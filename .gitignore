@@ -1,0 +1,22 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Build
+target/
+build/
+out/
+
+# NetBeans
+nbproject/private/
+
+# Environment variables
+.env
+*.env.local
+
+# Logs
+*.log
+
+# Operating system
+.DS_Store
+Thumbs.db
