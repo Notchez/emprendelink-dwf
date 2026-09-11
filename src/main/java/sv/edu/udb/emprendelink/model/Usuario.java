@@ -11,23 +11,17 @@ public class Usuario {
     private String correo;
     private String contrasenaHash;
     private String telefono;
-    private Boolean activo;
+    private boolean activo;
     private LocalDateTime fechaRegistro;
 
     public Usuario() {
+        this.activo = true;
+        this.fechaRegistro = LocalDateTime.now();
     }
 
-    public Usuario(
-            Integer idUsuario,
-            Rol rol,
-            String nombre,
-            String apellido,
-            String correo,
-            String contrasenaHash,
-            String telefono,
-            Boolean activo,
-            LocalDateTime fechaRegistro
-    ) {
+    public Usuario(Integer idUsuario, Rol rol, String nombre, String apellido, String correo,
+                   String contrasenaHash, String telefono, boolean activo,
+                   LocalDateTime fechaRegistro) {
         this.idUsuario = idUsuario;
         this.rol = rol;
         this.nombre = nombre;
@@ -37,6 +31,17 @@ public class Usuario {
         this.telefono = telefono;
         this.activo = activo;
         this.fechaRegistro = fechaRegistro;
+    }
+
+    public Usuario(Rol rol, String nombre, String apellido, String correo,
+                   String contrasenaHash, String telefono) {
+        this();
+        this.rol = rol;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.correo = correo;
+        this.contrasenaHash = contrasenaHash;
+        this.telefono = telefono;
     }
 
     public Integer getIdUsuario() {
@@ -95,11 +100,11 @@ public class Usuario {
         this.telefono = telefono;
     }
 
-    public Boolean getActivo() {
+    public boolean isActivo() {
         return activo;
     }
 
-    public void setActivo(Boolean activo) {
+    public void setActivo(boolean activo) {
         this.activo = activo;
     }
 
