@@ -15,6 +15,10 @@ public class Rol {
         this.nombre = nombre;
     }
 
+    public Rol(TipoRol nombre) {
+        this.nombre = nombre;
+    }
+
     public Integer getIdRol() {
         return idRol;
     }
