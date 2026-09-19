@@ -18,8 +18,7 @@ import java.util.Optional;
 
 public class JdbcUsuarioDAO implements UsuarioDAO {
 
-    // Trae el usuario y su rol en una sola consulta, evitando una segunda
-    // ida a la base de datos solo para resolver el objeto Rol.
+
     private static final String SELECT_BASE =
         "SELECT u.id_usuario, u.id_rol, u.nombre, u.apellido, u.correo, " +
         "u.contrasena_hash, u.telefono, u.activo, u.fecha_registro, " +
@@ -41,8 +40,7 @@ public class JdbcUsuarioDAO implements UsuarioDAO {
             stmt.setString(4, usuario.getCorreo());
             stmt.setString(5, usuario.getContrasenaHash());
             stmt.setString(6, usuario.getTelefono());
-            stmt.setBoolean(7, usuario.getActivo() != null ? usuario.getActivo() : true);
-
+            stmt.setBoolean(7, usuario.isActivo());
             stmt.executeUpdate();
 
             try (ResultSet rs = stmt.getGeneratedKeys()) {
@@ -124,9 +122,7 @@ public class JdbcUsuarioDAO implements UsuarioDAO {
     public boolean actualizar(Usuario usuario) {
         String sql = "UPDATE usuarios SET id_rol = ?, nombre = ?, apellido = ?, " +
             "correo = ?, telefono = ?, activo = ? WHERE id_usuario = ?";
-        // No se actualiza contrasena_hash aquí a propósito: cambiar la
-        // contraseña debería ser una operación aparte, no parte de un
-        // update general de datos del perfil.
+
 
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -136,7 +132,7 @@ public class JdbcUsuarioDAO implements UsuarioDAO {
             stmt.setString(3, usuario.getApellido());
             stmt.setString(4, usuario.getCorreo());
             stmt.setString(5, usuario.getTelefono());
-            stmt.setBoolean(6, usuario.getActivo());
+            stmt.setBoolean(6, usuario.isActivo());
             stmt.setInt(7, usuario.getIdUsuario());
 
             return stmt.executeUpdate() > 0;
