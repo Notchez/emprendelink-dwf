@@ -2,13 +2,12 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <nav aria-label="Navegación principal"
-     style="padding: 15px; margin-bottom: 20px; border-bottom: 1px solid #ccc;">
+     style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
 
+    <%-- 1. Páginas públicas --%>
     <a href="${pageContext.request.contextPath}/catalogo">
         Catálogo
     </a>
-
-    &nbsp; | &nbsp;
 
     <a href="${pageContext.request.contextPath}/emprendimientos">
         Emprendimientos
@@ -16,15 +15,12 @@
 
     <c:choose>
 
+        <%-- 2. Opciones para visitantes --%>
         <c:when test="${empty sessionScope.usuarioAutenticado}">
-
-            &nbsp; | &nbsp;
 
             <a href="${pageContext.request.contextPath}/auth">
                 Iniciar sesión
             </a>
-
-            &nbsp; | &nbsp;
 
             <a href="${pageContext.request.contextPath}/registro">
                 Registrarse
@@ -32,37 +28,43 @@
 
         </c:when>
 
+        <%-- 3. Opciones para usuarios autenticados --%>
         <c:otherwise>
 
-            <c:if test="${sessionScope.usuarioAutenticado.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
+            <%-- Cliente --%>
+            <c:if test="${sessionScope.usuarioAutenticado.rol.nombre eq 'ROLE_CLIENTE'}">
 
-                &nbsp; | &nbsp;
+                <a href="${pageContext.request.contextPath}/pedidos">
+                    Mis pedidos
+                </a>
+
+            </c:if>
+
+            <%-- Emprendedor --%>
+            <c:if test="${sessionScope.usuarioAutenticado.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
 
                 <a href="${pageContext.request.contextPath}/emprendimientos/gestion">
                     Mis emprendimientos
                 </a>
 
-                &nbsp; | &nbsp;
-
                 <a href="${pageContext.request.contextPath}/publicaciones">
                     Mis publicaciones
                 </a>
-
-                &nbsp; | &nbsp;
 
                 <a href="${pageContext.request.contextPath}/publicaciones/nueva">
                     Nueva publicación
                 </a>
 
+                <a href="${pageContext.request.contextPath}/pedidos/recibidos">
+                    Pedidos recibidos
+                </a>
+
             </c:if>
 
-            &nbsp; | &nbsp;
-
+            <%-- 4. Cuenta y salida --%>
             <span>
                 <c:out value="${sessionScope.usuarioAutenticado.nombre}" />
             </span>
-
-            &nbsp; | &nbsp;
 
             <a href="${pageContext.request.contextPath}/logout">
                 Cerrar sesión

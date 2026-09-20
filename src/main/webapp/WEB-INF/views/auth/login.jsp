@@ -6,6 +6,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <title>Iniciar sesión - EmprendeLink</title>
 </head>
 <body>

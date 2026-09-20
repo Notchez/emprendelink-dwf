@@ -5,6 +5,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <title>Emprendimientos - EmprendeLink</title>
 </head>
 <body>
