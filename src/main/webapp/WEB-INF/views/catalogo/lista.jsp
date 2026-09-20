@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<jsp:include page="/WEB-INF/views/comun/menu.jsp" />
+
     <header>
         <h1>Catálogo de publicaciones</h1>
         <p>Explora los productos y servicios de nuestros emprendedores.</p>

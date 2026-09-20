@@ -17,6 +17,8 @@
 </head>
 <body>
 
+<jsp:include page="/WEB-INF/views/comun/menu.jsp" />
+
     <h1>
         <c:choose>
             <c:when test="${modo == 'editar'}">Editar publicación</c:when>

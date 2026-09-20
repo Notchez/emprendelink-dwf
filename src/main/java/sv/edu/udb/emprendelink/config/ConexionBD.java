@@ -10,51 +10,85 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConexionBD {
+
     private static Map<String, String> variables;
 
-    public static Connection obtenerConexion() throws SQLException {
+    public static Connection obtenerConexion()
+            throws SQLException {
+
         cargarVariablesSiHaceFalta();
 
         String url = variables.get("DB_URL");
         String usuario = variables.get("DB_USER");
         String contrasena = variables.get("DB_PASSWORD");
 
-        if (url == null || usuario == null || contrasena == null) {
+        if (url == null
+                || usuario == null
+                || contrasena == null) {
+
             throw new IllegalStateException(
-                    "Faltan variables DB_URL, DB_USER o DB_PASSWORD en el archivo .env");
+                    "Faltan DB_URL, DB_USER o DB_PASSWORD."
+            );
         }
 
-        return DriverManager.getConnection(url, usuario, contrasena);
+        return DriverManager.getConnection(
+                url,
+                usuario,
+                contrasena
+        );
     }
 
-    private static void cargarVariablesSiHaceFalta() {
+    private static synchronized void cargarVariablesSiHaceFalta() {
+
         if (variables != null) {
             return;
         }
 
-        variables = new HashMap<>();
-        Path rutaEnv = Path.of(".env");
+        String ubicacion = System.getProperty(
+                "emprendelink.env",
+                ".env"
+        );
+
+        Path rutaEnv = Path.of(ubicacion);
+
+        Map<String, String> valores = new HashMap<>();
 
         try {
             for (String linea : Files.readAllLines(rutaEnv)) {
+
                 String limpia = linea.trim();
 
-                if (limpia.isEmpty() || limpia.startsWith("#")) {
+                if (limpia.isEmpty()
+                        || limpia.startsWith("#")) {
                     continue;
                 }
 
-                int posIgual = limpia.indexOf('=');
-                if (posIgual == -1) {
+                int posicion = limpia.indexOf('=');
+
+                if (posicion < 0) {
                     continue;
                 }
 
-                String clave = limpia.substring(0, posIgual).trim();
-                String valor = limpia.substring(posIgual + 1).trim();
-                variables.put(clave, valor);
+                String clave = limpia.substring(
+                        0,
+                        posicion
+                ).trim();
+
+                String valor = limpia.substring(
+                        posicion + 1
+                ).trim();
+
+                valores.put(clave, valor);
             }
+
         } catch (IOException e) {
             throw new IllegalStateException(
-                    "No se pudo leer el archivo .env. ¿Existe en la raíz del proyecto?", e);
+                    "No se pudo leer .env en: "
+                            + rutaEnv.toAbsolutePath(),
+                    e
+            );
         }
+
+        variables = valores;
     }
 }

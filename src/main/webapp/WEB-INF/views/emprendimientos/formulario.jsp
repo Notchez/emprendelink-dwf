@@ -18,6 +18,8 @@
 
 <body>
 
+<jsp:include page="/WEB-INF/views/comun/menu.jsp" />
+
 <main>
 
     <c:choose>

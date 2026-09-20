@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<jsp:include page="/WEB-INF/views/comun/menu.jsp" />
+
     <header>
         <h1>Detalle de la publicación</h1>
 
