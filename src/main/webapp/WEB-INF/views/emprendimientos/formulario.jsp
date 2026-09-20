@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <title>
         <c:choose>
             <c:when test="${modo eq 'editar'}">Editar emprendimiento</c:when>
@@ -17,6 +17,8 @@
 </head>
 
 <body>
+
+<jsp:include page="/WEB-INF/views/comun/menu.jsp" />
 
 <main>
 

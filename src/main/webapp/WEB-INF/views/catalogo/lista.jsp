@@ -6,9 +6,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <title>Catálogo de publicaciones - EmprendeLink</title>
 </head>
 <body>
+
+<jsp:include page="/WEB-INF/views/comun/menu.jsp" />
 
     <header>
         <h1>Catálogo de publicaciones</h1>
