@@ -5,13 +5,19 @@
      style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
 
     <%-- 1. Páginas públicas --%>
-    <a href="${pageContext.request.contextPath}/catalogo">
-        Catálogo
-    </a>
+    <%-- Navegación pública: visitantes y clientes --%>
+    <c:if test="${empty sessionScope.usuarioAutenticado
+                  or sessionScope.usuarioAutenticado.rol.nombre eq 'ROLE_CLIENTE'}">
 
-    <a href="${pageContext.request.contextPath}/emprendimientos">
-        Emprendimientos
-    </a>
+        <a href="${pageContext.request.contextPath}/catalogo">
+            Catálogo
+        </a>
+
+        <a href="${pageContext.request.contextPath}/emprendimientos">
+            Emprendimientos
+        </a>
+
+    </c:if>
 
     <c:choose>
 
@@ -57,6 +63,19 @@
 
                 <a href="${pageContext.request.contextPath}/pedidos/recibidos">
                     Pedidos recibidos
+                </a>
+
+            </c:if>
+
+            <%-- Administrador --%>
+            <c:if test="${sessionScope.usuarioAutenticado.rol.nombre eq 'ROLE_ADMIN'}">
+
+                <a href="${pageContext.request.contextPath}/admin/categorias">
+                    Administrar categorías
+                </a>
+
+                <a href="${pageContext.request.contextPath}/admin/usuarios">
+                    Administrar usuarios
                 </a>
 
             </c:if>
