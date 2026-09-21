@@ -2,6 +2,16 @@
 
 Proyecto de cátedra para la materia **Desarrollo de Aplicaciones con Web Frameworks (DWF)**.
 
+## Integrantes del equipo
+
+| Nombre completo | Carné |
+|---|---|
+| Tito Mauricio Nochez Villagran | NV101005 |
+| Marvin Francisco Pérez Calderón | PC253641 |
+| Giovanni Manuel Quijano Sosa | QS242538 |
+| Jeferson Alfredo Romero Rivas | RR222321 |
+| Rafael Mena Mejia | MM253045 |
+
 ## Descripción
 
 **EmprendeLink** es una plataforma digital orientada a emprendedores que permite registrar y administrar emprendimientos, publicar productos o servicios y facilitar su consulta por parte de posibles clientes.
