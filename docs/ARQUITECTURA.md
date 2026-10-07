@@ -1,881 +1,1569 @@
 # Arquitectura del proyecto — EmprendeLink DWF
 
-Este documento define la arquitectura base de EmprendeLink para la materia Desarrollo de Aplicaciones con Web Frameworks (DWF).
+Este documento define la arquitectura oficial de EmprendeLink para la materia DWF.
 
-La arquitectura está diseñada para permitir que el mismo proyecto evolucione durante las cuatro fases de la materia sin reconstruir completamente el sistema cada vez que se incorpore una nueva tecnología.
+El proyecto debe evolucionar entre las diferentes fases sin reconstruir la aplicación desde cero.
 
----
+La arquitectura prioriza:
 
-## 1. Principio general
-
-EmprendeLink seguirá una arquitectura organizada por responsabilidades.
-
-Las principales capas serán:
-
-- Presentación
-- Controladores
-- Servicios
-- Acceso a datos
-- Persistencia
-- Modelo de dominio
-- Configuración
-- Seguridad
-
-El objetivo es evitar que la lógica de negocio, el acceso a datos y la presentación queden mezclados.
+- separación de responsabilidades;
+- reutilización de lógica;
+- mantenibilidad;
+- integración entre módulos;
+- evolución progresiva de tecnologías.
 
 ---
 
-## 2. Flujo general
+# 1. Estado actual
 
-La comunicación principal del sistema seguirá el siguiente flujo:
+## Fase 1 — Implementada
+
+La aplicación cuenta con una base funcional utilizando:
 
 ```text
-Usuario / Cliente
-        ↓
-      Vista
-        ↓
-   Controlador
-        ↓
-     Servicio
-        ↓
-       DAO
-        ↓
- Base de datos
+JSP
+Servlets
+Services
+DAO
+JDBC
+MySQL
 ```
 
-Cada capa deberá comunicarse principalmente con la capa inmediatamente inferior.
+Flujo principal:
+
+```text
+JSP
+ ↓
+Servlet
+ ↓
+Service
+ ↓
+DAO
+ ↓
+JDBC
+ ↓
+MySQL
+```
 
 ---
 
-## 3. Modelo de dominio
+## Fase 2 — En desarrollo
 
-El modelo de dominio representa los conceptos principales de EmprendeLink.
+La Fase 2 incorpora:
 
-Entidades iniciales:
+```text
+Jakarta Faces
+Managed Beans
+AJAX
+JPA
+Hibernate
+Validadores
+Converters
+Transacciones
+Pruebas
+```
 
-- `Rol`
-- `Usuario`
-- `Emprendimiento`
-- `Categoria`
-- `Publicacion`
-- `Pedido`
-- `DetallePedido`
+Flujo esperado:
+
+```text
+XHTML / JSF
+     ↓
+Managed Bean
+     ↓
+Service
+     ↓
+DAO
+     ↓
+JPA / Hibernate
+     ↓
+MySQL
+```
+
+La Fase 2 debe reutilizar la lógica existente y no crear una aplicación independiente.
+
+---
+
+# 2. Principio general
+
+La arquitectura se divide principalmente en:
+
+```text
+Presentación
+Controladores
+Servicios
+Acceso a datos
+Persistencia
+Modelo de dominio
+Seguridad
+Configuración
+```
+
+El flujo general es:
+
+```text
+Usuario
+  ↓
+Vista
+  ↓
+Controlador / Bean
+  ↓
+Service
+  ↓
+DAO
+  ↓
+Persistencia
+  ↓
+Base de datos
+```
+
+Cada capa debe limitarse a su responsabilidad.
+
+---
+
+# 3. Package raíz
+
+El package raíz oficial es:
+
+```text
+emprendelink
+```
+
+Ubicación:
+
+```text
+src/main/java/emprendelink/
+```
+
+Pruebas:
+
+```text
+src/test/java/emprendelink/
+```
+
+No utilizar en nuevo código:
+
+```text
+sv.edu.udb.emprendelink
+```
+
+---
+
+# 4. Estructura Java
+
+La estructura principal es:
+
+```text
+emprendelink/
+│
+├── config/
+│
+├── dao/
+│   ├── jdbc/
+│   └── jpa/
+│
+├── dto/
+├── exception/
+│
+├── model/
+│   └── enums/
+│
+├── persistence/
+│   └── jpa/
+│       ├── entity/
+│       └── mapper/
+│
+├── security/
+│
+├── service/
+│   └── impl/
+│
+├── spring/
+│
+├── util/
+│
+└── web/
+    ├── jsf/
+    ├── rest/
+    └── servlet/
+```
+
+No todas las estructuras representan funcionalidad actualmente activa.
+
+Los packages de tecnologías futuras pueden existir como preparación, pero no deben confundirse con funcionalidad implementada.
+
+---
+
+# 5. Modelo de dominio
+
+El modelo se encuentra en:
+
+```text
+emprendelink/model/
+```
+
+Entidades principales:
+
+```text
+Rol
+Usuario
+Emprendimiento
+Categoria
+Publicacion
+Pedido
+DetallePedido
+```
 
 Enumeraciones:
 
-- `TipoRol`
-- `TipoPublicacion`
-- `EstadoPedido`
-
-Estas clases representan el negocio y deberán evitar depender directamente de tecnologías de presentación como Servlets, JSF, REST o Spring MVC.
-
----
-
-## 4. Capa DAO
-
-La capa DAO será responsable de acceder a la información persistida.
-
-Las interfaces principales serán:
-
-- `RolDAO`
-- `UsuarioDAO`
-- `EmprendimientoDAO`
-- `CategoriaDAO`
-- `PublicacionDAO`
-- `PedidoDAO`
-
-Estas interfaces definirán los contratos de acceso a datos.
-
-Por ejemplo, `PublicacionDAO` podrá definir operaciones para:
-
-- buscar una publicación por ID;
-- listar publicaciones;
-- listar publicaciones activas;
-- listar publicaciones por emprendimiento;
-- guardar;
-- actualizar;
-- eliminar.
-
-La tecnología utilizada para realizar estas operaciones podrá cambiar sin modificar el contrato principal.
-
----
-
-## 5. Convención de nombres y firmas DAO
-
-Para mantener consistencia entre los diferentes módulos del proyecto, las interfaces DAO deberán seguir una convención común para nombrar sus métodos.
-
-Los nombres deberán escribirse en español y utilizar `camelCase`.
-
-### 5.1. Consultas que devuelven un único registro
-
-Se utilizará el prefijo:
-
-`buscarPor...`
-
-Ejemplos:
-
-```java
-Publicacion buscarPorId(Integer id);
-Usuario buscarPorId(Integer id);
-Usuario buscarPorCorreo(String correo);
-Emprendimiento buscarPorId(Integer id);
+```text
+TipoRol
+TipoPublicacion
+EstadoPedido
 ```
 
-El nombre deberá indicar claramente el criterio utilizado para realizar la búsqueda.
+El modelo representa conceptos del negocio.
+
+No debe depender directamente de:
+
+```text
+Servlets
+JSP
+JSF
+JPA
+REST
+Spring
+```
+
+El objetivo es mantener el dominio reutilizable independientemente de la tecnología utilizada para presentación o persistencia.
 
 ---
 
-### 5.2. Consultas que devuelven colecciones
+# 6. Relaciones principales del dominio
 
-Se utilizará el prefijo:
+Las relaciones conceptuales son:
 
-`listar...`
+```text
+Rol
+ └── Usuario
 
-Ejemplos:
+Usuario
+ ├── Emprendimiento
+ └── Pedido
 
-```java
-List<Publicacion> listarTodas();
-List<Publicacion> listarActivas();
-List<Publicacion> listarPorEmprendimiento(Integer idEmprendimiento);
-List<Pedido> listarPorUsuario(Integer idUsuario);
-List<Categoria> listarTodas();
+Emprendimiento
+ ├── Publicacion
+ └── Pedido
+
+Categoria
+ └── Publicacion
+
+Pedido
+ └── DetallePedido
+
+Publicacion
+ └── DetallePedido
 ```
 
-Cuando corresponda, el nombre deberá expresar claramente el filtro aplicado.
+Representación general:
 
-Ejemplos:
+```text
+Rol 1 ─── N Usuario
 
-- `listarTodas()`
-- `listarActivas()`
-- `listarPendientes()`
-- `listarPorUsuario(...)`
-- `listarPorEmprendimiento(...)`
-- `listarPorCategoria(...)`
+Usuario 1 ─── N Emprendimiento
 
-La terminación deberá mantener concordancia con la entidad cuando resulte natural.
+Emprendimiento 1 ─── N Publicacion
 
-Ejemplos:
+Categoria 1 ─── N Publicacion
 
-```java
-List<Publicacion> listarTodas();
-List<Categoria> listarTodas();
-List<Usuario> listarTodos();
-List<Pedido> listarTodos();
+Usuario 1 ─── N Pedido
+
+Emprendimiento 1 ─── N Pedido
+
+Pedido 1 ─── N DetallePedido
+
+Publicacion 1 ─── N DetallePedido
 ```
+
+Estas relaciones deberán reflejarse correctamente durante el mapeo JPA.
 
 ---
 
-### 5.3. Operaciones de creación
+# 7. DAO
 
-Para crear o persistir un nuevo registro se utilizará:
+Las interfaces DAO se encuentran en:
 
-`guardar(...)`
-
-Ejemplos:
-
-```java
-void guardar(Publicacion publicacion);
-void guardar(Usuario usuario);
-void guardar(Pedido pedido);
+```text
+emprendelink/dao/
 ```
+
+Interfaces principales:
+
+```text
+RolDAO
+UsuarioDAO
+EmprendimientoDAO
+CategoriaDAO
+PublicacionDAO
+PedidoDAO
+```
+
+Los DAO definen contratos de acceso a datos.
+
+Las capas superiores deben depender principalmente de las interfaces y no de una tecnología concreta.
 
 ---
 
-### 5.4. Operaciones de actualización
+# 8. JDBC
 
-Para modificar un registro existente se utilizará:
+La implementación utilizada durante Fase 1 se encuentra en:
 
-`actualizar(...)`
+```text
+emprendelink/dao/jdbc/
+```
 
 Ejemplos:
 
-```java
-void actualizar(Publicacion publicacion);
-void actualizar(Usuario usuario);
-void actualizar(Pedido pedido);
+```text
+JdbcRolDAO
+JdbcUsuarioDAO
+JdbcEmprendimientoDAO
+JdbcCategoriaDAO
+JdbcPublicacionDAO
+JdbcPedidoDAO
 ```
+
+Flujo:
+
+```text
+Service
+ ↓
+DAO
+ ↓
+JdbcDAO
+ ↓
+JDBC
+ ↓
+MySQL
+```
+
+La implementación JDBC se mantiene durante Fase 2 como parte de la funcionalidad existente y como referencia durante la migración.
+
+No debe eliminarse antes de comprobar que la nueva persistencia JPA cubre correctamente las funciones necesarias.
 
 ---
 
-### 5.5. Operaciones de eliminación
+# 9. JPA
 
-Para eliminar registros se utilizará el prefijo:
+La implementación JPA de Fase 2 se ubicará en:
 
-`eliminarPor...`
-
-Ejemplos:
-
-```java
-void eliminarPorId(Integer id);
+```text
+emprendelink/dao/jpa/
 ```
 
-Si posteriormente existen otros criterios de eliminación, el método deberá expresar claramente dicho criterio.
+Ejemplos previstos:
+
+```text
+JpaRolDAO
+JpaUsuarioDAO
+JpaEmprendimientoDAO
+JpaCategoriaDAO
+JpaPublicacionDAO
+JpaPedidoDAO
+```
+
+Flujo esperado:
+
+```text
+Service
+ ↓
+DAO
+ ↓
+JpaDAO
+ ↓
+JPA / Hibernate
+ ↓
+MySQL
+```
+
+Los DAO JPA deberán respetar los contratos existentes cuando sea razonable.
+
+No debe modificarse un contrato DAO compartido únicamente para facilitar una implementación JPA concreta sin analizar primero el impacto.
 
 ---
 
-### 5.6. Ejemplo de contrato DAO
+# 10. Entidades JPA
 
-Una interfaz como `PublicacionDAO` deberá mantener una nomenclatura consistente.
+Las entidades de persistencia se ubicarán en:
 
-```java
-public interface PublicacionDAO {
-
-    Publicacion buscarPorId(Integer id);
-
-    List<Publicacion> listarTodas();
-
-    List<Publicacion> listarActivas();
-
-    List<Publicacion> listarPorEmprendimiento(Integer idEmprendimiento);
-
-    void guardar(Publicacion publicacion);
-
-    void actualizar(Publicacion publicacion);
-
-    void eliminarPorId(Integer id);
-}
+```text
+emprendelink/persistence/jpa/entity/
 ```
 
-Las implementaciones concretas, como `JdbcPublicacionDAO` o `JpaPublicacionDAO`, deberán respetar exactamente el contrato definido por la interfaz correspondiente.
+Entidades previstas:
 
-No deberán utilizarse nombres alternativos para una misma operación, como:
+```text
+RolEntity
+UsuarioEntity
+EmprendimientoEntity
+CategoriaEntity
+PublicacionEntity
+PedidoEntity
+DetallePedidoEntity
+```
 
-- `get`
-- `find`
-- `fetch`
-- `obtener`
-- `cargar`
+Las entidades deberán utilizar:
 
-salvo que una tecnología o framework lo requiera explícitamente.
+```text
+jakarta.persistence.*
+```
 
-El objetivo de esta convención es que cualquier integrante pueda identificar el propósito de un método DAO únicamente por su nombre, independientemente del módulo en el que esté trabajando.
+No utilizar:
+
+```text
+javax.persistence.*
+```
+
+Las entidades JPA serán responsables de representar la persistencia relacional.
+
+No deberán contener lógica compleja de negocio.
 
 ---
 
-## 6. Implementaciones DAO
+# 11. Separación dominio — JPA
 
-Durante la evolución del proyecto existirán diferentes implementaciones de las interfaces DAO.
+El proyecto mantiene separados:
 
-### Fase 1
+```text
+Modelo de dominio
+```
 
-Persistencia mediante JDBC.
+y:
 
-Ejemplos:
-
-- `JdbcUsuarioDAO`
-- `JdbcEmprendimientoDAO`
-- `JdbcPublicacionDAO`
-- `JdbcPedidoDAO`
-
-### Fase 2 y posteriores
-
-Persistencia mediante JPA / Hibernate.
-
-Ejemplos:
-
-- `JpaUsuarioDAO`
-- `JpaEmprendimientoDAO`
-- `JpaPublicacionDAO`
-- `JpaPedidoDAO`
-
-Ambas implementaciones deberán respetar las interfaces DAO existentes.
-
-De esta manera, las capas superiores no dependerán directamente de JDBC o JPA.
+```text
+Entidades JPA
+```
 
 Ejemplo:
 
 ```text
-PublicacionService
-        ↓
- PublicacionDAO
-      ↙     ↘
-Jdbc...     Jpa...
+Usuario
+   ↕
+UsuarioMapper
+   ↕
+UsuarioEntity
 ```
 
----
+Esto permite evitar que el dominio dependa directamente de JPA.
 
-## 7. Capa de servicios
-
-La capa de servicios contendrá las reglas de negocio.
-
-Servicios principales:
-
-- `AutenticacionService`
-- `UsuarioService`
-- `EmprendimientoService`
-- `CategoriaService`
-- `PublicacionService`
-- `PedidoService`
-
-Implementaciones estándar:
-
-- `DefaultAutenticacionService`
-- `DefaultUsuarioService`
-- `DefaultEmprendimientoService`
-- `DefaultCategoriaService`
-- `DefaultPublicacionService`
-- `DefaultPedidoService`
-
-Responsabilidades de esta capa:
-
-- validar reglas de negocio;
-- coordinar operaciones entre entidades;
-- utilizar los DAO;
-- evitar que los controladores contengan lógica de negocio;
-- permitir reutilizar la misma lógica desde Servlets, JSF, REST y Spring.
-
-Los servicios no deberán contener código relacionado directamente con JSP, Servlets, JSF o componentes visuales.
-
----
-
-## 8. Capa de presentación
-
-La tecnología utilizada para presentar información cambiará durante las diferentes fases de la materia.
-
-### Fase 1
-
-Se utilizarán:
-
-- JSP
-- JSTL
-- HTML
-- CSS
-
-Las vistas deberán encargarse principalmente de mostrar información y recibir datos del usuario.
-
-No deberán contener lógica de negocio compleja.
-
-### Fase 2
-
-Se incorporará:
-
-- Jakarta Faces
-- Managed Beans
-- AJAX
-- validadores
-- convertidores
-
-### Fase 3
-
-Se incorporará un cliente externo que consumirá la API REST.
-
-La tecnología del cliente será definida según los requisitos de la fase.
-
-### Fase 4
-
-Spring MVC podrá proporcionar nuevos controladores y mecanismos de presentación cuando corresponda.
-
----
-
-## 9. Controladores
-
-Los controladores recibirán solicitudes del usuario y coordinarán la interacción con la capa de servicios.
-
-### Servlets
-
-Durante la Fase 1 se utilizarán inicialmente:
-
-- `AuthServlet`
-- `CatalogoServlet`
-- `UsuarioServlet`
-- `EmprendimientoServlet`
-- `CategoriaServlet`
-- `PublicacionServlet`
-- `PedidoServlet`
-
-Los Servlets no deberán acceder directamente a la base de datos.
-
-Flujo esperado:
+Flujo general:
 
 ```text
-Servlet
-   ↓
-Service
-   ↓
- DAO
-   ↓
-Base de datos
+Domain Model
+    ↕
+Mapper
+    ↕
+JPA Entity
 ```
 
-Los Servlets serán responsables principalmente de:
-
-- recibir parámetros HTTP;
-- diferenciar solicitudes GET y POST;
-- realizar validaciones básicas de entrada;
-- invocar la capa Service;
-- colocar información en request o session cuando corresponda;
-- realizar `forward`;
-- realizar `redirect`;
-- controlar el flujo de navegación;
-- presentar mensajes de éxito o error.
-
-Las reglas de negocio no deberán implementarse directamente dentro de los Servlets.
-
 ---
 
-## 10. JSF
+# 12. Mappers
 
-Durante la Fase 2 se incorporarán Managed Beans.
-
-Nombres previstos:
-
-- `AuthBean`
-- `CatalogoBean`
-- `EmprendimientoBean`
-- `CategoriaBean`
-- `PublicacionBean`
-- `PedidoBean`
-
-Los Beans utilizarán los servicios existentes.
-
-No deberán duplicar reglas de negocio que ya existan en la capa Service.
-
-La incorporación de JSF deberá sustituir o complementar la capa de presentación sin obligar a reconstruir la lógica de negocio.
-
----
-
-## 11. Persistencia JPA
-
-Cuando se incorpore JPA / Hibernate, la persistencia se mantendrá separada del resto de la aplicación.
-
-Estructura prevista:
+Los mappers se ubicarán en:
 
 ```text
-persistence/jpa/entity
+emprendelink/persistence/jpa/mapper/
 ```
-
-Contendrá entidades JPA.
 
 Ejemplos:
 
-- `RolEntity`
-- `UsuarioEntity`
-- `EmprendimientoEntity`
-- `CategoriaEntity`
-- `PublicacionEntity`
-- `PedidoEntity`
-- `DetallePedidoEntity`
-
-Estructura:
-
 ```text
-persistence/jpa/mapper
+RolMapper
+UsuarioMapper
+EmprendimientoMapper
+CategoriaMapper
+PublicacionMapper
+PedidoMapper
+DetallePedidoMapper
 ```
 
-Contendrá los componentes responsables de convertir entre:
+Responsabilidad:
 
 ```text
-Entidad JPA ↔ Modelo de dominio
+JPA Entity ↔ Domain Model
 ```
 
-Esta estrategia permitirá mantener el modelo de dominio desacoplado de la tecnología de persistencia.
+Los mappers pueden convertir:
 
-Si durante el desarrollo se determina que la ruta académica requiere utilizar directamente anotaciones JPA sobre los POJO del dominio, esta arquitectura podrá simplificarse mediante una decisión coordinada del equipo.
+```text
+Entity → Domain
+Domain → Entity
+```
 
-Cualquier modificación de este tipo deberá quedar documentada.
+No deben contener:
+
+- consultas;
+- manejo de transacciones;
+- reglas de negocio;
+- lógica de presentación.
 
 ---
 
-## 12. API REST
+# 13. Services
 
-Durante la Fase 3 se incorporará una API REST.
-
-Ruta base prevista:
+Las interfaces de servicio se encuentran en:
 
 ```text
-/api/v1
+emprendelink/service/
 ```
 
-Recursos previstos:
-
-- `EmprendimientoResource`
-- `PublicacionResource`
-- `PedidoResource`
-
-Ejemplos de rutas:
+Servicios principales:
 
 ```text
-GET  /api/v1/emprendimientos
-GET  /api/v1/emprendimientos/{id}
-
-GET  /api/v1/publicaciones
-GET  /api/v1/publicaciones/{id}
-GET  /api/v1/emprendimientos/{id}/publicaciones
-
-POST /api/v1/pedidos
-GET  /api/v1/pedidos/{id}
-PUT  /api/v1/pedidos/{id}/estado
+AutenticacionService
+UsuarioService
+EmprendimientoService
+CategoriaService
+PublicacionService
+PedidoService
 ```
 
-Estas rutas son una definición inicial y podrán ampliarse según los requisitos funcionales del proyecto.
-
-La API deberá reutilizar la lógica de negocio existente mediante la capa Service.
-
-Flujo esperado:
+Implementaciones:
 
 ```text
-Cliente externo
+emprendelink/service/impl/
+```
+
+Clases existentes:
+
+```text
+AutenticacionServiceImpl
+UsuarioServiceImpl
+EmprendimientoServiceImpl
+CategoriaServiceImpl
+PublicacionServiceImpl
+PedidoServiceImpl
+```
+
+La convención oficial es:
+
+```text
+ServiceImpl
+```
+
+No:
+
+```text
+DefaultService
+```
+
+---
+
+# 14. Responsabilidades de Services
+
+La capa Service contiene principalmente:
+
+- reglas de negocio;
+- validaciones de negocio;
+- permisos;
+- coordinación entre operaciones;
+- coordinación entre DAO;
+- control de estados;
+- integridad lógica.
+
+Ejemplo:
+
+```text
+PedidoBean
+   ↓
+PedidoService
+   ↓
+PedidoDAO
+```
+
+Un Service puede utilizar varios DAO cuando una operación lo requiera.
+
+Ejemplo:
+
+```text
+PedidoService
+ ├── PedidoDAO
+ ├── PublicacionDAO
+ └── UsuarioDAO
+```
+
+---
+
+# 15. Regla de acceso a datos
+
+Los componentes de presentación no deben acceder directamente a la base de datos.
+
+Incorrecto:
+
+```text
+Bean
+ ↓
+EntityManager
+```
+
+o:
+
+```text
+Servlet
+ ↓
+Connection
+```
+
+Flujo correcto:
+
+```text
+Bean / Servlet
       ↓
- REST Resource
-      ↓
-    Service
+   Service
       ↓
      DAO
       ↓
-Base de datos
+Persistencia
 ```
 
 ---
 
-## 13. DTO
+# 16. Servlets
 
-La API utilizará objetos específicos para transportar datos cuando sea necesario.
-
-DTO previstos:
-
-- `EmprendimientoDTO`
-- `PublicacionDTO`
-- `CrearPedidoDTO`
-- `PedidoDTO`
-- `DetallePedidoDTO`
-- `ApiErrorDTO`
-
-Los DTO permitirán separar el contrato externo de la API del modelo interno de la aplicación.
-
-Esto permitirá evitar la exposición innecesaria de información interna de las entidades.
-
----
-
-## 14. Spring
-
-Durante la Fase 4 se incorporarán los módulos de Spring requeridos por el proyecto.
-
-Podrán utilizarse componentes relacionados con:
-
-- Spring MVC
-- Spring Security
-- Spring Data / JPA
-- Spring REST
-- Dependency Injection
-- otros módulos autorizados por la materia
-
-Spring deberá integrarse sobre las responsabilidades existentes.
-
-La incorporación de Spring no implica obligatoriamente reconstruir desde cero las capas de:
-
-- dominio;
-- servicios;
-- acceso a datos;
-- persistencia.
-
-Cuando sea posible, Spring deberá aprovechar las interfaces y responsabilidades establecidas durante las fases anteriores.
-
----
-
-## 15. Seguridad
-
-La seguridad se incorporará progresivamente.
-
-Roles oficiales:
-
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
-
-La autorización deberá realizarse según las responsabilidades de cada rol.
-
-Durante las diferentes fases podrán existir mecanismos básicos de control de acceso.
-
-Durante la Fase 4 se implementará protección de rutas y recursos utilizando los mecanismos de seguridad correspondientes.
-
-Las contraseñas nunca deberán almacenarse como texto plano.
-
-Los secretos y credenciales reales nunca deberán almacenarse en Git.
-
-Ejemplos de información que no deberá subirse al repositorio:
-
-- contraseñas de bases de datos;
-- tokens;
-- claves privadas;
-- API keys;
-- credenciales reales;
-- archivos locales que contengan secretos.
-
----
-
-## 16. Manejo de errores
-
-Se utilizarán excepciones propias del proyecto para representar diferentes tipos de problemas.
-
-Base prevista:
-
-- `EmprendeLinkException`
-- `ValidacionException`
-- `ReglaNegocioException`
-- `RecursoNoEncontradoException`
-- `AccesoNoAutorizadoException`
-- `PersistenciaException`
-
-Esto permitirá implementar posteriormente manejo centralizado de errores para:
-
-- Servlets;
-- JSF;
-- API REST;
-- Spring.
-
-Cada capa deberá manejar únicamente los errores que correspondan a su responsabilidad.
-
-Por ejemplo:
+Los Servlets se encuentran en:
 
 ```text
-DAO
-↓
-PersistenciaException
-↓
-Service
-↓
-ReglaNegocioException / RecursoNoEncontradoException
-↓
-Controlador
-↓
-Mensaje o respuesta apropiada
+emprendelink/web/servlet/
 ```
 
-No deberán mostrarse directamente al usuario detalles internos de excepciones SQL, stack traces o información sensible.
+Controladores existentes:
+
+```text
+AuthServlet
+CatalogoServlet
+UsuarioServlet
+EmprendimientoServlet
+CategoriaServlet
+PublicacionServlet
+PedidoServlet
+```
+
+Estos forman parte principalmente de la implementación funcional de Fase 1.
+
+Responsabilidades:
+
+- recibir solicitudes;
+- obtener parámetros;
+- realizar validaciones básicas;
+- invocar Services;
+- gestionar navegación;
+- preparar información para la vista;
+- manejar mensajes.
+
+No deben:
+
+- ejecutar SQL;
+- contener lógica compleja de negocio;
+- gestionar directamente persistencia JPA.
 
 ---
 
-## 17. Estructura Java prevista
+# 17. JSP
 
-La estructura base del código será:
+Las vistas de Fase 1 utilizan JSP.
 
-```text
-src/main/java/sv/edu/udb/emprendelink/
-```
-
-Paquetes previstos:
-
-```text
-model
-model/enums
-
-dao
-dao/jdbc
-dao/jpa
-
-service
-service/impl
-
-persistence/jpa/entity
-persistence/jpa/mapper
-
-web/servlet
-web/jsf
-web/rest
-
-dto
-
-spring
-security
-config
-exception
-util
-```
-
-Las carpetas se crearán progresivamente según sean necesarias.
-
-No se deberán crear componentes vacíos únicamente para completar la estructura.
-
-La estructura real del repositorio será la fuente de verdad sobre los componentes que ya hayan sido implementados.
-
----
-
-## 18. Vistas previstas
-
-La ubicación base de las vistas JSP será:
+Ubicación principal:
 
 ```text
 src/main/webapp/WEB-INF/views/
 ```
 
-Estructura inicial prevista:
+Las vistas deben limitarse principalmente a:
 
-```text
-auth/
-catalogo/
-emprendimientos/
-publicaciones/
-pedidos/
-admin/
-error/
-```
+- presentación;
+- formularios;
+- renderización de datos.
 
-Ejemplos:
-
-```text
-auth/login.jsp
-
-catalogo/lista.jsp
-catalogo/detalle.jsp
-
-emprendimientos/lista.jsp
-emprendimientos/formulario.jsp
-
-publicaciones/lista.jsp
-publicaciones/formulario.jsp
-
-pedidos/lista.jsp
-pedidos/detalle.jsp
-
-admin/usuarios.jsp
-admin/categorias.jsp
-
-error/403.jsp
-error/404.jsp
-error/500.jsp
-```
-
-Las JSP estarán ubicadas dentro de `WEB-INF` para evitar su acceso directo cuando corresponda.
-
-El acceso normal deberá realizarse mediante los controladores.
+No deben contener consultas o lógica de persistencia.
 
 ---
 
-## 19. Evolución por fases
+# 18. Jakarta Faces
 
-La arquitectura deberá permitir la siguiente evolución.
+Durante Fase 2 la capa de presentación evoluciona a Jakarta Faces.
 
-### Fase 1
-
-```text
-JSP / Servlets
-      ↓
-   Services
-      ↓
-     DAO
-      ↓
-    JDBC
-      ↓
-    MySQL
-```
-
-### Fase 2
+Las vistas utilizarán:
 
 ```text
-JSF / Managed Beans
-        ↓
-     Services
-        ↓
-       DAO
-        ↓
- JPA / Hibernate
-        ↓
-      MySQL
+.xhtml
 ```
 
-### Fase 3
+Los componentes JSF deberán interactuar con Managed Beans.
+
+Flujo:
+
+```text
+XHTML
+ ↓
+Managed Bean
+ ↓
+Service
+ ↓
+DAO
+ ↓
+JPA
+```
+
+---
+
+# 19. Managed Beans
+
+Los Beans se encuentran en:
+
+```text
+emprendelink/web/jsf/
+```
+
+Beans previstos:
+
+```text
+AuthBean
+CatalogoBean
+CategoriaBean
+EmprendimientoBean
+PublicacionBean
+PedidoBean
+```
+
+Los Beans son responsables de:
+
+- datos de formularios;
+- acciones de interfaz;
+- navegación;
+- mensajes;
+- interacción con Services;
+- actualización de vistas.
+
+No deberán contener:
+
+- SQL;
+- consultas JPA;
+- reglas de negocio complejas;
+- manejo directo de conexiones.
+
+---
+
+# 20. AJAX
+
+Fase 2 requiere demostrar AJAX mediante Jakarta Faces.
+
+Mecanismo principal:
+
+```text
+<f:ajax>
+```
+
+AJAX podrá utilizarse para:
+
+- filtros;
+- actualización parcial de vistas;
+- selección dinámica;
+- formularios;
+- validaciones;
+- tablas;
+- detalles.
+
+Flujo conceptual:
+
+```text
+Acción usuario
+     ↓
+   AJAX
+     ↓
+Managed Bean
+     ↓
+Service
+     ↓
+Resultado
+     ↓
+Actualización parcial
+```
+
+AJAX no debe reemplazar la lógica de negocio ni la seguridad del backend.
+
+---
+
+# 21. Validación
+
+La validación puede existir en diferentes niveles.
+
+## Vista
+
+Responsable principalmente de:
+
+```text
+required
+formatos
+longitudes
+rangos
+```
+
+## Managed Bean
+
+Puede coordinar errores y mensajes asociados a la interacción.
+
+## Service
+
+Debe validar:
+
+```text
+reglas de negocio
+permisos
+propiedad
+estados
+consistencia
+```
+
+## Base de datos
+
+Debe mantener:
+
+```text
+PK
+FK
+UNIQUE
+NOT NULL
+restricciones
+```
+
+Una sola capa no debe considerarse suficiente para toda validación.
+
+---
+
+# 22. Validators
+
+Los validators específicos de JSF podrán utilizarse cuando exista una necesidad concreta de validación de entrada.
+
+Ejemplo conceptual:
+
+```text
+Formulario
+ ↓
+Validator
+ ↓
+Managed Bean
+```
+
+No deben utilizarse para reemplazar reglas de negocio propias de Services.
+
+---
+
+# 23. Converters
+
+Los converters se utilizarán cuando JSF necesite transformar entre:
+
+```text
+valor recibido desde la vista
+```
+
+y:
+
+```text
+objeto Java
+```
+
+Ejemplo:
+
+```text
+ID de categoría
+      ↓
+CategoriaConverter
+      ↓
+Categoria
+```
+
+Su uso debe responder a una necesidad funcional real.
+
+---
+
+# 24. Transacciones
+
+Las operaciones que afectan múltiples registros deberán mantener consistencia transaccional.
+
+Ejemplo:
+
+```text
+Crear pedido
+    ↓
+Crear cabecera
+    ↓
+Crear detalles
+    ↓
+Actualizar información relacionada
+    ↓
+Commit
+```
+
+Si ocurre un error crítico:
+
+```text
+Rollback
+```
+
+Resultado requerido:
+
+```text
+todo se guarda
+```
+
+o:
+
+```text
+nada se guarda
+```
+
+No debe persistirse información parcial.
+
+---
+
+# 25. Pedido como operación crítica
+
+El módulo de pedidos requiere especial atención porque relaciona múltiples conceptos:
+
+```text
+Usuario
+Emprendimiento
+Pedido
+DetallePedido
+Publicacion
+```
+
+El flujo de creación debe comprobar como mínimo:
+
+- cliente válido;
+- emprendimiento válido;
+- publicaciones válidas;
+- cantidades válidas;
+- precios;
+- subtotales;
+- total;
+- integridad de detalles.
+
+El estado inicial esperado es:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 26. Estados de pedido
+
+Estados oficiales:
+
+```text
+PENDIENTE
+CONFIRMADO
+EN_PROCESO
+COMPLETADO
+CANCELADO
+```
+
+Las transiciones deben validarse mediante reglas de negocio.
+
+No deberá aceptarse arbitrariamente cualquier cambio entre dos valores del enum.
+
+La definición oficial de transiciones deberá mantenerse en:
+
+```text
+docs/ROLES-PERMISOS.md
+```
+
+y reflejarse en la implementación de Service.
+
+---
+
+# 27. Seguridad
+
+La seguridad se aplica principalmente mediante:
+
+- autenticación;
+- roles;
+- propiedad de recursos;
+- reglas de acceso.
+
+Roles:
+
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
+
+Ejemplo:
+
+```text
+Usuario autenticado
+      ↓
+Validar rol
+      ↓
+Validar propiedad
+      ↓
+Service
+      ↓
+Operación
+```
+
+La interfaz puede ocultar acciones, pero la autorización debe verificarse siempre en backend.
+
+---
+
+# 28. Contraseñas
+
+Las contraseñas nunca deben persistirse en texto plano.
+
+El proyecto contiene utilidades de seguridad para:
+
+```text
+hash
+verificación
+```
+
+La autenticación debe reutilizar este mecanismo.
+
+No crear sistemas paralelos de contraseñas para JSF.
+
+---
+
+# 29. Configuración
+
+Los componentes de configuración se encuentran principalmente en:
+
+```text
+emprendelink/config/
+```
+
+Actualmente existe configuración para la conexión utilizada por JDBC y registro de servicios.
+
+La configuración JPA será incorporada durante Fase 2.
+
+La configuración específica de persistencia deberá mantenerse separada del código de presentación.
+
+---
+
+# 30. persistence.xml
+
+La configuración JPA utilizará:
+
+```text
+src/main/resources/META-INF/persistence.xml
+```
+
+Este archivo deberá definir la unidad de persistencia utilizada por el proyecto.
+
+No deberá incluir credenciales personales reales.
+
+La configuración deberá ser compatible con:
+
+```text
+Jakarta Persistence
+Hibernate
+MySQL
+GlassFish
+```
+
+---
+
+# 31. Inyección y registro de servicios
+
+Durante Fase 1 los Services son registrados para ser utilizados por los controladores existentes.
+
+La evolución hacia JSF deberá reutilizar los mismos contratos y responsabilidades.
+
+No debe crearse un segundo conjunto independiente de Services únicamente para JSF.
+
+Conceptualmente:
+
+```text
+Servlet ──────┐
+              ↓
+           Service
+              ↑
+JSF Bean ─────┘
+```
+
+Esto permite compartir reglas de negocio entre diferentes tecnologías de presentación.
+
+---
+
+# 32. Manejo de errores
+
+Excepciones existentes:
+
+```text
+EmprendeLinkException
+ValidacionException
+ReglaNegocioException
+RecursoNoEncontradoException
+AccesoNoAutorizadoException
+PersistenciaException
+```
+
+Flujo conceptual:
+
+```text
+Persistencia
+     ↓
+PersistenciaException
+     ↓
+Service
+     ↓
+Regla de negocio / validación
+     ↓
+Controlador / Bean
+     ↓
+Mensaje apropiado
+```
+
+No mostrar directamente al usuario:
+
+```text
+stack traces
+SQL interno
+contraseñas
+rutas locales
+datos sensibles
+```
+
+---
+
+# 33. Base de datos
+
+La base oficial es:
+
+```text
+emprendelink_dwf
+```
+
+La definición SQL real se mantiene en:
+
+```text
+database/schema.sql
+```
+
+Los datos de prueba se mantienen en:
+
+```text
+database/seed.sql
+```
+
+Las entidades JPA deben ser compatibles con el esquema existente.
+
+No modificar la base únicamente para facilitar un mapeo JPA sin analizar primero el impacto.
+
+---
+
+# 34. Fuente de verdad de datos
+
+Para estructura física:
+
+```text
+database/schema.sql
+```
+
+Para documentación:
+
+```text
+docs/MODELO-DATOS.md
+```
+
+Para conceptos de negocio:
+
+```text
+docs/MODELO-DOMINIO.md
+```
+
+Estos elementos deberán mantenerse consistentes.
+
+---
+
+# 35. API REST
+
+La estructura prevista para REST se encuentra en:
+
+```text
+emprendelink/web/rest/
+```
+
+La implementación formal corresponde principalmente a:
+
+```text
+Fase 3
+```
+
+Flujo previsto:
 
 ```text
 Cliente externo
       ↓
-   REST API
+REST Resource
       ↓
-   Services
+Service
       ↓
-     DAO
+DAO
       ↓
-JPA / Hibernate
+JPA
       ↓
-    MySQL
+MySQL
 ```
 
-### Fase 4
+Los recursos REST deberán reutilizar la misma capa Service.
 
-```text
-Spring MVC / REST / Security
-            ↓
-         Services
-            ↓
-DAO / Spring Data cuando corresponda
-            ↓
-      JPA / Hibernate
-            ↓
-          MySQL
-```
-
-El proyecto deberá evolucionar sobre la misma base funcional.
-
-Las nuevas tecnologías deberán integrarse sobre el trabajo existente y no convertirse en aplicaciones independientes por fase.
+No desarrollar una segunda lógica de negocio para la API.
 
 ---
 
-## 20. Regla de dependencias
+# 36. DTO
 
-Como principio general:
+Los DTO se encuentran en:
 
-- las vistas no acceden directamente a la base de datos;
-- los controladores no contienen consultas SQL;
-- los controladores no implementan reglas de negocio complejas;
-- los DAO no contienen lógica de presentación;
-- los DAO se encargan del acceso a datos;
-- los servicios contienen las principales reglas de negocio;
-- el modelo no deberá depender de tecnologías web;
-- los controladores reutilizarán los servicios existentes;
-- las diferentes implementaciones DAO respetarán sus interfaces;
-- las tecnologías específicas deberán mantenerse lo más aisladas posible;
-- JDBC, JPA, JSF, REST y Spring no deberán provocar duplicación innecesaria de la lógica del sistema.
+```text
+emprendelink/dto/
+```
 
-Dependencia general esperada:
+Su función principal será transportar información hacia interfaces externas cuando corresponda.
+
+Ejemplos:
+
+```text
+EmprendimientoDTO
+PublicacionDTO
+CrearPedidoDTO
+PedidoDTO
+DetallePedidoDTO
+ApiErrorDTO
+```
+
+Los DTO no representan el modelo de dominio ni deben contener reglas de negocio.
+
+---
+
+# 37. Spring
+
+El proyecto contiene estructura preparada para futuras fases:
+
+```text
+emprendelink/spring/
+```
+
+Spring corresponde principalmente a:
+
+```text
+Fase 4
+```
+
+No debe utilizarse actualmente para sustituir:
+
+```text
+JSF
+JPA
+Managed Beans
+DAO
+```
+
+durante Fase 2.
+
+La presencia del package no implica que Spring esté implementado actualmente.
+
+---
+
+# 38. Evolución por fases
+
+## Fase 1
+
+```text
+JSP
+ ↓
+Servlet
+ ↓
+Service
+ ↓
+DAO
+ ↓
+JDBC
+ ↓
+MySQL
+```
+
+---
+
+## Fase 2
+
+```text
+JSF / XHTML
+     ↓
+Managed Bean
+     ↓
+Service
+     ↓
+DAO
+     ↓
+JPA / Hibernate
+     ↓
+MySQL
+```
+
+---
+
+## Fase 3
+
+```text
+Cliente externo
+      ↓
+REST API
+      ↓
+Service
+      ↓
+DAO
+      ↓
+JPA / Hibernate
+      ↓
+MySQL
+```
+
+---
+
+## Fase 4
+
+```text
+Spring
+  ↓
+Service
+  ↓
+Persistencia
+  ↓
+MySQL
+```
+
+La arquitectura podrá adaptarse según los requisitos exactos de cada fase, pero deberá conservar las responsabilidades ya establecidas siempre que sea razonable.
+
+---
+
+# 39. Regla de dependencias
+
+Dependencia esperada:
 
 ```text
 Presentación
      ↓
-Controladores
+Controlador / Bean
      ↓
-  Servicios
+Service
      ↓
-    DAO
+DAO
      ↓
 Persistencia
 ```
 
-No deberá invertirse este flujo sin una razón técnica documentada.
+Reglas:
+
+- una vista no accede a la base de datos;
+- un Bean no ejecuta SQL;
+- un Servlet no implementa persistencia;
+- un DAO no maneja navegación;
+- una Entity no maneja presentación;
+- un Mapper no contiene reglas de negocio;
+- un Service no contiene código visual;
+- el dominio no depende directamente de frameworks web.
 
 ---
 
-## 21. Objetivo arquitectónico
+# 40. Dependencias entre módulos
 
-La arquitectura de EmprendeLink busca que diferentes integrantes puedan trabajar en módulos separados sin generar dependencias innecesarias.
+Cada módulo funcional debe utilizar las mismas capas.
 
-También busca que el proyecto pueda evolucionar de manera progresiva durante las cuatro fases de DWF:
+Ejemplo categorías:
 
-1. Java Web, Servlets, JSP, JDBC y MVC.
-2. JSF, AJAX y JPA / Hibernate.
-3. Servicios REST y cliente consumidor.
-4. Spring, seguridad, pruebas y despliegue.
+```text
+categoria.xhtml
+      ↓
+CategoriaBean
+      ↓
+CategoriaService
+      ↓
+CategoriaDAO
+      ↓
+JpaCategoriaDAO
+      ↓
+CategoriaEntity
+```
 
-Las decisiones estructurales deberán mantenerse consistentes.
+Ejemplo publicaciones:
 
-Cualquier cambio importante que afecte:
+```text
+publicaciones.xhtml
+       ↓
+PublicacionBean
+       ↓
+PublicacionService
+       ↓
+PublicacionDAO
+       ↓
+JpaPublicacionDAO
+       ↓
+PublicacionEntity
+```
 
-- contratos DAO;
-- modelo de dominio;
-- servicios;
-- organización de paquetes;
-- rutas generales;
+Ejemplo pedidos:
+
+```text
+pedidos.xhtml
+      ↓
+PedidoBean
+      ↓
+PedidoService
+      ↓
+PedidoDAO
+      ↓
+JpaPedidoDAO
+      ↓
+PedidoEntity
+```
+
+---
+
+# 41. Archivos compartidos
+
+Cambios sobre los siguientes elementos pueden afectar varios módulos:
+
+```text
+pom.xml
+database/schema.sql
+database/seed.sql
+interfaces DAO
+interfaces Service
+modelos
+enums
+persistence.xml
+configuración
+```
+
+Estos cambios deben realizarse con especial cuidado durante el trabajo paralelo.
+
+---
+
+# 42. Pruebas
+
+La arquitectura debe permitir probar componentes independientemente cuando sea posible.
+
+Las pruebas se ubican en:
+
+```text
+src/test/java/emprendelink/
+```
+
+Durante Fase 2 deberán cubrirse especialmente:
+
+- Services;
+- reglas de negocio;
+- DAO JPA;
+- relaciones;
 - persistencia;
-- seguridad;
-- arquitectura entre capas;
+- transacciones;
+- rollback;
+- permisos;
+- estados.
 
-deberá revisarse antes de integrarse a `develop`.
+---
 
-Esta arquitectura podrá evolucionar durante el proyecto, pero los cambios deberán quedar documentados en este archivo.
+# 43. Build
 
-El objetivo final es mantener una solución:
+El proyecto debe validarse mediante:
 
-- comprensible;
+```text
+mvn clean package
+```
+
+Un módulo no deberá considerarse listo para integración si rompe el build general.
+
+Resultado esperado:
+
+```text
+BUILD SUCCESS
+```
+
+---
+
+# 44. Compatibilidad con Fase 1
+
+La incorporación de JPA y JSF no implica eliminar inmediatamente:
+
+```text
+JdbcDAO
+Servlets
+JSP
+```
+
+La transición deberá hacerse de forma progresiva.
+
+Antes de retirar una implementación anterior deberá existir una alternativa funcional equivalente y haber sido probada.
+
+---
+
+# 45. Componentes futuros
+
+Las estructuras preparadas para fases futuras no deben condicionar innecesariamente la Fase 2.
+
+No priorizar actualmente:
+
+```text
+REST completo
+Spring
+Spring Security
+cliente externo
+```
+
+La prioridad actual es:
+
+```text
+JPA
+Hibernate
+JSF
+Managed Beans
+AJAX
+Validators
+Converters
+Transacciones
+Pruebas
+```
+
+---
+
+# 46. Objetivo arquitectónico
+
+EmprendeLink debe mantenerse como una sola aplicación que evoluciona progresivamente.
+
+La arquitectura debe permitir que varios integrantes trabajen en módulos separados sin crear implementaciones incompatibles.
+
+Toda modificación importante debe conservar, cuando sea posible:
+
+```text
+Vista
+ ↓
+Controlador / Bean
+ ↓
+Service
+ ↓
+DAO
+ ↓
+Persistencia
+```
+
+El objetivo final es mantener un proyecto:
+
+- funcional;
 - modular;
+- comprensible;
 - mantenible;
-- reproducible;
-- extensible;
-- preparada para evolucionar durante las siguientes fases de la materia.
+- integrable;
+- defendible técnicamente.

@@ -1,42 +1,67 @@
 # Product Backlog — EmprendeLink DWF
 
-Este documento contiene el Product Backlog inicial de EmprendeLink para la materia Desarrollo de Aplicaciones con Web Frameworks (DWF).
+Este documento define el Product Backlog de EmprendeLink.
 
-El backlog evolucionará durante el ciclo académico conforme se definan nuevos requisitos, correcciones y criterios indicados por el docente.
+El backlog es un documento vivo y puede evolucionar según:
 
----
-
-## 1. Convención de prioridades
-
-Se utilizará la clasificación MoSCoW:
-
-- `MUST`: requisito indispensable.
-- `SHOULD`: requisito importante, pero no crítico.
-- `COULD`: requisito deseable.
-- `WON'T`: fuera del alcance actual.
+- requisitos académicos;
+- retroalimentación del docente;
+- defectos;
+- cambios de alcance;
+- necesidades de integración.
 
 ---
 
-# ÉPICA 1 — Gestión de usuarios y autenticación
+# 1. Prioridades
+
+Se utiliza MoSCoW:
+
+```text
+MUST
+SHOULD
+COULD
+WON'T
+```
+
+## MUST
+
+Requisito indispensable.
+
+## SHOULD
+
+Importante, pero no bloquea necesariamente la entrega principal.
+
+## COULD
+
+Deseable si existe tiempo.
+
+## WON'T
+
+Fuera del alcance actual.
+
+---
+
+# ÉPICA 1 — Usuarios y autenticación
 
 ## HU-01 — Registro de usuario
 
 Como visitante,
-quiero registrarme en EmprendeLink,
-para poder utilizar las funcionalidades privadas de la plataforma.
+quiero registrarme,
+para utilizar las funcionalidades privadas de EmprendeLink.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
-Criterios iniciales:
+Criterios:
 
-- solicitar datos obligatorios;
-- validar correo;
+- correo obligatorio;
 - evitar correos duplicados;
-- almacenar la contraseña de forma segura;
-- asignar un rol válido;
-- registrar fecha de creación.
+- contraseña almacenada de forma segura;
+- rol válido;
+- usuario activo según reglas del sistema.
 
 ---
 
@@ -44,703 +69,1057 @@ Criterios iniciales:
 
 Como usuario registrado,
 quiero iniciar sesión,
-para acceder a las funcionalidades correspondientes a mi rol.
+para utilizar las funciones permitidas por mi rol.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
-Criterios iniciales:
+Criterios:
 
-- validar credenciales;
-- rechazar usuarios inactivos;
-- crear una sesión válida;
-- identificar el rol del usuario;
-- redirigir según corresponda.
+- validar correo;
+- verificar contraseña;
+- rechazar usuario inactivo;
+- identificar rol;
+- crear sesión válida.
 
 ---
 
 ## HU-03 — Cierre de sesión
 
 Como usuario autenticado,
-quiero cerrar mi sesión,
-para finalizar de forma segura mi acceso al sistema.
+quiero cerrar sesión,
+para terminar mi acceso de forma segura.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
 ## HU-04 — Administración de usuarios
 
 Como administrador,
-quiero consultar y activar o desactivar usuarios,
-para gestionar el acceso a la plataforma.
+quiero consultar y administrar usuarios,
+para controlar el acceso a la plataforma.
 
 Prioridad:
 
-`SHOULD`
+```text
+SHOULD
+```
 
 ---
 
-# ÉPICA 2 — Gestión de emprendimientos
+# ÉPICA 2 — Emprendimientos
 
 ## HU-05 — Registrar emprendimiento
 
 Como emprendedor,
 quiero registrar un emprendimiento,
-para publicar mis productos o servicios.
+para ofrecer productos o servicios.
 
 Prioridad:
 
-`MUST`
-
-Criterios iniciales:
-
-- registrar nombre;
-- descripción;
-- contacto;
-- propietario;
-- fecha de registro;
-- estado activo.
+```text
+MUST
+```
 
 ---
 
 ## HU-06 — Consultar emprendimientos propios
 
 Como emprendedor,
-quiero consultar mis emprendimientos,
-para poder administrarlos.
+quiero visualizar mis emprendimientos,
+para administrarlos.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-07 — Editar emprendimiento
+## HU-07 — Editar emprendimiento propio
 
 Como emprendedor,
-quiero modificar los datos de un emprendimiento propio,
-para mantener su información actualizada.
+quiero actualizar un emprendimiento de mi propiedad.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
-El sistema deberá verificar que el emprendimiento pertenezca al usuario autenticado.
+Regla:
+
+El usuario debe ser propietario.
 
 ---
 
 ## HU-08 — Activar o desactivar emprendimiento
 
-Como emprendedor,
-quiero cambiar el estado de mis emprendimientos,
-para controlar su visibilidad.
+Como usuario autorizado,
+quiero modificar la disponibilidad de un emprendimiento.
 
 Prioridad:
 
-`SHOULD`
+```text
+SHOULD
+```
 
 ---
 
 ## HU-09 — Consultar emprendimientos públicos
 
-Como visitante o usuario,
-quiero consultar emprendimientos activos,
-para conocer los negocios disponibles en la plataforma.
+Como visitante,
+quiero visualizar emprendimientos activos.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
 # ÉPICA 3 — Categorías
 
-## HU-10 — Administrar categorías
+## HU-10 — Crear categoría
 
 Como administrador,
-quiero crear y modificar categorías,
-para organizar correctamente las publicaciones.
+quiero crear categorías,
+para organizar las publicaciones.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-11 — Activar o desactivar categorías
+## HU-11 — Editar categoría
 
 Como administrador,
-quiero cambiar el estado de las categorías,
-para controlar cuáles pueden utilizarse.
+quiero modificar categorías existentes.
 
 Prioridad:
 
-`SHOULD`
+```text
+MUST
+```
 
 ---
 
-# ÉPICA 4 — Gestión de publicaciones
+## HU-12 — Activar o desactivar categoría
 
-## HU-12 — Crear publicación
+Como administrador,
+quiero controlar qué categorías pueden utilizarse.
+
+Prioridad:
+
+```text
+SHOULD
+```
+
+---
+
+# ÉPICA 4 — Publicaciones
+
+## HU-13 — Crear publicación
 
 Como emprendedor,
-quiero publicar un producto o servicio,
-para ofrecerlo a posibles clientes.
+quiero registrar un producto o servicio,
+para ofrecerlo dentro de mi emprendimiento.
 
 Prioridad:
 
-`MUST`
-
-Criterios iniciales:
-
-- seleccionar emprendimiento;
-- seleccionar categoría;
-- indicar tipo;
-- ingresar nombre;
-- descripción;
-- precio;
-- stock cuando corresponda;
-- registrar fecha;
-- establecer estado activo.
+```text
+MUST
+```
 
 ---
 
-## HU-13 — Consultar publicaciones propias
+## HU-14 — Consultar publicaciones propias
 
 Como emprendedor,
-quiero consultar las publicaciones de mis emprendimientos,
-para administrarlas.
+quiero consultar las publicaciones de mis emprendimientos.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-14 — Editar publicación
+## HU-15 — Editar publicación propia
 
 Como emprendedor,
-quiero modificar una publicación propia,
-para mantener actualizada la información de mi oferta.
+quiero modificar una publicación propia.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-15 — Activar o desactivar publicación
+## HU-16 — Activar o desactivar publicación
 
 Como emprendedor,
-quiero cambiar la disponibilidad de una publicación,
-para controlar si aparece en el catálogo.
+quiero controlar si una publicación está disponible.
 
 Prioridad:
 
-`SHOULD`
+```text
+SHOULD
+```
 
 ---
 
-## HU-16 — Consultar catálogo público
+## HU-17 — Consultar catálogo público
 
-Como visitante o usuario,
-quiero consultar las publicaciones activas,
-para conocer los productos y servicios disponibles.
+Como visitante,
+quiero consultar publicaciones activas.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-17 — Consultar detalle de publicación
+## HU-18 — Consultar detalle
 
-Como visitante o usuario,
-quiero consultar el detalle de una publicación,
-para conocer información adicional antes de realizar un pedido.
+Como usuario,
+quiero consultar los detalles de una publicación.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-18 — Filtrar publicaciones
+## HU-19 — Filtrar catálogo
 
 Como usuario,
 quiero filtrar publicaciones,
-para encontrar más fácilmente productos o servicios de mi interés.
+para encontrar contenido con mayor facilidad.
 
 Prioridad:
 
-`COULD`
+```text
+SHOULD
+```
 
 Filtros previstos:
 
-- categoría;
-- tipo;
-- emprendimiento.
+```text
+categoría
+tipo
+emprendimiento
+```
 
 ---
 
-# ÉPICA 5 — Gestión de pedidos
+# ÉPICA 5 — Pedidos
 
-## HU-19 — Crear pedido
+## HU-20 — Crear pedido
 
 Como cliente,
 quiero realizar un pedido,
-para solicitar productos o servicios de un emprendimiento.
+para solicitar productos o servicios.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
-Criterios iniciales:
+Criterios:
 
-- seleccionar publicaciones;
-- indicar cantidades;
-- validar disponibilidad;
+- cliente válido;
+- publicaciones válidas;
+- cantidades mayores a cero;
 - conservar precio unitario;
 - calcular subtotales;
 - calcular total;
-- generar detalles;
-- crear pedido con estado `PENDIENTE`.
+- crear detalles;
+- iniciar en `PENDIENTE`.
 
 ---
 
-## HU-20 — Consultar pedidos propios
+## HU-21 — Consultar pedidos propios
 
 Como cliente,
-quiero consultar los pedidos que he realizado,
-para conocer su información y estado.
+quiero consultar mis pedidos.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-21 — Consultar pedidos recibidos
+## HU-22 — Consultar pedidos recibidos
 
 Como emprendedor,
-quiero consultar los pedidos recibidos por mis emprendimientos,
-para poder gestionarlos.
+quiero consultar pedidos dirigidos a mis emprendimientos.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-22 — Actualizar estado de pedido
+## HU-23 — Actualizar estado de pedido
 
 Como emprendedor,
-quiero cambiar el estado de un pedido recibido,
-para reflejar su avance.
+quiero actualizar el estado de un pedido válido de mi emprendimiento.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
-Estados previstos:
+Estados:
 
-- `PENDIENTE`
-- `CONFIRMADO`
-- `EN_PROCESO`
-- `COMPLETADO`
-- `CANCELADO`
+```text
+PENDIENTE
+CONFIRMADO
+EN_PROCESO
+COMPLETADO
+CANCELADO
+```
+
+Las transiciones deberán respetar `docs/ROLES-PERMISOS.md`.
 
 ---
 
 # ÉPICA 6 — Administración
 
-## HU-23 — Supervisar emprendimientos
+## HU-24 — Supervisar emprendimientos
 
 Como administrador,
-quiero consultar los emprendimientos registrados,
-para supervisar el contenido de la plataforma.
+quiero consultar emprendimientos registrados.
 
 Prioridad:
 
-`SHOULD`
+```text
+SHOULD
+```
 
 ---
 
-## HU-24 — Supervisar publicaciones
+## HU-25 — Supervisar publicaciones
 
 Como administrador,
-quiero consultar las publicaciones registradas,
-para supervisar el contenido disponible.
+quiero consultar publicaciones registradas.
 
 Prioridad:
 
-`SHOULD`
+```text
+SHOULD
+```
 
 ---
 
-# ÉPICA 7 — API REST
+# ÉPICA 7 — Seguridad
 
-## HU-25 — Consultar emprendimientos mediante API
+## HU-26 — Proteger funciones privadas
 
-Como cliente externo,
-quiero obtener emprendimientos mediante una API REST,
-para consumir la información desde otra aplicación.
+Como sistema,
+quiero impedir que usuarios no autenticados accedan a funciones privadas.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-## HU-26 — Consultar publicaciones mediante API
+## HU-27 — Validar roles
 
-Como cliente externo,
-quiero obtener publicaciones mediante una API REST,
-para mostrar el catálogo desde otra aplicación.
+Como sistema,
+quiero autorizar acciones de acuerdo con el rol del usuario.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-## HU-27 — Crear pedido mediante API
+## HU-28 — Validar propiedad
 
-Como cliente autorizado,
-quiero crear pedidos mediante la API,
-para realizar operaciones desde un cliente externo.
+Como sistema,
+quiero comprobar la propiedad del recurso antes de permitir modificaciones.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-## HU-28 — Consultar pedido mediante API
+## HU-29 — Proteger contraseñas
 
-Como cliente autorizado,
-quiero consultar un pedido mediante la API,
-para conocer sus datos y estado.
+Como sistema,
+quiero almacenar contraseñas mediante hashes seguros.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-## HU-29 — Actualizar estado mediante API
+# ÉPICA 8 — Calidad
 
-Como emprendedor autorizado,
-quiero actualizar el estado de un pedido mediante la API,
-para gestionar pedidos desde un cliente externo.
+## HU-30 — Validar entradas
+
+Como sistema,
+quiero rechazar datos inválidos.
 
 Prioridad:
 
-`SHOULD`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-# ÉPICA 8 — Cliente externo
+## HU-31 — Manejar errores
 
-## HU-30 — Consumir catálogo desde cliente externo
+Como sistema,
+quiero mostrar errores controlados sin exponer información interna.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-32 — Ejecutar pruebas
+
+Como equipo,
+queremos comprobar las funcionalidades antes de integrarlas.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-33 — Mantener documentación
+
+Como equipo,
+queremos mantener la documentación sincronizada con el código.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+# ÉPICA 9 — Persistencia JPA — Fase 2
+
+## HU-34 — Configurar JPA
+
+Como equipo,
+queremos configurar Jakarta Persistence,
+para utilizar JPA durante Fase 2.
+
+Prioridad:
+
+```text
+MUST
+```
+
+Criterios:
+
+- `persistence.xml`;
+- compatibilidad MySQL;
+- compatibilidad GlassFish;
+- namespace `jakarta.*`;
+- build exitoso.
+
+---
+
+## HU-35 — Integrar Hibernate
+
+Como equipo,
+queremos utilizar Hibernate como proveedor ORM según la configuración aprobada.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-36 — Mapear entidades JPA
+
+Como equipo,
+queremos mapear el modelo persistente,
+para representar las relaciones de la base de datos.
+
+Prioridad:
+
+```text
+MUST
+```
+
+Entidades:
+
+```text
+RolEntity
+UsuarioEntity
+EmprendimientoEntity
+CategoriaEntity
+PublicacionEntity
+PedidoEntity
+DetallePedidoEntity
+```
+
+---
+
+## HU-37 — Mapear relaciones
+
+Como equipo,
+queremos representar las relaciones entre entidades,
+para mantener la integridad del modelo.
+
+Prioridad:
+
+```text
+MUST
+```
+
+Relaciones principales:
+
+```text
+Rol 1:N Usuario
+Usuario 1:N Emprendimiento
+Emprendimiento 1:N Publicacion
+Categoria 1:N Publicacion
+Usuario 1:N Pedido
+Emprendimiento 1:N Pedido
+Pedido 1:N DetallePedido
+Publicacion 1:N DetallePedido
+```
+
+---
+
+## HU-38 — Implementar DAO JPA
+
+Como equipo,
+queremos implementar los contratos DAO mediante JPA.
+
+Prioridad:
+
+```text
+MUST
+```
+
+Módulos:
+
+```text
+usuarios
+categorías
+emprendimientos
+publicaciones
+pedidos
+```
+
+---
+
+## HU-39 — Mantener mappers
+
+Como equipo,
+queremos transformar entre entidades JPA y dominio,
+para conservar la separación arquitectónica.
+
+Prioridad:
+
+```text
+MUST
+```
+
+Flujo:
+
+```text
+Entity ↔ Mapper ↔ Domain
+```
+
+---
+
+# ÉPICA 10 — JSF — Fase 2
+
+## HU-40 — Implementar autenticación JSF
 
 Como usuario,
-quiero visualizar publicaciones mediante un cliente externo,
-para demostrar la integración con la API REST.
+quiero utilizar la autenticación desde una interfaz JSF.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-## HU-31 — Consultar detalle desde cliente externo
+## HU-41 — Implementar gestión JSF de usuarios
+
+Como administrador,
+quiero gestionar usuarios mediante JSF.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-42 — Implementar categorías JSF
+
+Como administrador,
+quiero gestionar categorías utilizando JSF.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-43 — Implementar emprendimientos JSF
+
+Como emprendedor,
+quiero gestionar mis emprendimientos mediante JSF.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-44 — Implementar publicaciones JSF
+
+Como emprendedor,
+quiero gestionar publicaciones mediante JSF.
+
+Prioridad:
+
+```text
+MUST
+```
+
+---
+
+## HU-45 — Implementar catálogo JSF
 
 Como usuario,
-quiero visualizar el detalle de una publicación,
-para demostrar la consulta de recursos individuales mediante la API.
+quiero consultar y filtrar publicaciones mediante una interfaz JSF.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-## HU-32 — Ejecutar operación transaccional desde cliente externo
+## HU-46 — Implementar pedidos JSF
 
-Como usuario autorizado,
-quiero realizar una operación mediante el cliente externo,
-para demostrar una integración completa con el backend.
+Como cliente o emprendedor,
+quiero interactuar con pedidos mediante JSF según mis permisos.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 3`
+```text
+MUST
+```
 
 ---
 
-# ÉPICA 9 — Seguridad
+# ÉPICA 11 — AJAX, validación y converters — Fase 2
 
-## HU-33 — Proteger rutas por autenticación
+## HU-47 — Incorporar AJAX
+
+Como usuario,
+quiero obtener actualizaciones parciales de la interfaz,
+para mejorar la interacción con la aplicación.
+
+Prioridad:
+
+```text
+MUST
+```
+
+AJAX debe utilizarse en funcionalidades reales.
+
+---
+
+## HU-48 — Implementar validadores
 
 Como sistema,
-quiero impedir el acceso no autenticado a funciones privadas,
-para proteger la información y operaciones de los usuarios.
+quiero validar correctamente entradas de formularios JSF.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-34 — Proteger recursos por rol
+## HU-49 — Implementar converters
 
 Como sistema,
-quiero autorizar operaciones según el rol del usuario,
-para evitar accesos indebidos.
+quiero transformar correctamente selecciones de JSF en objetos Java.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-35 — Validar propiedad de recursos
+# ÉPICA 12 — Transacciones — Fase 2
+
+## HU-50 — Crear pedidos transaccionalmente
 
 Como sistema,
-quiero comprobar que un usuario sea propietario del recurso que intenta modificar,
-para evitar modificaciones sobre información ajena.
+quiero guardar un pedido y sus detalles de manera atómica.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
+
+Resultado:
+
+```text
+todo se guarda
+```
+
+o:
+
+```text
+nada se guarda
+```
 
 ---
 
-## HU-36 — Integrar Spring Security
-
-Como equipo de desarrollo,
-queremos implementar seguridad utilizando Spring Security,
-para centralizar autenticación y autorización durante la fase final.
-
-Prioridad:
-
-`MUST`
-
-Fase prevista:
-
-`Fase 4`
-
----
-
-# ÉPICA 10 — Calidad y liberación
-
-## HU-37 — Validar entradas
+## HU-51 — Ejecutar rollback
 
 Como sistema,
-quiero validar los datos ingresados,
-para evitar información inválida o inconsistente.
+quiero revertir una operación cuando una parte crítica falle.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-38 — Manejar errores de forma controlada
+# ÉPICA 13 — Pruebas — Fase 2
 
-Como sistema,
-quiero manejar errores de forma consistente,
-para evitar fallos sin controlar y exposición de información interna.
+## HU-52 — Probar persistencia JPA
+
+Como equipo,
+queremos comprobar CRUD y relaciones JPA.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-39 — Ejecutar pruebas
+## HU-53 — Probar reglas de negocio
 
-Como equipo de desarrollo,
-queremos ejecutar pruebas funcionales, de integración y regresión,
-para verificar la calidad del sistema.
+Como equipo,
+queremos comprobar permisos, propiedad y estados.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-40 — Documentar instalación y ejecución
+## HU-54 — Probar transacciones
 
-Como integrante del equipo o evaluador,
-quiero disponer de instrucciones claras,
-para poder ejecutar el proyecto correctamente.
+Como equipo,
+queremos comprobar commit y rollback.
 
 Prioridad:
 
-`MUST`
+```text
+MUST
+```
 
 ---
 
-## HU-41 — Preparar versión final
+## HU-55 — Probar interfaz JSF
 
-Como equipo de desarrollo,
-queremos generar una versión estable del sistema,
-para realizar la entrega y demostración final.
+Como equipo,
+queremos comprobar Beans, validaciones, converters y AJAX.
 
 Prioridad:
 
-`MUST`
-
-Fase prevista:
-
-`Fase 4`
+```text
+MUST
+```
 
 ---
 
-# Distribución inicial por fases
+# Distribución por fases
 
-## Fase 1 — Fundamentos Java Web y MVC
-
-Prioridad principal:
-
-- HU-01
-- HU-02
-- HU-03
-- HU-05
-- HU-06
-- HU-07
-- HU-09
-- HU-10
-- HU-12
-- HU-13
-- HU-14
-- HU-16
-- HU-17
-- HU-19
-- HU-20
-- HU-21
-- HU-22
-- HU-37
-- HU-38
+## Fase 1 — Completada
 
 Tecnologías principales:
 
-- Java Web
-- JDBC
-- DAO
-- Servlets
-- JSP
-- JSTL
-- MySQL
-- MVC
-
----
-
-## Fase 2 — Persistencia y JSF
-
-Objetivo principal:
-
-Evolucionar las funcionalidades existentes incorporando:
-
-- JPA / Hibernate;
-- JSF;
-- Managed Beans;
-- AJAX;
-- validadores;
-- convertidores;
-- relaciones y transacciones.
-
-No se deberá reconstruir un sistema diferente.
-
----
-
-## Fase 3 — REST e integración
-
-Historias principales:
-
-- HU-25
-- HU-26
-- HU-27
-- HU-28
-- HU-29
-- HU-30
-- HU-31
-- HU-32
+```text
+Servlets
+JSP
+JDBC
+DAO
+Services
+MySQL
+MVC
+```
 
 Objetivo:
 
-Exponer funcionalidades mediante una API REST y consumirlas desde un cliente externo.
+Crear la base funcional inicial.
 
 ---
 
-## Fase 4 — Spring, seguridad y liberación
+## Fase 2 — Actual
 
-Historias principales:
+Tecnologías principales:
 
-- HU-33
-- HU-34
-- HU-35
-- HU-36
-- HU-38
-- HU-39
-- HU-40
-- HU-41
+```text
+JPA
+Hibernate
+JSF
+Managed Beans
+AJAX
+Validators
+Converters
+Transacciones
+Pruebas
+```
+
+Historias prioritarias:
+
+```text
+HU-34 a HU-55
+```
+
+además de mantener funcionales las historias de negocio desarrolladas en Fase 1.
+
+---
+
+# Distribución modular de Fase 2
+
+## Módulo 1
+
+```text
+Autenticación y usuarios
+```
+
+Incluye principalmente:
+
+```text
+RolEntity
+UsuarioEntity
+JpaRolDAO
+JpaUsuarioDAO
+AuthBean
+gestión de usuarios JSF
+```
+
+---
+
+## Módulo 2
+
+```text
+Categorías
+```
+
+Incluye:
+
+```text
+CategoriaEntity
+CategoriaMapper
+JpaCategoriaDAO
+CategoriaBean
+vistas JSF
+validación
+AJAX
+```
+
+---
+
+## Módulo 3
+
+```text
+Emprendimientos
+```
+
+Incluye:
+
+```text
+EmprendimientoEntity
+EmprendimientoMapper
+JpaEmprendimientoDAO
+EmprendimientoBean
+vistas JSF
+propiedad de recursos
+```
+
+---
+
+## Módulo 4
+
+```text
+Publicaciones y catálogo
+```
+
+Incluye:
+
+```text
+PublicacionEntity
+PublicacionMapper
+JpaPublicacionDAO
+PublicacionBean
+CatalogoBean
+filtros
+AJAX
+```
+
+---
+
+## Módulo 5
+
+```text
+Pedidos
+```
+
+Incluye:
+
+```text
+PedidoEntity
+DetallePedidoEntity
+mappers
+JpaPedidoDAO
+PedidoBean
+transacciones
+rollback
+estados
+```
+
+---
+
+# Fase 3 — Prevista
 
 Objetivo:
 
-Integrar componentes Spring, fortalecer seguridad, completar pruebas, documentación y despliegue.
+```text
+API REST
+cliente externo
+integración
+```
+
+No debe adelantarse durante Fase 2 si perjudica el cumplimiento actual.
+
+---
+
+# Fase 4 — Prevista
+
+Objetivo:
+
+```text
+Spring
+seguridad avanzada
+pruebas finales
+despliegue
+```
+
+---
+
+# Definición de terminado
+
+Una historia puede considerarse terminada cuando:
+
+1. compila;
+2. funciona;
+3. respeta arquitectura;
+4. respeta permisos;
+5. maneja errores;
+6. mantiene integridad;
+7. tiene pruebas o evidencia;
+8. no contiene secretos;
+9. la documentación afectada está actualizada;
+10. `mvn clean package` finaliza correctamente;
+11. está lista para Pull Request hacia `develop`.
 
 ---
 
 # Regla del backlog
 
-El Product Backlog es un documento vivo.
+El backlog puede:
 
-Las historias podrán:
-
-- dividirse;
 - ampliarse;
-- cambiar de prioridad;
-- recibir nuevos criterios;
-- reorganizarse entre fases;
+- dividirse;
+- reorganizarse;
+- cambiar prioridades;
+- recibir nuevos criterios.
 
-según los requerimientos del docente y las necesidades reales del proyecto.
+Todo cambio importante debe conservar coherencia entre:
 
-Cualquier cambio relevante deberá mantenerse sincronizado con la planificación y el repositorio.
+```text
+requisitos
+código
+documentación
+pruebas
+```
