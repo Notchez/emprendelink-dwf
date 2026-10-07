@@ -21,9 +21,7 @@ El sistema permite gestionar:
 - pedidos;
 - detalles de pedidos.
 
-El proyecto evoluciona progresivamente durante las diferentes fases de la materia.
-
-Actualmente el proyecto se encuentra trabajando en:
+El proyecto se encuentra actualmente trabajando en:
 
 ```text
 FASE 2
@@ -56,7 +54,7 @@ MVC
 
 La implementación existente no debe reconstruirse desde cero.
 
-La Fase 2 debe evolucionar sobre la base existente.
+La Fase 2 debe evolucionar sobre la base funcional existente.
 
 ---
 
@@ -64,7 +62,7 @@ La Fase 2 debe evolucionar sobre la base existente.
 
 El package raíz Java oficial es:
 
-```java
+```text
 emprendelink
 ```
 
@@ -118,9 +116,9 @@ Analizar primero el estado real.
 
 ---
 
-# 4. Arquitectura
+# 4. Arquitectura general
 
-La arquitectura general esperada es:
+La arquitectura esperada es:
 
 ```text
 Vista
@@ -253,7 +251,15 @@ PublicacionServiceImpl
 PedidoServiceImpl
 ```
 
-No utilizar nombres `Default*Service` salvo que el proyecto adopte explícitamente esa convención posteriormente.
+No utilizar nombres:
+
+```text
+DefaultUsuarioService
+DefaultPublicacionService
+DefaultPedidoService
+```
+
+salvo que el proyecto adopte explícitamente esa convención posteriormente.
 
 Responsabilidades de los Services:
 
@@ -261,7 +267,7 @@ Responsabilidades de los Services:
 - validaciones de negocio;
 - coordinación entre DAO;
 - control de operaciones;
-- permisos relacionados con la operación;
+- permisos relacionados con operaciones;
 - consistencia de datos.
 
 No mover estas responsabilidades hacia Servlets, Beans o DAO.
@@ -299,6 +305,18 @@ Los Servlets no deben:
 - ejecutar SQL;
 - crear conexiones directamente;
 - implementar reglas complejas de negocio.
+
+Flujo esperado:
+
+```text
+Servlet
+  ↓
+Service
+  ↓
+DAO
+  ↓
+Persistencia
+```
 
 ---
 
@@ -342,9 +360,10 @@ JPA
 Un Managed Bean no debe:
 
 - ejecutar consultas SQL;
-- crear `EntityManager` directamente salvo una decisión arquitectónica explícita;
+- crear conexiones JDBC;
 - duplicar reglas existentes en Services;
-- acceder directamente a DAO si existe un Service correspondiente.
+- acceder directamente a DAO si existe un Service correspondiente;
+- contener lógica de persistencia.
 
 ---
 
@@ -394,13 +413,13 @@ docs/MODELO-DATOS.md
 
 Utilizar exclusivamente:
 
-```java
+```text
 jakarta.persistence.*
 ```
 
 No utilizar:
 
-```java
+```text
 javax.persistence.*
 ```
 
@@ -414,7 +433,7 @@ Antes de agregar o modificar una dependencia de Hibernate:
 
 1. revisar `pom.xml`;
 2. revisar `docs/VERSIONS.md`;
-3. utilizar una versión compatible con Jakarta Persistence y Jakarta EE utilizados por el proyecto;
+3. utilizar una versión compatible con Jakarta Persistence;
 4. verificar compatibilidad con GlassFish;
 5. ejecutar `mvn clean package`.
 
@@ -422,17 +441,48 @@ No cambiar versiones individualmente sin actualizar la documentación correspond
 
 ---
 
-# 12. JSF y AJAX
+# 12. Configuración JPA
 
-Fase 2 requiere demostrar interacción con JSF y AJAX.
+La configuración de persistencia deberá mantenerse en:
 
-Cuando corresponda, utilizar componentes JSF estándar como:
+```text
+src/main/resources/META-INF/persistence.xml
+```
 
-```xml
+Cuando este archivo sea creado deberá:
+
+- utilizar Jakarta Persistence;
+- definir correctamente la unidad de persistencia;
+- utilizar la configuración de MySQL acordada;
+- evitar credenciales reales;
+- mantener compatibilidad con GlassFish;
+- registrar o detectar correctamente las entidades JPA.
+
+No hardcodear credenciales personales de ningún integrante.
+
+---
+
+# 13. JSF y AJAX
+
+Fase 2 requiere demostrar interacción mediante JSF y AJAX.
+
+Cuando corresponda utilizar:
+
+```text
 <f:ajax>
 ```
 
-Las operaciones AJAX deben mejorar la interacción sin saltarse:
+Las operaciones AJAX deben mejorar una funcionalidad real.
+
+Ejemplos válidos:
+
+- filtros de catálogo;
+- actualización de listas;
+- validación parcial;
+- cambio de selección;
+- actualización de información sin recargar toda la página.
+
+AJAX no debe saltarse:
 
 - validaciones;
 - Services;
@@ -441,25 +491,46 @@ Las operaciones AJAX deben mejorar la interacción sin saltarse:
 
 No implementar AJAX únicamente como efecto visual.
 
-Debe estar vinculado a una funcionalidad real.
+---
+
+# 14. Validadores
+
+Los validadores deben utilizarse cuando exista una necesidad real de validar entrada del usuario.
+
+Ejemplos:
+
+- formato;
+- longitud;
+- rango;
+- datos obligatorios;
+- reglas específicas del formulario.
+
+Las reglas puramente de negocio deben seguir ubicándose en Services.
+
+No duplicar la misma regla en múltiples capas sin necesidad.
 
 ---
 
-# 13. Validadores y converters
+# 15. Converters
 
-Cuando un formulario requiera reglas específicas, utilizar mecanismos apropiados de JSF y Jakarta Validation.
+Los converters deben utilizarse cuando JSF necesite transformar correctamente entre:
 
-Los validadores deben utilizarse para restricciones de entrada o formato cuando corresponda.
+```text
+valor de vista ↔ objeto Java
+```
 
-Los converters deben utilizarse cuando sea necesario transformar correctamente entre valores de la vista y objetos del dominio.
+Ejemplos:
 
-No crear validators o converters artificiales únicamente para indicar que existen.
+- selección de categoría;
+- selección de emprendimiento;
+- selección de publicación;
+- selección de objetos relacionados.
 
-Deben resolver una necesidad real del módulo.
+No crear converters artificiales únicamente para cumplir formalmente el requisito.
 
 ---
 
-# 14. Transacciones
+# 16. Transacciones
 
 Las operaciones que modifiquen múltiples registros relacionados deben mantener integridad transaccional.
 
@@ -483,11 +554,11 @@ rollback
 
 No debe quedar información parcial persistida.
 
-Las transacciones deben gestionarse en la capa apropiada y no desde la vista.
+Las transacciones deben gestionarse en la capa apropiada y nunca desde XHTML.
 
 ---
 
-# 15. Seguridad
+# 17. Seguridad
 
 Roles oficiales:
 
@@ -513,11 +584,38 @@ Las contraseñas nunca deben almacenarse en texto plano.
 
 Utilizar las utilidades de seguridad existentes cuando corresponda.
 
-No introducir contraseñas reales, tokens, secretos o credenciales en Git.
+No introducir:
+
+```text
+contraseñas reales
+tokens
+API keys
+secretos
+credenciales
+```
+
+en Git.
 
 ---
 
-# 16. Pedidos
+# 18. Autenticación
+
+La autenticación debe reutilizar la lógica existente siempre que sea posible.
+
+La lógica relacionada con:
+
+- login;
+- usuarios activos;
+- roles;
+- verificación de contraseña;
+
+debe permanecer centralizada.
+
+No duplicar autenticación de manera independiente para Servlets y JSF.
+
+---
+
+# 19. Pedidos
 
 Estados oficiales:
 
@@ -531,11 +629,11 @@ CANCELADO
 
 Los cambios de estado deben validarse como reglas de negocio.
 
-No aceptar cualquier cambio simplemente porque el valor pertenece al enum.
+No aceptar cualquier transición simplemente porque ambos valores pertenecen al enum.
 
 Las transiciones permitidas deben mantenerse centralizadas y documentadas.
 
-La creación de un pedido debe proteger la integridad entre:
+La creación de pedidos debe proteger la integridad entre:
 
 ```text
 Pedido
@@ -547,7 +645,7 @@ Usuario
 
 ---
 
-# 17. Base de datos
+# 20. Base de datos
 
 Base oficial:
 
@@ -581,7 +679,31 @@ docs/MODELO-DATOS.md
 
 ---
 
-# 18. Configuración
+# 21. Seed
+
+El archivo:
+
+```text
+database/seed.sql
+```
+
+debe contener datos válidos para el sistema real.
+
+Los valores de contraseña utilizados en datos de prueba deben ser compatibles con el mecanismo real de hashing y verificación utilizado por la aplicación.
+
+No utilizar valores ficticios como:
+
+```text
+hash_admin
+hash_usuario
+hash_cliente
+```
+
+si dichos valores impiden autenticar los usuarios de prueba.
+
+---
+
+# 22. Configuración local
 
 La configuración local utiliza:
 
@@ -613,7 +735,39 @@ No hardcodear rutas locales de un integrante.
 
 ---
 
-# 19. Tecnologías fuera de la fase actual
+# 23. GlassFish
+
+El servidor base del proyecto es:
+
+```text
+GlassFish 8.0.4
+```
+
+El artefacto generado es:
+
+```text
+target/emprendelink.war
+```
+
+Context path esperado:
+
+```text
+/emprendelink
+```
+
+Ejemplo local:
+
+```text
+http://localhost:8080/emprendelink/
+```
+
+La configuración local del servidor dentro de IntelliJ puede variar entre integrantes.
+
+No subir configuraciones privadas del IDE como solución para compartir GlassFish.
+
+---
+
+# 24. Tecnologías fuera de la fase actual
 
 Aunque el repositorio contiene estructuras previstas para futuras fases, durante Fase 2 no debe priorizarse:
 
@@ -633,7 +787,7 @@ No ampliar esos módulos salvo instrucción explícita.
 
 ---
 
-# 20. Dependencias
+# 25. Dependencias
 
 Antes de agregar una dependencia:
 
@@ -644,11 +798,44 @@ Antes de agregar una dependencia:
 5. actualizar `pom.xml`;
 6. ejecutar el build completo.
 
-No agregar frameworks solamente para simplificar una tarea pequeña.
+No agregar frameworks únicamente para simplificar una tarea pequeña.
 
 ---
 
-# 21. Pruebas
+# 26. Maven
+
+El archivo central de dependencias es:
+
+```text
+pom.xml
+```
+
+Antes de modificarlo revisar el impacto sobre todo el equipo.
+
+Después de cualquier cambio en dependencias ejecutar:
+
+```text
+mvn clean package
+```
+
+Resultado esperado:
+
+```text
+BUILD SUCCESS
+```
+
+No asumir que una dependencia es necesaria únicamente porque una clase del proyecto todavía no compile.
+
+Primero revisar:
+
+- imports;
+- versión de Jakarta EE;
+- APIs proporcionadas por GlassFish;
+- configuración del IDE.
+
+---
+
+# 27. Pruebas
 
 Las pruebas se encuentran bajo:
 
@@ -656,7 +843,7 @@ Las pruebas se encuentran bajo:
 src/test/java/
 ```
 
-Durante Fase 2 deben incorporarse pruebas reales para las funcionalidades relevantes.
+Durante Fase 2 deben incorporarse pruebas reales para funcionalidades relevantes.
 
 Prioridades:
 
@@ -670,9 +857,19 @@ Prioridades:
 - validaciones;
 - estados de pedido.
 
-No considerar una prueba válida únicamente porque una clase con nombre `*Test` compile.
+No considerar una prueba válida únicamente porque una clase con nombre:
+
+```text
+*Test
+```
+
+compile.
 
 Debe existir al menos una prueba ejecutable cuando se afirme cobertura automatizada.
+
+---
+
+# 28. Matriz de pruebas
 
 La matriz manual se encuentra en:
 
@@ -680,15 +877,29 @@ La matriz manual se encuentra en:
 docs/MATRIZ-PRUEBAS.md
 ```
 
-Cuando una prueba documentada sea ejecutada, actualizar su resultado y evidencia cuando corresponda.
+Debe ampliarse durante Fase 2 para cubrir:
+
+- entidades JPA;
+- relaciones;
+- persistencia;
+- CRUD;
+- rollback;
+- AJAX;
+- validadores;
+- converters;
+- Managed Beans;
+- permisos;
+- flujos JSF.
+
+Cuando una prueba sea ejecutada debe registrarse su resultado cuando corresponda.
 
 ---
 
-# 22. Build obligatorio
+# 29. Build obligatorio
 
 Antes de considerar finalizada una modificación importante ejecutar:
 
-```bash
+```text
 mvn clean package
 ```
 
@@ -704,7 +915,7 @@ Revisar también la salida de Maven.
 
 ---
 
-# 23. Git
+# 30. Git
 
 Ramas permanentes:
 
@@ -738,6 +949,9 @@ Ejemplos:
 
 ```text
 feature/fase2-categorias
+feature/fase2-emprendimientos
+feature/fase2-publicaciones
+feature/fase2-pedidos
 fix/validacion-correo
 refactor/package-raiz
 docs/fase2-documentacion
@@ -753,7 +967,29 @@ develop
 
 ---
 
-# 24. Cambios compartidos
+# 31. Integración entre ramas
+
+Antes de crear una rama:
+
+```text
+git switch develop
+git pull origin develop
+```
+
+Después crear la rama correspondiente.
+
+Antes de abrir un Pull Request:
+
+```text
+mvn clean package
+git status
+```
+
+Evitar mezclar cambios de módulos no relacionados dentro del mismo Pull Request.
+
+---
+
+# 32. Cambios compartidos
 
 Tener especial cuidado al modificar archivos utilizados por todo el equipo:
 
@@ -771,38 +1007,39 @@ modelos compartidos
 configuración JPA
 ```
 
-Antes de realizar cambios amplios sobre estos archivos, revisar el impacto sobre los módulos de los demás integrantes.
+Antes de realizar cambios amplios sobre estos archivos revisar el impacto sobre los módulos de los demás integrantes.
 
 Evitar refactors globales innecesarios durante el desarrollo paralelo.
 
 ---
 
-# 25. Código existente
+# 33. Código existente
 
 No asumir que un archivo está incorrecto simplemente porque existe otra forma de implementarlo.
 
 Antes de reemplazar código:
 
 1. identificar quién lo utiliza;
-2. revisar Services y DAO relacionados;
-3. revisar imports;
-4. revisar rutas;
-5. revisar vistas;
-6. revisar pruebas;
-7. revisar documentación.
+2. revisar Services relacionados;
+3. revisar DAO relacionados;
+4. revisar imports;
+5. revisar rutas;
+6. revisar vistas;
+7. revisar pruebas;
+8. revisar documentación.
 
 Mantener compatibilidad siempre que sea razonable.
 
 ---
 
-# 26. Código generado por IA
+# 34. Código generado por IA
 
 Todo código generado debe:
 
 - compilar;
 - utilizar clases reales del repositorio;
 - respetar nombres existentes;
-- respetar las interfaces actuales;
+- respetar interfaces actuales;
 - utilizar `jakarta.*`;
 - respetar la arquitectura;
 - manejar errores;
@@ -813,20 +1050,24 @@ Todo código generado debe:
 
 No inventar:
 
-- servicios inexistentes;
-- campos inexistentes;
-- tablas inexistentes;
-- rutas inexistentes;
-- métodos DAO inexistentes;
-- dependencias no declaradas.
+```text
+servicios inexistentes
+campos inexistentes
+tablas inexistentes
+rutas inexistentes
+métodos DAO inexistentes
+dependencias no declaradas
+```
 
 Si una nueva pieza es realmente necesaria, indicarlo explícitamente y explicar qué archivos dependen de ella.
 
 ---
 
-# 27. Modificaciones de archivos
+# 35. Archivos completos
 
 Cuando una tarea implique cambiar código existente, preferir entregar archivos completos cuando eso reduzca errores de integración.
+
+Evitar instrucciones ambiguas como modificar líneas sueltas cuando el cambio afecta gran parte de una clase.
 
 No eliminar código funcional sin explicar la razón técnica.
 
@@ -843,7 +1084,96 @@ build
 
 ---
 
-# 28. Alcance de Fase 2
+# 36. Errores y excepciones
+
+El proyecto utiliza excepciones propias.
+
+Entre ellas:
+
+```text
+EmprendeLinkException
+ValidacionException
+ReglaNegocioException
+RecursoNoEncontradoException
+AccesoNoAutorizadoException
+PersistenciaException
+```
+
+No mostrar al usuario:
+
+- stack traces;
+- errores SQL internos;
+- rutas locales;
+- credenciales;
+- detalles sensibles.
+
+Las excepciones deben convertirse en mensajes apropiados según la capa correspondiente.
+
+---
+
+# 37. Arquitectura por fase
+
+Fase 1:
+
+```text
+JSP / Servlets
+      ↓
+   Services
+      ↓
+     DAO
+      ↓
+    JDBC
+      ↓
+    MySQL
+```
+
+Fase 2:
+
+```text
+JSF / Managed Beans
+        ↓
+     Services
+        ↓
+       DAO
+        ↓
+ JPA / Hibernate
+        ↓
+      MySQL
+```
+
+Fase 3:
+
+```text
+Cliente externo
+      ↓
+   REST API
+      ↓
+   Services
+      ↓
+     DAO
+      ↓
+JPA / Hibernate
+      ↓
+    MySQL
+```
+
+Fase 4:
+
+```text
+Spring
+  ↓
+Services
+  ↓
+Persistencia
+  ↓
+MySQL
+```
+
+No adelantar una fase si eso perjudica el cumplimiento de la fase actual.
+
+---
+
+# 38. Alcance de Fase 2
 
 El objetivo actual es demostrar correctamente:
 
@@ -865,7 +1195,27 @@ Cualquier decisión debe priorizar estos requisitos sobre funcionalidades futura
 
 ---
 
-# 29. Criterio de finalización
+# 39. Distribución modular
+
+Los módulos de Fase 2 están divididos por áreas funcionales.
+
+Las áreas principales son:
+
+```text
+Autenticación y usuarios
+Categorías
+Emprendimientos
+Publicaciones y catálogo
+Pedidos
+```
+
+Cada módulo debe respetar las mismas reglas arquitectónicas.
+
+Ningún módulo debe crear una arquitectura paralela independiente.
+
+---
+
+# 40. Criterio de finalización
 
 Una tarea de Fase 2 puede considerarse terminada cuando:
 
@@ -889,7 +1239,7 @@ Una tarea de Fase 2 puede considerarse terminada cuando:
 
 ---
 
-# 30. Principio final
+# 41. Principio final
 
 No desarrollar componentes únicamente para completar carpetas o aparentar cumplimiento.
 
