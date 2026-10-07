@@ -1,699 +1,1287 @@
 # Matriz de pruebas — EmprendeLink DWF
 
-Este documento contiene la matriz inicial de pruebas del proyecto EmprendeLink.
+Este documento define las pruebas funcionales, de integración, persistencia, seguridad y regresión de EmprendeLink.
 
-La matriz deberá ampliarse conforme se implementen nuevas funcionalidades durante las diferentes fases del proyecto.
+Durante Fase 2 la prioridad es comprobar:
 
----
-
-## 1. Objetivo
-
-Verificar que las funcionalidades principales del sistema se comporten correctamente y que las reglas de negocio, seguridad, persistencia e integración funcionen según lo esperado.
-
----
-
-## 2. Tipos de prueba
-
-Durante el proyecto podrán utilizarse:
-
-- pruebas funcionales;
-- pruebas de integración;
-- pruebas de persistencia;
-- pruebas de seguridad;
-- pruebas de API;
-- pruebas de regresión;
-- pruebas de aceptación.
+```text
+JPA
+Hibernate
+JSF
+Managed Beans
+AJAX
+Validators
+Converters
+Transacciones
+Permisos
+Reglas de negocio
+```
 
 ---
 
-## 3. Estados de prueba
+# 1. Estados
 
-Cada caso podrá utilizar uno de los siguientes estados:
+Cada prueba puede encontrarse en:
 
-- `PENDIENTE`
-- `APROBADA`
-- `FALLIDA`
-- `BLOQUEADA`
-
----
-
-## 4. Formato de casos
-
-Cada caso deberá incluir como mínimo:
-
-- ID;
-- módulo;
-- descripción;
-- precondiciones;
-- pasos;
-- resultado esperado;
-- resultado obtenido;
-- estado;
-- evidencia.
+```text
+PENDIENTE
+APROBADA
+FALLIDA
+BLOQUEADA
+```
 
 ---
 
-# Casos iniciales
+# 2. Evidencia
 
-## CP-001 — Registro exitoso de usuario
+Cada prueba ejecutada debe poder respaldarse mediante:
 
-Módulo:
-
-`Usuarios`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- El correo ingresado no existe previamente.
-- La base de datos se encuentra disponible.
-
-Pasos:
-
-1. Acceder al registro.
-2. Ingresar datos válidos.
-3. Enviar el formulario.
-
-Resultado esperado:
-
-- El usuario se registra correctamente.
-- La contraseña no se almacena en texto plano.
-- Se asigna el rol correspondiente.
-- Se registra la fecha de creación.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-002 — Registro con correo duplicado
-
-Módulo:
-
-`Usuarios`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- Existe un usuario con el mismo correo.
-
-Pasos:
-
-1. Acceder al registro.
-2. Ingresar un correo existente.
-3. Completar los demás datos.
-4. Enviar el formulario.
-
-Resultado esperado:
-
-- El sistema rechaza el registro.
-- Se muestra un mensaje controlado.
-- No se crea un usuario duplicado.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-003 — Inicio de sesión válido
-
-Módulo:
-
-`Autenticación`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- Existe un usuario activo con credenciales válidas.
-
-Pasos:
-
-1. Acceder al formulario de inicio de sesión.
-2. Ingresar correo y contraseña correctos.
-3. Enviar el formulario.
-
-Resultado esperado:
-
-- La autenticación es exitosa.
-- Se crea una sesión válida.
-- El sistema identifica correctamente el rol del usuario.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-004 — Inicio de sesión inválido
-
-Módulo:
-
-`Autenticación`
-
-Tipo:
-
-`Funcional`
-
-Pasos:
-
-1. Acceder al inicio de sesión.
-2. Ingresar credenciales incorrectas.
-3. Enviar el formulario.
-
-Resultado esperado:
-
-- El sistema rechaza la autenticación.
-- No se crea una sesión válida.
-- Se muestra un mensaje controlado.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-005 — Acceso administrativo sin permisos
-
-Módulo:
-
-`Seguridad`
-
-Tipo:
-
-`Seguridad`
-
-Precondiciones:
-
-- Usuario autenticado con rol diferente a `ROLE_ADMIN`.
-
-Pasos:
-
-1. Intentar acceder a `/admin/usuarios`.
-
-Resultado esperado:
-
-- El servidor rechaza el acceso.
-- El usuario no puede ejecutar operaciones administrativas.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-006 — Crear emprendimiento
-
-Módulo:
-
-`Emprendimientos`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- Usuario autenticado con `ROLE_EMPRENDEDOR`.
-
-Pasos:
-
-1. Acceder al formulario de creación.
-2. Ingresar datos válidos.
-3. Guardar.
-
-Resultado esperado:
-
-- Se crea el emprendimiento.
-- El propietario corresponde al usuario autenticado.
-- El emprendimiento queda asociado correctamente en la base de datos.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-007 — Modificar emprendimiento ajeno
-
-Módulo:
-
-`Emprendimientos`
-
-Tipo:
-
-`Seguridad`
-
-Precondiciones:
-
-- Usuario autenticado con `ROLE_EMPRENDEDOR`.
-- Existe un emprendimiento perteneciente a otro usuario.
-
-Pasos:
-
-1. Intentar editar el emprendimiento ajeno mediante su ID.
-
-Resultado esperado:
-
-- El sistema rechaza la operación.
-- El registro no se modifica.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-008 — Crear publicación válida
-
-Módulo:
-
-`Publicaciones`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- Usuario autenticado con `ROLE_EMPRENDEDOR`.
-- Existe un emprendimiento propio.
-- Existe una categoría activa.
-
-Pasos:
-
-1. Acceder al formulario de publicación.
-2. Seleccionar emprendimiento y categoría.
-3. Ingresar datos válidos.
-4. Guardar.
-
-Resultado esperado:
-
-- La publicación se registra correctamente.
-- Queda asociada al emprendimiento y categoría seleccionados.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-009 — Precio negativo en publicación
-
-Módulo:
-
-`Publicaciones`
-
-Tipo:
-
-`Validación`
-
-Pasos:
-
-1. Intentar crear o modificar una publicación.
-2. Ingresar un precio menor que cero.
-3. Guardar.
-
-Resultado esperado:
-
-- El sistema rechaza el valor.
-- La publicación no se guarda con un precio inválido.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-010 — Consultar catálogo público
-
-Módulo:
-
-`Catálogo`
-
-Tipo:
-
-`Funcional`
-
-Pasos:
-
-1. Acceder al catálogo sin iniciar sesión.
-
-Resultado esperado:
-
-- Se muestran únicamente publicaciones visibles o activas.
-- No se requiere autenticación.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-011 — Crear pedido válido
-
-Módulo:
-
-`Pedidos`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- Usuario autenticado con `ROLE_CLIENTE`.
-- Existen publicaciones válidas.
-
-Pasos:
-
-1. Seleccionar publicaciones.
-2. Indicar cantidades válidas.
-3. Crear el pedido.
-
-Resultado esperado:
-
-- Se crea un pedido con estado `PENDIENTE`.
-- Se crean los detalles correspondientes.
-- Los precios unitarios quedan almacenados.
-- Los subtotales se calculan correctamente.
-- El total corresponde a la suma de subtotales.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-012 — Cantidad inválida en pedido
-
-Módulo:
-
-`Pedidos`
-
-Tipo:
-
-`Validación`
-
-Pasos:
-
-1. Intentar crear un pedido.
-2. Ingresar cantidad igual o menor que cero.
-
-Resultado esperado:
-
-- El sistema rechaza la solicitud.
-- No se crea un detalle inválido.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-013 — Cliente consulta pedido ajeno
-
-Módulo:
-
-`Pedidos`
-
-Tipo:
-
-`Seguridad`
-
-Precondiciones:
-
-- Usuario autenticado con `ROLE_CLIENTE`.
-- Existe un pedido perteneciente a otro cliente.
-
-Pasos:
-
-1. Intentar consultar directamente el pedido ajeno.
-
-Resultado esperado:
-
-- El acceso es rechazado.
-- No se expone información del pedido.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-014 — Emprendedor consulta pedido recibido
-
-Módulo:
-
-`Pedidos`
-
-Tipo:
-
-`Funcional`
-
-Precondiciones:
-
-- Usuario autenticado con `ROLE_EMPRENDEDOR`.
-- Existe un pedido dirigido a uno de sus emprendimientos.
-
-Pasos:
-
-1. Acceder a pedidos recibidos.
-2. Consultar el pedido.
-
-Resultado esperado:
-
-- El pedido se muestra correctamente.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-015 — Emprendedor intenta modificar pedido ajeno
-
-Módulo:
-
-`Pedidos`
-
-Tipo:
-
-`Seguridad`
-
-Precondiciones:
-
-- Existe un pedido correspondiente a un emprendimiento de otro usuario.
-
-Pasos:
-
-1. Intentar modificar el estado del pedido.
-
-Resultado esperado:
-
-- El sistema rechaza la operación.
-- El estado original no cambia.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-016 — Persistencia de relaciones
-
-Módulo:
-
-`Persistencia`
-
-Tipo:
-
-`Integración`
-
-Objetivo:
-
-Verificar relaciones entre:
-
-- usuario y rol;
-- usuario y emprendimiento;
-- emprendimiento y publicación;
-- categoría y publicación;
-- pedido y detalles.
-
-Resultado esperado:
-
-- Las relaciones se almacenan y recuperan correctamente.
-- No se generan referencias inválidas.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-017 — API consulta publicaciones
-
-Módulo:
-
-`API REST`
-
-Tipo:
-
-`Integración`
-
-Fase prevista:
-
-`Fase 3`
-
-Solicitud:
-
-`GET /api/v1/publicaciones`
-
-Resultado esperado:
-
-- Código `200 OK`.
-- Respuesta en JSON.
-- Estructura compatible con el contrato definido.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-018 — API recurso inexistente
-
-Módulo:
-
-`API REST`
-
-Tipo:
-
-`Integración`
-
-Fase prevista:
-
-`Fase 3`
-
-Solicitud conceptual:
-
-`GET /api/v1/publicaciones/999999`
-
-Resultado esperado:
-
-- Código `404 Not Found`.
-- Respuesta de error controlada.
-- No se devuelve stack trace.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-019 — API acceso sin autorización
-
-Módulo:
-
-`API REST`
-
-Tipo:
-
-`Seguridad`
-
-Fase prevista:
-
-`Fase 3`
-
-Resultado esperado:
-
-Según el caso:
-
-- `401 Unauthorized`; o
-- `403 Forbidden`.
-
-No deberá devolverse información protegida.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## CP-020 — Regresión de funcionalidades principales
-
-Módulo:
-
-`General`
-
-Tipo:
-
-`Regresión`
-
-Fase prevista:
-
-`Fase 4`
-
-Objetivo:
-
-Verificar que después de integrar Spring y los componentes finales continúen funcionando:
-
-- autenticación;
-- usuarios;
-- emprendimientos;
-- publicaciones;
-- pedidos;
-- persistencia;
-- API;
-- seguridad.
-
-Estado:
-
-`PENDIENTE`
-
----
-
-## 5. Evidencias
-
-Cada prueba ejecutada deberá poder respaldarse mediante una evidencia apropiada.
-
-Ejemplos:
-
-- captura de pantalla;
-- respuesta HTTP;
-- resultado de herramienta de prueba;
-- registro controlado;
+- captura;
+- resultado Maven;
+- log controlado;
+- consulta de base de datos;
 - resultado automatizado;
-- evidencia de base de datos.
+- evidencia visual;
+- descripción reproducible.
 
-Las evidencias deberán evitar mostrar:
+No registrar:
 
 - contraseñas;
 - tokens;
-- credenciales;
-- información sensible.
+- secretos;
+- credenciales.
 
 ---
 
-## 6. Mantenimiento
+# 3. Pruebas de Fase 1 a conservar
 
-Esta matriz deberá actualizarse cuando:
+## CP-001 — Registro válido
 
-- se agregue una funcionalidad;
-- cambie una regla de negocio;
-- se modifique un endpoint;
+Módulo:
+
+```text
+Usuarios
+```
+
+Resultado esperado:
+
+- crea usuario;
+- correo único;
+- contraseña segura;
+- rol válido.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-002 — Correo duplicado
+
+Resultado esperado:
+
+- rechaza registro;
+- no duplica usuario;
+- muestra error controlado.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-003 — Login válido
+
+Resultado esperado:
+
+- autentica usuario activo;
+- identifica rol;
+- establece sesión.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-004 — Login inválido
+
+Resultado esperado:
+
+- rechaza autenticación;
+- no establece sesión válida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-005 — Usuario inactivo
+
+Resultado esperado:
+
+- autenticación rechazada.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-006 — Crear emprendimiento propio
+
+Precondición:
+
+```text
+ROLE_EMPRENDEDOR
+```
+
+Resultado esperado:
+
+- crea emprendimiento;
+- propietario correcto.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-007 — Editar emprendimiento ajeno
+
+Resultado esperado:
+
+- operación rechazada;
+- registro sin cambios.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-008 — Crear categoría
+
+Precondición:
+
+```text
+ROLE_ADMIN
+```
+
+Resultado esperado:
+
+- categoría creada correctamente.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-009 — Crear publicación válida
+
+Resultado esperado:
+
+- publicación persistida;
+- emprendimiento correcto;
+- categoría correcta.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-010 — Precio negativo
+
+Resultado esperado:
+
+- valor rechazado;
+- no persiste publicación inválida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-011 — Catálogo público
+
+Resultado esperado:
+
+- muestra publicaciones permitidas;
+- no requiere login para contenido público.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-012 — Crear pedido válido
+
+Resultado esperado:
+
+- estado `PENDIENTE`;
+- detalles correctos;
+- precios guardados;
+- subtotales correctos;
+- total correcto.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-013 — Cantidad inválida
+
+Resultado esperado:
+
+- rechazo;
+- no crea detalle inválido.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-014 — Cliente consulta pedido ajeno
+
+Resultado esperado:
+
+- acceso rechazado;
+- información no expuesta.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-015 — Emprendedor consulta pedido propio
+
+Resultado esperado:
+
+- pedido visible si corresponde a su emprendimiento.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-016 — Emprendedor modifica pedido ajeno
+
+Resultado esperado:
+
+- operación rechazada;
+- estado original conservado.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 4. Persistencia JPA — Fase 2
+
+## CP-017 — Arranque de unidad de persistencia
+
+Objetivo:
+
+Comprobar que la configuración JPA inicia correctamente.
+
+Resultado esperado:
+
+- unidad de persistencia válida;
+- sin errores de mapeo;
+- conexión funcional.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-018 — Persistencia de RolEntity
+
+Resultado esperado:
+
+- crear;
+- consultar;
+- actualizar cuando corresponda;
+- relación válida con usuario.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-019 — Persistencia de UsuarioEntity
+
+Resultado esperado:
+
+- usuario persistido;
+- rol relacionado;
+- correo único;
+- datos recuperables.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-020 — Relación Usuario — Rol
+
+Resultado esperado:
+
+```text
+Rol 1:N Usuario
+```
+
+sin referencias inválidas.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-021 — Persistencia de CategoriaEntity
+
+Resultado esperado:
+
+- crear;
+- consultar;
+- actualizar;
+- listar.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-022 — Persistencia de EmprendimientoEntity
+
+Resultado esperado:
+
+- propietario válido;
+- relación persistida;
+- recuperación correcta.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-023 — Relación Usuario — Emprendimiento
+
+Resultado esperado:
+
+```text
+Usuario 1:N Emprendimiento
+```
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-024 — Persistencia de PublicacionEntity
+
+Resultado esperado:
+
+- emprendimiento relacionado;
+- categoría relacionada;
+- tipo válido;
+- precio válido.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-025 — Relaciones de publicación
+
+Comprobar:
+
+```text
+Emprendimiento 1:N Publicacion
+Categoria 1:N Publicacion
+```
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-026 — Persistencia de PedidoEntity
+
+Resultado esperado:
+
+- cliente válido;
+- emprendimiento válido;
+- estado válido;
+- total válido.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-027 — Persistencia de DetallePedidoEntity
+
+Resultado esperado:
+
+- pedido relacionado;
+- publicación relacionada;
+- cantidad válida;
+- precio unitario persistido;
+- subtotal válido.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-028 — Relación Pedido — Detalle
+
+Resultado esperado:
+
+```text
+Pedido 1:N DetallePedido
+```
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 5. DAO JPA
+
+## CP-029 — CRUD JPA de categorías
+
+Verificar:
+
+- crear;
+- buscar;
+- listar;
+- actualizar;
+- operación de eliminación o cambio de estado según contrato.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-030 — CRUD JPA de emprendimientos
+
+Resultado esperado:
+
+- operaciones correctas;
+- propiedad conservada.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-031 — CRUD JPA de publicaciones
+
+Resultado esperado:
+
+- operaciones correctas;
+- relaciones conservadas.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-032 — Consultas JPA de pedidos
+
+Verificar:
+
+- pedidos por cliente;
+- pedidos por emprendimiento;
+- detalle por ID;
+- permisos aplicados por capa Service.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 6. Mappers
+
+## CP-033 — Entity → Domain
+
+Resultado esperado:
+
+- IDs conservados;
+- atributos conservados;
+- relaciones necesarias convertidas correctamente.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-034 — Domain → Entity
+
+Resultado esperado:
+
+- atributos correctamente mapeados;
+- sin pérdida de información necesaria.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 7. JSF
+
+## CP-035 — Render de página JSF
+
+Resultado esperado:
+
+- XHTML carga;
+- Bean disponible;
+- no ocurre error de resolución.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-036 — Login mediante AuthBean
+
+Resultado esperado:
+
+- login válido;
+- rechazo de credenciales incorrectas;
+- rol disponible;
+- sesión controlada.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-037 — CRUD JSF de categorías
+
+Resultado esperado:
+
+- lista;
+- crea;
+- modifica;
+- muestra mensajes;
+- utiliza Service.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-038 — Gestión JSF de emprendimientos
+
+Resultado esperado:
+
+- lista únicamente recursos permitidos;
+- crea;
+- modifica propios;
+- rechaza recursos ajenos.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-039 — Gestión JSF de publicaciones
+
+Resultado esperado:
+
+- lista;
+- crea;
+- modifica;
+- valida propietario;
+- relaciones correctas.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-040 — Gestión JSF de pedidos
+
+Resultado esperado:
+
+- cliente consulta sus pedidos;
+- emprendedor consulta pedidos recibidos;
+- permisos correctos.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 8. AJAX
+
+## CP-041 — Actualización parcial
+
+Objetivo:
+
+Comprobar una interacción real mediante:
+
+```text
+<f:ajax>
+```
+
+Resultado esperado:
+
+- no recarga toda la página;
+- Bean procesa el evento;
+- componente correcto se actualiza.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-042 — Filtro de catálogo con AJAX
+
+Resultado esperado:
+
+- filtro aplicado;
+- resultados actualizados;
+- datos consistentes.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 9. Validators
+
+## CP-043 — Campo obligatorio
+
+Resultado esperado:
+
+- formulario no continúa;
+- mensaje visible;
+- registro no persiste.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-044 — Valor numérico inválido
+
+Ejemplo:
+
+```text
+precio negativo
+cantidad <= 0
+```
+
+Resultado esperado:
+
+- rechazo;
+- mensaje;
+- sin persistencia inválida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-045 — Validación de correo
+
+Resultado esperado:
+
+- formato inválido rechazado;
+- duplicado rechazado cuando corresponda.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 10. Converters
+
+## CP-046 — Converter de relación
+
+Ejemplo:
+
+```text
+selección de categoría
+```
+
+Resultado esperado:
+
+```text
+valor de vista → Categoria
+```
+
+correctamente.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-047 — Converter con ID inexistente
+
+Resultado esperado:
+
+- error controlado;
+- no provoca persistencia incorrecta.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 11. Transacciones
+
+## CP-048 — Creación transaccional de pedido
+
+Resultado esperado:
+
+- pedido creado;
+- todos los detalles creados;
+- datos consistentes.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-049 — Rollback al fallar detalle
+
+Escenario:
+
+1. iniciar creación de pedido;
+2. provocar un fallo crítico en un detalle;
+3. ejecutar operación.
+
+Resultado esperado:
+
+```text
+rollback
+```
+
+No debe quedar:
+
+- pedido parcial;
+- detalles parciales;
+- datos inconsistentes.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 12. Estados de pedido
+
+## CP-050 — PENDIENTE → CONFIRMADO
+
+Resultado esperado:
+
+- transición permitida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-051 — PENDIENTE → CANCELADO
+
+Resultado esperado:
+
+- transición permitida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-052 — CONFIRMADO → EN_PROCESO
+
+Resultado esperado:
+
+- transición permitida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-053 — EN_PROCESO → COMPLETADO
+
+Resultado esperado:
+
+- transición permitida.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-054 — Transición inválida
+
+Ejemplo:
+
+```text
+PENDIENTE → COMPLETADO
+```
+
+Resultado esperado:
+
+- operación rechazada;
+- estado original conservado.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-055 — Modificar pedido completado
+
+Resultado esperado:
+
+- rechazo;
+- `COMPLETADO` permanece terminal.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-056 — Modificar pedido cancelado
+
+Resultado esperado:
+
+- rechazo;
+- `CANCELADO` permanece terminal.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 13. Seguridad
+
+## CP-057 — Cliente accede a pedido ajeno
+
+Resultado esperado:
+
+- acceso rechazado.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-058 — Emprendedor edita emprendimiento ajeno
+
+Resultado esperado:
+
+- rechazo;
+- datos sin cambios.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-059 — Emprendedor edita publicación ajena
+
+Resultado esperado:
+
+- rechazo;
+- datos sin cambios.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-060 — Emprendedor modifica pedido ajeno
+
+Resultado esperado:
+
+- rechazo;
+- estado conservado.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-061 — Cliente intenta administrar categoría
+
+Resultado esperado:
+
+- acceso rechazado.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 14. Build y pruebas automatizadas
+
+## CP-062 — Build Maven
+
+Ejecutar:
+
+```bash
+mvn clean package
+```
+
+Resultado esperado:
+
+```text
+BUILD SUCCESS
+```
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-063 — Ejecución de tests Maven
+
+Resultado esperado:
+
+- Maven ejecuta casos reales;
+- no únicamente clases vacías;
+- cantidad de tests mayor que cero cuando ya exista suite automatizada.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 15. Regresión
+
+## CP-064 — Login después de integración JPA
+
+Resultado esperado:
+
+- autenticación continúa funcionando.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-065 — Catálogo después de integración JSF
+
+Resultado esperado:
+
+- datos disponibles;
+- relaciones correctas;
+- filtros funcionales.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+## CP-066 — Pedidos después de integración completa
+
+Resultado esperado:
+
+- crear;
+- consultar;
+- gestionar estados;
+- mantener integridad.
+
+Estado:
+
+```text
+PENDIENTE
+```
+
+---
+
+# 16. Registro de defectos
+
+Cuando una prueba falle debe registrarse:
+
+```text
+ID de prueba
+fecha
+resultado obtenido
+resultado esperado
+módulo
+rama
+defecto encontrado
+corrección
+estado
+```
+
+Estados posibles del defecto:
+
+```text
+ABIERTO
+EN_CORRECCION
+CORREGIDO
+REVALIDAR
+CERRADO
+```
+
+---
+
+# 17. Sprint Review de Fase 2
+
+Antes de la entrega deben revisarse:
+
+```text
+JPA configurado
+entidades mapeadas
+relaciones funcionales
+CRUD funcional
+JSF funcional
+Managed Beans funcionales
+AJAX demostrado
+validaciones demostradas
+converters demostrados
+transacción demostrada
+rollback demostrado
+permisos demostrados
+build exitoso
+defectos críticos cerrados
+```
+
+---
+
+# 18. Evidencias recomendadas
+
+Para la entrega pueden conservarse evidencias de:
+
+- pantallas JSF;
+- formularios;
+- AJAX;
+- datos persistidos;
+- relaciones;
+- mensajes de validación;
+- permisos;
+- cambios de estado;
+- Maven;
+- pruebas;
+- rollback.
+
+---
+
+# 19. Regla de aprobación
+
+Una prueba solo debe marcarse:
+
+```text
+APROBADA
+```
+
+cuando haya sido ejecutada realmente.
+
+No marcar una prueba como aprobada únicamente porque el código compile.
+
+---
+
+# 20. Mantenimiento
+
+Actualizar esta matriz cuando:
+
+- cambie una regla;
+- cambie un permiso;
+- se agregue funcionalidad;
 - se corrija un defecto;
-- cambien permisos;
-- se modifique la persistencia;
-- se realice una entrega.
+- cambie persistencia;
+- cambie una transición;
+- se integre una rama;
+- se prepare una entrega.
 
-Una prueba marcada como aprobada deberá volver a ejecutarse cuando un cambio posterior pueda afectar su comportamiento.
+Las pruebas de regresión deben repetirse cuando un cambio posterior pueda afectar una funcionalidad previamente validada.

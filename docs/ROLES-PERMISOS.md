@@ -1,154 +1,168 @@
 # Roles y permisos — EmprendeLink DWF
 
-Este documento define los roles oficiales del sistema EmprendeLink y las acciones permitidas para cada uno.
+Este documento define los roles oficiales, permisos, propiedad de recursos y reglas de autorización de EmprendeLink.
 
-Los permisos definidos aquí deberán mantenerse consistentes en:
+Estas reglas deben mantenerse consistentes en:
 
-- lógica de negocio;
-- controladores;
+- Services;
+- Servlets;
+- Managed Beans;
 - vistas;
-- API REST;
+- persistencia;
+- pruebas;
+- API cuando corresponda;
+- seguridad futura.
+
+---
+
+# 1. Roles oficiales
+
+Roles persistidos:
+
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
+
+Los nombres deben mantenerse exactamente iguales en:
+
+- Java;
+- base de datos;
+- JPA;
 - seguridad;
 - pruebas.
 
 ---
 
-## 1. Roles oficiales
+# 2. Visitante
 
-Los roles persistidos dentro del sistema serán:
+Un visitante no representa un rol persistido.
 
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
+Es una persona que todavía no ha iniciado sesión.
 
-Estos valores deberán utilizarse exactamente con la misma escritura en Java, base de datos y componentes de seguridad.
+## Permitido
 
----
-
-## 2. Visitante
-
-Un visitante representa a una persona que accede al sistema sin haber iniciado sesión.
-
-No constituye un rol persistido dentro de la base de datos.
-
-### Acciones permitidas
-
-- consultar el catálogo público;
-- visualizar emprendimientos activos;
-- visualizar publicaciones activas;
-- consultar detalles de una publicación;
-- acceder al inicio de sesión;
-- acceder al registro de usuario cuando corresponda.
-
-### Acciones no permitidas
-
-- crear pedidos;
-- administrar emprendimientos;
-- administrar publicaciones;
-- consultar información privada;
-- acceder a funciones administrativas.
-
----
-
-## 3. ROLE_CLIENTE
-
-Representa a un usuario registrado que utiliza EmprendeLink para consultar ofertas y realizar pedidos.
-
-### Acciones permitidas
-
-- iniciar y cerrar sesión;
-- consultar el catálogo;
+- acceder al login;
+- acceder al registro;
+- consultar catálogo público;
 - consultar emprendimientos activos;
 - consultar publicaciones activas;
-- visualizar detalles de publicaciones;
+- consultar detalles públicos.
+
+## No permitido
+
+- crear pedidos;
+- consultar pedidos privados;
+- gestionar emprendimientos;
+- gestionar publicaciones;
+- administrar categorías;
+- administrar usuarios;
+- modificar información privada.
+
+---
+
+# 3. ROLE_CLIENTE
+
+Representa al usuario que utiliza EmprendeLink principalmente para consultar ofertas y realizar pedidos.
+
+## Permitido
+
+- iniciar sesión;
+- cerrar sesión;
+- consultar catálogo;
+- consultar publicaciones;
+- consultar emprendimientos;
 - crear pedidos;
 - consultar sus propios pedidos;
 - consultar el detalle de sus propios pedidos;
-- actualizar los datos permitidos de su perfil.
+- actualizar información personal permitida.
 
-### Restricciones
+## No permitido
 
-Un cliente no podrá:
-
-- administrar emprendimientos;
-- crear o modificar publicaciones;
-- administrar categorías;
-- modificar usuarios de terceros;
-- consultar pedidos de otros clientes;
-- administrar pedidos pertenecientes a emprendimientos ajenos;
-- acceder a funciones administrativas.
-
----
-
-## 4. ROLE_EMPRENDEDOR
-
-Representa a un usuario autorizado para registrar y gestionar emprendimientos y sus publicaciones.
-
-### Acciones permitidas
-
-- iniciar y cerrar sesión;
-- consultar el catálogo;
-- gestionar sus propios emprendimientos;
-- crear publicaciones para sus emprendimientos;
-- modificar sus propias publicaciones;
-- activar o desactivar sus propias publicaciones;
-- consultar los pedidos recibidos por sus emprendimientos;
-- consultar el detalle de dichos pedidos;
-- gestionar el estado de pedidos correspondientes a sus emprendimientos;
-- actualizar los datos permitidos de su perfil.
-
-### Restricciones
-
-Un emprendedor no podrá:
-
-- modificar emprendimientos pertenecientes a otros usuarios;
-- modificar publicaciones de otros emprendimientos;
-- consultar información privada de pedidos ajenos a sus emprendimientos;
-- administrar categorías globales;
 - administrar usuarios;
-- acceder a funciones exclusivas del administrador.
-
----
-
-## 5. ROLE_ADMIN
-
-Representa al usuario con permisos administrativos dentro de EmprendeLink.
-
-### Acciones permitidas
-
-- iniciar y cerrar sesión;
-- consultar usuarios;
-- activar o desactivar usuarios;
 - administrar categorías;
-- consultar emprendimientos;
-- activar o desactivar emprendimientos cuando corresponda;
-- consultar publicaciones;
-- activar o desactivar publicaciones cuando corresponda;
-- consultar información general necesaria para administración;
-- acceder a funciones administrativas del sistema.
-
-### Restricciones generales
-
-Las funciones administrativas deberán utilizarse únicamente para la administración de la plataforma.
-
-Las acciones del administrador también deberán respetar las reglas de integridad y negocio del sistema.
+- gestionar emprendimientos;
+- gestionar publicaciones;
+- consultar pedidos de otros clientes;
+- modificar pedidos dirigidos a emprendimientos;
+- acceder a recursos administrativos.
 
 ---
 
-## 6. Matriz general de permisos
+# 4. ROLE_EMPRENDEDOR
 
-| Funcionalidad | Visitante | Cliente | Emprendedor | Administrador |
+Representa al usuario autorizado para gestionar sus emprendimientos.
+
+## Permitido
+
+- iniciar sesión;
+- cerrar sesión;
+- consultar catálogo;
+- consultar sus emprendimientos;
+- crear emprendimientos;
+- editar sus emprendimientos;
+- gestionar publicaciones de sus emprendimientos;
+- consultar pedidos recibidos;
+- consultar detalle de pedidos recibidos;
+- modificar el estado de pedidos válidos recibidos;
+- actualizar información personal permitida.
+
+## No permitido
+
+- modificar emprendimientos ajenos;
+- modificar publicaciones ajenas;
+- consultar pedidos de emprendimientos ajenos;
+- administrar usuarios;
+- administrar categorías globales;
+- utilizar funciones exclusivas de administrador.
+
+---
+
+# 5. ROLE_ADMIN
+
+Representa al usuario administrativo de la plataforma.
+
+## Permitido
+
+- iniciar sesión;
+- cerrar sesión;
+- consultar usuarios;
+- activar o desactivar usuarios cuando corresponda;
+- gestionar categorías;
+- supervisar emprendimientos;
+- supervisar publicaciones;
+- acceder a funciones administrativas;
+- consultar información necesaria para administración.
+
+## Restricción
+
+El rol administrador no elimina las reglas de integridad.
+
+Una operación administrativa también debe respetar:
+
+- llaves;
+- relaciones;
+- reglas de negocio;
+- consistencia.
+
+---
+
+# 6. Matriz general
+
+| Funcionalidad | Visitante | Cliente | Emprendedor | Admin |
 |---|---:|---:|---:|---:|
 | Consultar catálogo | Sí | Sí | Sí | Sí |
-| Ver emprendimientos activos | Sí | Sí | Sí | Sí |
 | Ver publicaciones activas | Sí | Sí | Sí | Sí |
+| Ver emprendimientos activos | Sí | Sí | Sí | Sí |
+| Registrarse | Sí | No aplica | No aplica | No aplica |
 | Iniciar sesión | Sí | Sí | Sí | Sí |
 | Crear pedido | No | Sí | No | No |
 | Consultar pedidos propios | No | Sí | No | No |
 | Gestionar emprendimiento propio | No | No | Sí | No |
-| Gestionar publicaciones propias | No | No | Sí | No |
+| Gestionar publicación propia | No | No | Sí | No |
 | Consultar pedidos recibidos | No | No | Sí | No |
-| Cambiar estado de pedidos recibidos | No | No | Sí | No |
+| Cambiar estado de pedido recibido | No | No | Sí | No |
 | Administrar categorías | No | No | No | Sí |
 | Administrar usuarios | No | No | No | Sí |
 | Supervisar emprendimientos | No | No | No | Sí |
@@ -156,126 +170,421 @@ Las acciones del administrador también deberán respetar las reglas de integrid
 
 ---
 
-## 7. Propiedad de los recursos
+# 7. Autenticación
 
-Tener un rol autorizado no será suficiente para modificar cualquier recurso.
+Una operación privada requiere una sesión válida.
 
-También deberá verificarse la propiedad del recurso cuando corresponda.
+El sistema debe identificar al menos:
+
+```text
+usuario
+rol
+estado activo
+```
+
+Un usuario inactivo no debe autenticarse exitosamente.
+
+---
+
+# 8. Autorización
+
+Autenticación y autorización no son lo mismo.
+
+```text
+Autenticación
+= saber quién es el usuario
+```
+
+```text
+Autorización
+= determinar qué puede hacer
+```
+
+Después de autenticar debe verificarse el permiso correspondiente.
+
+---
+
+# 9. Propiedad de recursos
+
+Tener el rol adecuado no permite modificar cualquier recurso.
 
 Ejemplo:
 
-Un usuario con:
+```text
+ROLE_EMPRENDEDOR
+```
 
-`ROLE_EMPRENDEDOR`
+puede modificar un emprendimiento únicamente si:
 
-podrá modificar un emprendimiento únicamente si dicho emprendimiento pertenece al mismo usuario.
+```text
+emprendimiento.idPropietario
+==
+usuarioAutenticado.idUsuario
+```
 
-De manera equivalente, una publicación solo podrá ser modificada por el propietario del emprendimiento al que pertenece.
+La misma regla aplica indirectamente a publicaciones y pedidos relacionados.
 
 ---
 
-## 8. Pedidos
+# 10. Emprendimientos
 
-### Cliente
+Un emprendedor puede modificar únicamente emprendimientos propios.
 
-Un cliente podrá:
+Debe verificarse:
+
+```text
+usuario autenticado
+rol emprendedor
+propiedad
+estado permitido
+```
+
+No confiar en un ID enviado por formulario como prueba de propiedad.
+
+---
+
+# 11. Publicaciones
+
+Una publicación pertenece a un emprendimiento.
+
+Para modificarla debe comprobarse que:
+
+```text
+publicación
+  ↓
+emprendimiento
+  ↓
+propietario
+  ↓
+usuario autenticado
+```
+
+El usuario no puede obtener permiso simplemente cambiando el ID de la URL o formulario.
+
+---
+
+# 12. Categorías
+
+La administración global de categorías corresponde a:
+
+```text
+ROLE_ADMIN
+```
+
+Los emprendedores pueden seleccionar categorías válidas para sus publicaciones, pero no administrarlas globalmente.
+
+---
+
+# 13. Pedidos
+
+## Cliente
+
+Puede:
 
 - crear pedidos;
-- consultar únicamente sus propios pedidos.
+- consultar sus pedidos;
+- consultar sus detalles.
 
-### Emprendedor
+No puede:
 
-Un emprendedor podrá consultar y gestionar únicamente pedidos dirigidos a emprendimientos de su propiedad.
-
-### Administrador
-
-El acceso administrativo a pedidos deberá limitarse a las funciones necesarias para supervisión o soporte del sistema.
+- consultar pedidos de terceros;
+- cambiar el estado operativo del pedido.
 
 ---
 
-## 9. Estados de pedido
+## Emprendedor
 
-Los estados oficiales son:
+Puede:
 
-- `PENDIENTE`
-- `CONFIRMADO`
-- `EN_PROCESO`
-- `COMPLETADO`
-- `CANCELADO`
+- consultar pedidos dirigidos a emprendimientos propios;
+- consultar detalles;
+- actualizar estados permitidos.
 
-Los cambios de estado deberán implementarse mediante reglas de negocio y no mediante modificaciones arbitrarias desde la interfaz.
-
-Las transiciones permitidas podrán detallarse posteriormente según los requisitos funcionales de la fase correspondiente.
+Debe verificarse propiedad del emprendimiento antes de permitir cualquier modificación.
 
 ---
 
-## 10. Control de acceso
+## Administrador
 
-La autorización deberá verificarse en el backend.
+Puede realizar funciones de supervisión cuando exista una necesidad administrativa.
 
-Ocultar un botón o enlace en la interfaz no constituye una medida suficiente de seguridad.
-
-Por ejemplo, aunque un cliente no visualice una opción administrativa, el servidor deberá rechazar igualmente cualquier intento de acceder directamente a una ruta protegida.
+No se considera operador normal del flujo comercial del pedido.
 
 ---
 
-## 11. Respuestas ante acceso no autorizado
+# 14. Estados oficiales de pedido
 
-Cuando un usuario intente acceder a un recurso para el cual no posee permisos, la aplicación deberá responder de manera controlada.
+```text
+PENDIENTE
+CONFIRMADO
+EN_PROCESO
+COMPLETADO
+CANCELADO
+```
 
-Según la tecnología utilizada podrá aplicarse:
+El estado inicial de un pedido es:
 
-- redirección;
-- página de acceso denegado;
-- respuesta HTTP apropiada;
-- excepción de autorización.
-
-Para la API REST se utilizarán códigos HTTP apropiados, por ejemplo:
-
-- `401 Unauthorized` cuando no exista autenticación válida;
-- `403 Forbidden` cuando el usuario esté autenticado pero no tenga permiso.
+```text
+PENDIENTE
+```
 
 ---
 
-## 12. Seguridad de contraseñas
+# 15. Transiciones permitidas
 
-Las contraseñas nunca deberán:
+Las transiciones normales son:
+
+```text
+PENDIENTE
+   ├──► CONFIRMADO
+   └──► CANCELADO
+
+CONFIRMADO
+   ├──► EN_PROCESO
+   └──► CANCELADO
+
+EN_PROCESO
+   ├──► COMPLETADO
+   └──► CANCELADO
+
+COMPLETADO
+   └──► estado terminal
+
+CANCELADO
+   └──► estado terminal
+```
+
+Tabla:
+
+| Estado actual | Estado permitido |
+|---|---|
+| `PENDIENTE` | `CONFIRMADO`, `CANCELADO` |
+| `CONFIRMADO` | `EN_PROCESO`, `CANCELADO` |
+| `EN_PROCESO` | `COMPLETADO`, `CANCELADO` |
+| `COMPLETADO` | Ninguno |
+| `CANCELADO` | Ninguno |
+
+---
+
+# 16. Transiciones inválidas
+
+Ejemplos que deben rechazarse:
+
+```text
+PENDIENTE → COMPLETADO
+PENDIENTE → EN_PROCESO
+CONFIRMADO → PENDIENTE
+EN_PROCESO → CONFIRMADO
+COMPLETADO → PENDIENTE
+CANCELADO → CONFIRMADO
+```
+
+No es suficiente comprobar que ambos estados existen dentro de `EstadoPedido`.
+
+Debe verificarse la transición.
+
+---
+
+# 17. Lugar de validación de estados
+
+La regla debe encontrarse principalmente en:
+
+```text
+PedidoService
+```
+
+o su implementación correspondiente.
+
+No debe existir únicamente en:
+
+- XHTML;
+- JavaScript;
+- Managed Bean;
+- Servlet.
+
+La interfaz puede limitar opciones visuales, pero el backend debe volver a validar.
+
+---
+
+# 18. Seguridad en JSF
+
+Los Managed Beans deben verificar los mismos permisos que la implementación web anterior.
+
+Ejemplo:
+
+```text
+PedidoBean
+   ↓
+PedidoService
+   ↓
+validar usuario
+validar rol
+validar propiedad
+validar transición
+```
+
+No considerar:
+
+```text
+rendered="false"
+```
+
+como mecanismo suficiente de seguridad.
+
+---
+
+# 19. Acceso directo
+
+Un usuario puede intentar introducir directamente:
+
+```text
+URL
+ID
+parámetro
+```
+
+aunque la interfaz no muestre la acción.
+
+El backend debe rechazar la operación igualmente.
+
+---
+
+# 20. Contraseñas
+
+Las contraseñas nunca deben:
 
 - almacenarse en texto plano;
-- mostrarse en respuestas;
-- incluirse en logs;
-- exponerse mediante la API.
+- registrarse en logs;
+- mostrarse en errores;
+- incluirse en respuestas;
+- exponerse a otros usuarios.
 
-El sistema almacenará únicamente hashes seguros de contraseña.
-
----
-
-## 13. Evolución hacia Spring Security
-
-Durante la fase correspondiente, los roles oficiales serán reutilizados por Spring Security:
-
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
-
-No se deberán crear nombres alternativos para representar los mismos permisos.
-
-Las reglas de autorización deberán derivarse de este documento y de las reglas de negocio vigentes.
+La aplicación debe guardar únicamente representaciones seguras compatibles con el mecanismo de hashing utilizado.
 
 ---
 
-## 14. Cambios de permisos
+# 21. Usuarios inactivos
 
-Cualquier modificación en los permisos deberá revisarse antes de implementarse.
+Un usuario inactivo debe ser rechazado durante autenticación.
 
-Si un permiso cambia, deberán revisarse también:
+Si el estado cambia durante una sesión, las operaciones sensibles deberán aplicar la política definida por el sistema.
 
-- controladores;
-- servicios;
-- vistas;
-- API REST;
-- configuración de seguridad;
-- matriz de pruebas;
-- documentación.
+---
 
-El objetivo es evitar que diferentes componentes del sistema apliquen reglas de autorización contradictorias.
+# 22. Errores de autorización
+
+Las operaciones no autorizadas deben producir una respuesta controlada.
+
+Según la tecnología:
+
+```text
+mensaje JSF
+redirect
+página 403
+excepción de autorización
+respuesta HTTP
+```
+
+No mostrar:
+
+```text
+stack trace
+SQL
+información sensible
+```
+
+---
+
+# 23. Excepciones
+
+Cuando corresponda puede utilizarse:
+
+```text
+AccesoNoAutorizadoException
+```
+
+u otra excepción del dominio apropiada.
+
+El mensaje debe ser comprensible sin revelar detalles internos.
+
+---
+
+# 24. Persistencia JPA
+
+Las relaciones JPA no sustituyen las reglas de autorización.
+
+Una relación correcta entre:
+
+```text
+UsuarioEntity
+EmprendimientoEntity
+```
+
+no significa automáticamente que el usuario tenga permiso para modificar cualquier `EmprendimientoEntity`.
+
+La autorización sigue perteneciendo a la lógica del sistema.
+
+---
+
+# 25. Pruebas obligatorias de seguridad
+
+Durante Fase 2 deben comprobarse al menos:
+
+- cliente intentando leer pedido ajeno;
+- emprendedor intentando modificar emprendimiento ajeno;
+- emprendedor intentando modificar publicación ajena;
+- emprendedor intentando cambiar pedido ajeno;
+- usuario sin rol administrativo intentando administrar categorías;
+- transición inválida de pedido;
+- modificación de pedido terminal.
+
+---
+
+# 26. Spring Security
+
+Los roles actuales deberán reutilizarse en la fase correspondiente:
+
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
+
+No crear roles alternativos simplemente por incorporar Spring.
+
+La integración de Spring Security corresponde a una fase posterior.
+
+---
+
+# 27. Cambios
+
+Si un permiso cambia deben revisarse también:
+
+```text
+Service
+Servlet
+Managed Bean
+XHTML
+pruebas
+API
+documentación
+```
+
+No modificar un permiso únicamente en la interfaz.
+
+---
+
+# 28. Principio final
+
+Toda operación sensible debe responder estas preguntas:
+
+```text
+¿Está autenticado?
+¿Está activo?
+¿Tiene el rol correcto?
+¿Es propietario cuando corresponde?
+¿El recurso está en un estado válido?
+¿La operación está permitida?
+```
+
+Solo si las validaciones necesarias son correctas debe ejecutarse la operación.
