@@ -7,14 +7,21 @@ import emprendelink.model.Usuario;
 import emprendelink.model.enums.TipoRol;
 import emprendelink.security.Contrasenas;
 import emprendelink.service.UsuarioService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
-public class UsuarioServiceImpl implements UsuarioService {
+@ApplicationScoped
+@Transactional
+public class UsuarioServiceImpl
+        implements UsuarioService {
 
     private final UsuarioDAO usuarioDAO;
     private final RolDAO rolDAO;
 
+    @Inject
     public UsuarioServiceImpl(
             UsuarioDAO usuarioDAO,
             RolDAO rolDAO) {
@@ -25,7 +32,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public List<Usuario> listarTodos() {
-        List<Usuario> usuarios = usuarioDAO.listarTodos();
+
+        List<Usuario> usuarios =
+                usuarioDAO.listarTodos();
 
         for (Usuario usuario : usuarios) {
             usuario.setContrasenaHash(null);
@@ -62,7 +71,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         String correoNormalizado =
-                correo.trim().toLowerCase();
+                correo.trim()
+                        .toLowerCase();
 
         if (usuarioDAO.buscarPorCorreo(
                 correoNormalizado).isPresent()) {
@@ -72,24 +82,34 @@ public class UsuarioServiceImpl implements UsuarioService {
             );
         }
 
-        Rol rolEncontrado = rolDAO.listarTodos()
-                .stream()
-                .filter(r -> r.getNombre() == rol)
-                .findFirst()
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "El rol no existe en la base de datos."
+        Rol rolEncontrado =
+                rolDAO.listarTodos()
+                        .stream()
+                        .filter(
+                                r ->
+                                        r.getNombre() == rol
                         )
-                );
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "El rol no existe en la base de datos."
+                                        )
+                        );
 
-        Usuario usuario = new Usuario(
-                rolEncontrado,
-                nombre.trim(),
-                apellido.trim(),
-                correoNormalizado,
-                Contrasenas.generarHash(contrasena),
-                telefono == null ? null : telefono.trim()
-        );
+        Usuario usuario =
+                new Usuario(
+                        rolEncontrado,
+                        nombre.trim(),
+                        apellido.trim(),
+                        correoNormalizado,
+                        Contrasenas.generarHash(
+                                contrasena
+                        ),
+                        telefono == null
+                                ? null
+                                : telefono.trim()
+                );
 
         usuarioDAO.crear(usuario);
     }
@@ -100,28 +120,37 @@ public class UsuarioServiceImpl implements UsuarioService {
             boolean activo) {
 
         if (idUsuario == null) {
+
             throw new IllegalArgumentException(
                     "El identificador es obligatorio."
             );
         }
 
-        Usuario usuario = usuarioDAO.buscarPorId(idUsuario)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El usuario no existe."
+        Usuario usuario =
+                usuarioDAO.buscarPorId(
+                                idUsuario
                         )
-                );
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "El usuario no existe."
+                                        )
+                        );
 
         usuario.setActivo(activo);
 
         if (!usuarioDAO.actualizar(usuario)) {
+
             throw new IllegalStateException(
                     "No se pudo actualizar el usuario."
             );
         }
     }
 
-    private boolean esVacio(String valor) {
-        return valor == null || valor.isBlank();
+    private boolean esVacio(
+            String valor) {
+
+        return valor == null
+                || valor.isBlank();
     }
 }

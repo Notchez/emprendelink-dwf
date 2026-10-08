@@ -1,8 +1,13 @@
 package emprendelink.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Usuario {
+public class Usuario implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private Integer idUsuario;
     private Rol rol;
@@ -15,13 +20,23 @@ public class Usuario {
     private LocalDateTime fechaRegistro;
 
     public Usuario() {
+
         this.activo = true;
-        this.fechaRegistro = LocalDateTime.now();
+        this.fechaRegistro =
+                LocalDateTime.now();
     }
 
-    public Usuario(Integer idUsuario, Rol rol, String nombre, String apellido, String correo,
-                   String contrasenaHash, String telefono, boolean activo,
-                   LocalDateTime fechaRegistro) {
+    public Usuario(
+            Integer idUsuario,
+            Rol rol,
+            String nombre,
+            String apellido,
+            String correo,
+            String contrasenaHash,
+            String telefono,
+            boolean activo,
+            LocalDateTime fechaRegistro) {
+
         this.idUsuario = idUsuario;
         this.rol = rol;
         this.nombre = nombre;
@@ -33,9 +48,16 @@ public class Usuario {
         this.fechaRegistro = fechaRegistro;
     }
 
-    public Usuario(Rol rol, String nombre, String apellido, String correo,
-                   String contrasenaHash, String telefono) {
+    public Usuario(
+            Rol rol,
+            String nombre,
+            String apellido,
+            String correo,
+            String contrasenaHash,
+            String telefono) {
+
         this();
+
         this.rol = rol;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -48,7 +70,9 @@ public class Usuario {
         return idUsuario;
     }
 
-    public void setIdUsuario(Integer idUsuario) {
+    public void setIdUsuario(
+            Integer idUsuario) {
+
         this.idUsuario = idUsuario;
     }
 
@@ -56,7 +80,9 @@ public class Usuario {
         return rol;
     }
 
-    public void setRol(Rol rol) {
+    public void setRol(
+            Rol rol) {
+
         this.rol = rol;
     }
 
@@ -64,7 +90,9 @@ public class Usuario {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
+    public void setNombre(
+            String nombre) {
+
         this.nombre = nombre;
     }
 
@@ -72,7 +100,9 @@ public class Usuario {
         return apellido;
     }
 
-    public void setApellido(String apellido) {
+    public void setApellido(
+            String apellido) {
+
         this.apellido = apellido;
     }
 
@@ -80,7 +110,9 @@ public class Usuario {
         return correo;
     }
 
-    public void setCorreo(String correo) {
+    public void setCorreo(
+            String correo) {
+
         this.correo = correo;
     }
 
@@ -88,7 +120,9 @@ public class Usuario {
         return contrasenaHash;
     }
 
-    public void setContrasenaHash(String contrasenaHash) {
+    public void setContrasenaHash(
+            String contrasenaHash) {
+
         this.contrasenaHash = contrasenaHash;
     }
 
@@ -96,7 +130,9 @@ public class Usuario {
         return telefono;
     }
 
-    public void setTelefono(String telefono) {
+    public void setTelefono(
+            String telefono) {
+
         this.telefono = telefono;
     }
 
@@ -104,7 +140,9 @@ public class Usuario {
         return activo;
     }
 
-    public void setActivo(boolean activo) {
+    public void setActivo(
+            boolean activo) {
+
         this.activo = activo;
     }
 
@@ -112,7 +150,9 @@ public class Usuario {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+    public void setFechaRegistro(
+            LocalDateTime fechaRegistro) {
+
         this.fechaRegistro = fechaRegistro;
     }
 }

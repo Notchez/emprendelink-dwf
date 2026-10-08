@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+    <title>Registro - EmprendeLink</title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h1>Crear cuenta</h1>
+
+        <h:form id="registroForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"/>
+
+            <h:outputLabel
+                    for="nombre"
+                    value="Nombre"/>
+
+            <h:inputText
+                    id="nombre"
+                    value="#{usuarioBean.nombre}"
+                    required="true"
+                    requiredMessage="El nombre es obligatorio."/>
+
+            <h:message for="nombre"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="apellido"
+                    value="Apellido"/>
+
+            <h:inputText
+                    id="apellido"
+                    value="#{usuarioBean.apellido}"
+                    required="true"
+                    requiredMessage="El apellido es obligatorio."/>
+
+            <h:message for="apellido"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="correo"
+                    value="Correo"/>
+
+            <h:inputText
+                    id="correo"
+                    value="#{usuarioBean.correo}"
+                    required="true"
+                    requiredMessage="El correo es obligatorio."
+                    validator="correoValidator">
+
+                <f:ajax
+                        event="blur"
+                        execute="@this"
+                        render="correoMensaje"/>
+
+            </h:inputText>
+
+            <h:message
+                    id="correoMensaje"
+                    for="correo"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="contrasena"
+                    value="Contraseña"/>
+
+            <h:inputSecret
+                    id="contrasena"
+                    value="#{usuarioBean.contrasena}"
+                    required="true"
+                    requiredMessage="La contraseña es obligatoria."
+                    validator="contrasenaValidator"/>
+
+            <h:message for="contrasena"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="telefono"
+                    value="Teléfono"/>
+
+            <h:inputText
+                    id="telefono"
+                    value="#{usuarioBean.telefono}"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="rol"
+                    value="Tipo de cuenta"/>
+
+            <h:selectOneMenu
+                    id="rol"
+                    value="#{usuarioBean.rol}"
+                    converter="tipoRolConverter"
+                    required="true">
+
+                <f:selectItems
+                        value="#{usuarioBean.rolesRegistro}"
+                        var="rol"
+                        itemValue="#{rol}"
+                        itemLabel="#{usuarioBean.etiquetaRol(rol)}"/>
+
+                <f:ajax
+                        event="change"
+                        execute="@this"
+                        render="rolInfo"/>
+
+            </h:selectOneMenu>
+
+            <h:panelGroup
+                    id="rolInfo"
+                    layout="block">
+
+                <p>
+                    <h:outputText
+                            value="#{usuarioBean.descripcionRol}"/>
+                </p>
+
+            </h:panelGroup>
+
+            <br/>
+
+            <h:commandButton
+                    value="Registrarme"
+                    action="#{usuarioBean.registrar}"/>
+
+        </h:form>
+
+        <p>
+            <a href="#{request.contextPath}/login.xhtml">
+                Volver al inicio de sesión
+            </a>
+        </p>
+
+    </main>
+
+</h:body>
+
+</html>
