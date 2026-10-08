@@ -57,7 +57,7 @@ class AuthUsuariosServiceTest {
                 " Nochez ",
                 " TITO@TEST.COM ",
                 "Demo1234!",
-                "7000-0000",
+                " 7000-0000 ",
                 TipoRol.ROLE_CLIENTE
         );
 
@@ -74,8 +74,18 @@ class AuthUsuariosServiceTest {
         );
 
         assertEquals(
+                "Nochez",
+                usuario.getApellido()
+        );
+
+        assertEquals(
                 "tito@test.com",
                 usuario.getCorreo()
+        );
+
+        assertEquals(
+                "7000-0000",
+                usuario.getTelefono()
         );
 
         assertNotNull(
@@ -112,15 +122,64 @@ class AuthUsuariosServiceTest {
     }
 
     @Test
+    void rechazaCorreoDuplicado() {
+
+        registrarCliente(
+                "duplicado@test.com"
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> registrarCliente(
+                        " DUPLICADO@TEST.COM "
+                )
+        );
+    }
+
+    @Test
+    void rechazaCorreoConFormatoInvalido() {
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> registrarCliente(
+                        "correo-invalido"
+                )
+        );
+    }
+
+    @Test
+    void rechazaCamposQueSuperanLongitudPermitida() {
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioService.registrar(
+                        "A".repeat(81),
+                        "Nochez",
+                        "tito@test.com",
+                        "Demo1234!",
+                        null,
+                        TipoRol.ROLE_CLIENTE
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioService.registrar(
+                        "Tito",
+                        "Nochez",
+                        "tito@test.com",
+                        "Demo1234!",
+                        "7".repeat(21),
+                        TipoRol.ROLE_CLIENTE
+                )
+        );
+    }
+
+    @Test
     void autenticaCredencialesValidas() {
 
-        usuarioService.registrar(
-                "David",
-                "Gómez",
-                "david@test.com",
-                "Demo1234!",
-                null,
-                TipoRol.ROLE_CLIENTE
+        registrarCliente(
+                "david@test.com"
         );
 
         Usuario autenticado =
@@ -144,13 +203,8 @@ class AuthUsuariosServiceTest {
     @Test
     void usuarioInactivoNoPuedeAutenticarse() {
 
-        usuarioService.registrar(
-                "Mariana",
-                "López",
-                "mariana@test.com",
-                "Demo1234!",
-                null,
-                TipoRol.ROLE_CLIENTE
+        registrarCliente(
+                "mariana@test.com"
         );
 
         Usuario usuario =
@@ -172,6 +226,19 @@ class AuthUsuariosServiceTest {
                 );
 
         assertNull(autenticado);
+    }
+
+    private void registrarCliente(
+            String correo) {
+
+        usuarioService.registrar(
+                "Tito",
+                "Nochez",
+                correo,
+                "Demo1234!",
+                null,
+                TipoRol.ROLE_CLIENTE
+        );
     }
 
     private static class FakeRolDAO
@@ -234,7 +301,8 @@ class AuthUsuariosServiceTest {
         }
 
         @Override
-        public boolean eliminar(Integer idRol) {
+        public boolean eliminar(
+                Integer idRol) {
 
             return roles.removeIf(
                     rol ->

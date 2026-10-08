@@ -33,7 +33,8 @@
                     id="nombre"
                     value="#{usuarioBean.nombre}"
                     required="true"
-                    requiredMessage="El nombre es obligatorio."/>
+                    requiredMessage="El nombre es obligatorio."
+                    maxlength="80"/>
 
             <h:message for="nombre"/>
 
@@ -47,7 +48,8 @@
                     id="apellido"
                     value="#{usuarioBean.apellido}"
                     required="true"
-                    requiredMessage="El apellido es obligatorio."/>
+                    requiredMessage="El apellido es obligatorio."
+                    maxlength="80"/>
 
             <h:message for="apellido"/>
 
@@ -62,7 +64,8 @@
                     value="#{usuarioBean.correo}"
                     required="true"
                     requiredMessage="El correo es obligatorio."
-                    validator="correoValidator">
+                    validator="correoValidator"
+                    maxlength="120">
 
                 <f:ajax
                         event="blur"
@@ -86,7 +89,8 @@
                     value="#{usuarioBean.contrasena}"
                     required="true"
                     requiredMessage="La contraseña es obligatoria."
-                    validator="contrasenaValidator"/>
+                    validator="contrasenaValidator"
+                    maxlength="128"/>
 
             <h:message for="contrasena"/>
 
@@ -98,7 +102,8 @@
 
             <h:inputText
                     id="telefono"
-                    value="#{usuarioBean.telefono}"/>
+                    value="#{usuarioBean.telefono}"
+                    maxlength="20"/>
 
             <br/><br/>
 

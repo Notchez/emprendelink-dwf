@@ -10,6 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -19,8 +20,7 @@ public class JpaUsuarioDAO implements UsuarioDAO {
     private EntityManager entityManager;
 
     @Override
-    public Usuario crear(
-            Usuario usuario) {
+    public Usuario crear(Usuario usuario) {
 
         validarRol(usuario);
 
@@ -30,8 +30,7 @@ public class JpaUsuarioDAO implements UsuarioDAO {
         RolEntity rol =
                 entityManager.getReference(
                         RolEntity.class,
-                        usuario.getRol()
-                                .getIdRol()
+                        usuario.getRol().getIdRol()
                 );
 
         entidad.setRol(rol);
@@ -39,9 +38,7 @@ public class JpaUsuarioDAO implements UsuarioDAO {
         entityManager.persist(entidad);
         entityManager.flush();
 
-        return UsuarioMapper.aDominio(
-                entidad
-        );
+        return UsuarioMapper.aDominio(entidad);
     }
 
     @Override
@@ -59,9 +56,7 @@ public class JpaUsuarioDAO implements UsuarioDAO {
                 );
 
         return Optional.ofNullable(
-                UsuarioMapper.aDominio(
-                        entidad
-                )
+                UsuarioMapper.aDominio(entidad)
         );
     }
 
@@ -87,13 +82,11 @@ public class JpaUsuarioDAO implements UsuarioDAO {
                 .setParameter(
                         "correo",
                         correo.trim()
-                                .toLowerCase()
+                                .toLowerCase(Locale.ROOT)
                 )
                 .getResultStream()
                 .findFirst()
-                .map(
-                        UsuarioMapper::aDominio
-                );
+                .map(UsuarioMapper::aDominio);
     }
 
     @Override
@@ -109,9 +102,7 @@ public class JpaUsuarioDAO implements UsuarioDAO {
                         UsuarioEntity.class
                 )
                 .getResultStream()
-                .map(
-                        UsuarioMapper::aDominio
-                )
+                .map(UsuarioMapper::aDominio)
                 .toList();
     }
 
@@ -140,39 +131,24 @@ public class JpaUsuarioDAO implements UsuarioDAO {
         RolEntity rol =
                 entityManager.getReference(
                         RolEntity.class,
-                        usuario.getRol()
-                                .getIdRol()
+                        usuario.getRol().getIdRol()
                 );
 
         entidad.setRol(rol);
+        entidad.setNombre(usuario.getNombre());
+        entidad.setApellido(usuario.getApellido());
+        entidad.setCorreo(usuario.getCorreo());
+        entidad.setTelefono(usuario.getTelefono());
+        entidad.setActivo(usuario.isActivo());
+        entidad.setFechaRegistro(usuario.getFechaRegistro());
 
-        entidad.setNombre(
-                usuario.getNombre()
-        );
+        if (usuario.getContrasenaHash() != null
+                && !usuario.getContrasenaHash().isBlank()) {
 
-        entidad.setApellido(
-                usuario.getApellido()
-        );
-
-        entidad.setCorreo(
-                usuario.getCorreo()
-        );
-
-        entidad.setContrasenaHash(
-                usuario.getContrasenaHash()
-        );
-
-        entidad.setTelefono(
-                usuario.getTelefono()
-        );
-
-        entidad.setActivo(
-                usuario.isActivo()
-        );
-
-        entidad.setFechaRegistro(
-                usuario.getFechaRegistro()
-        );
+            entidad.setContrasenaHash(
+                    usuario.getContrasenaHash()
+            );
+        }
 
         return true;
     }
@@ -205,8 +181,7 @@ public class JpaUsuarioDAO implements UsuarioDAO {
 
         if (usuario == null
                 || usuario.getRol() == null
-                || usuario.getRol()
-                .getIdRol() == null) {
+                || usuario.getRol().getIdRol() == null) {
 
             throw new IllegalArgumentException(
                     "El usuario debe tener un rol válido."

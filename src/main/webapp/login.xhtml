@@ -20,14 +20,11 @@
 
         <h1>Iniciar sesión</h1>
 
-        <ui:fragment
-                rendered="#{param.registro eq 'exitoso'}">
-
+        <ui:fragment rendered="#{param.registro eq 'exitoso'}">
             <p>
                 Registro completado.
                 Ya puedes iniciar sesión.
             </p>
-
         </ui:fragment>
 
         <h:form id="loginForm">
@@ -45,7 +42,8 @@
                     value="#{authBean.correo}"
                     required="true"
                     requiredMessage="El correo es obligatorio."
-                    validator="correoValidator">
+                    validator="correoValidator"
+                    maxlength="120">
 
                 <f:ajax
                         event="blur"
@@ -68,7 +66,8 @@
                     id="contrasena"
                     value="#{authBean.contrasena}"
                     required="true"
-                    requiredMessage="La contraseña es obligatoria."/>
+                    requiredMessage="La contraseña es obligatoria."
+                    maxlength="128"/>
 
             <h:message
                     for="contrasena"/>
@@ -84,12 +83,6 @@
         <p>
             <a href="#{request.contextPath}/registro.xhtml">
                 Crear cuenta
-            </a>
-        </p>
-
-        <p>
-            <a href="#{request.contextPath}/catalogo">
-                Ver catálogo público
             </a>
         </p>
 
