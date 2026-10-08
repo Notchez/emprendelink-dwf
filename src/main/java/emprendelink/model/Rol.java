@@ -2,7 +2,13 @@ package emprendelink.model;
 
 import emprendelink.model.enums.TipoRol;
 
-public class Rol {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Rol implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private Integer idRol;
     private TipoRol nombre;
@@ -10,12 +16,15 @@ public class Rol {
     public Rol() {
     }
 
-    public Rol(Integer idRol, TipoRol nombre) {
-        this.idRol = idRol;
+    public Rol(TipoRol nombre) {
         this.nombre = nombre;
     }
 
-    public Rol(TipoRol nombre) {
+    public Rol(
+            Integer idRol,
+            TipoRol nombre) {
+
+        this.idRol = idRol;
         this.nombre = nombre;
     }
 
@@ -23,7 +32,9 @@ public class Rol {
         return idRol;
     }
 
-    public void setIdRol(Integer idRol) {
+    public void setIdRol(
+            Integer idRol) {
+
         this.idRol = idRol;
     }
 
@@ -31,7 +42,9 @@ public class Rol {
         return nombre;
     }
 
-    public void setNombre(TipoRol nombre) {
+    public void setNombre(
+            TipoRol nombre) {
+
         this.nombre = nombre;
     }
 }

@@ -1,513 +1,132 @@
-# Rutas del proyecto — EmprendeLink DWF
+# Rutas — EmprendeLink DWF
 
-Este documento define las rutas oficiales previstas para EmprendeLink.
+Context path local:
 
-El objetivo es mantener consistencia entre:
+```text
+/emprendelink
+```
 
-- Servlets
-- JSP
-- JSF
-- API REST
-- Spring
-- enlaces internos
-- pruebas
-- documentación
-
-Las rutas podrán evolucionar durante el proyecto, pero cualquier cambio deberá realizarse de forma coordinada.
-
----
-
-## 1. Context path
-
-Context path oficial:
-
-`/emprendelink`
-
-Ejemplo local:
-
-`http://localhost:8080/emprendelink`
-
----
-
-## 2. Rutas públicas
-
-Las siguientes rutas podrán ser accesibles sin autenticación.
-
-### Inicio
-
-`/`
-
-Responsabilidad:
-
-- mostrar la página principal del sistema.
-
-### Catálogo
-
-`/catalogo`
-
-Responsabilidad:
-
-- mostrar publicaciones activas;
-- permitir consulta pública del catálogo.
-
-### Detalle de publicación
-
-`/catalogo/publicacion`
-
-Parámetro esperado:
-
-`id`
-
-Ejemplo:
-
-`/catalogo/publicacion?id=10`
-
-Responsabilidad:
-
-- mostrar el detalle de una publicación específica.
-
-### Emprendimientos públicos
-
-`/emprendimientos`
-
-Responsabilidad:
-
-- consultar emprendimientos visibles o activos.
-
-### Detalle de emprendimiento
-
-`/emprendimientos/detalle`
-
-Parámetro esperado:
-
-`id`
-
-Ejemplo:
-
-`/emprendimientos/detalle?id=3`
-
----
-
-## 3. Autenticación
+## Rutas implementadas
 
 ### Login
 
-`/auth`
+```text
+/login.xhtml
+```
 
-Uso inicial:
-
-- mostrar formulario de inicio de sesión;
-- procesar autenticación.
-
-### Logout
-
-`/logout`
-
-Responsabilidad:
-
-- cerrar la sesión actual.
+Pública.
 
 ### Registro
 
-`/registro`
+```text
+/registro.xhtml
+```
 
-Responsabilidad prevista:
+Pública.
 
-- permitir registro de usuarios cuando corresponda.
+Permite crear:
 
----
+```text
+ROLE_CLIENTE
+ROLE_EMPRENDEDOR
+```
 
-## 4. Rutas de cliente
+No permite crear `ROLE_ADMIN`.
 
-Estas rutas requerirán autenticación con rol:
+### Inicio autenticado
 
-`ROLE_CLIENTE`
+```text
+/inicio.xhtml
+```
 
-### Pedidos del cliente
+Requiere sesión válida.
 
-`/pedidos`
+### Administración de usuarios
 
-Responsabilidad:
+```text
+/admin/usuarios.xhtml
+```
 
-- listar pedidos realizados por el cliente autenticado.
+Requiere:
 
-### Crear pedido
+```text
+ROLE_ADMIN
+```
 
-`/pedidos/crear`
+Protegida por `AdminFilter`.
 
-Responsabilidad:
-
-- crear un nuevo pedido.
-
-### Detalle de pedido
-
-`/pedidos/detalle`
-
-Parámetro esperado:
-
-`id`
-
-Ejemplo:
-
-`/pedidos/detalle?id=25`
-
-El backend deberá verificar que el pedido pertenezca al cliente autenticado.
-
----
-
-## 5. Rutas de emprendedor
-
-Estas rutas requerirán autenticación con rol:
-
-`ROLE_EMPRENDEDOR`
-
-### Gestión de emprendimientos
-
-`/emprendimientos/gestion`
-
-Responsabilidad:
-
-- listar emprendimientos pertenecientes al usuario autenticado.
-
-### Crear emprendimiento
-
-`/emprendimientos/nuevo`
-
-### Editar emprendimiento
-
-`/emprendimientos/editar`
-
-Parámetro esperado:
-
-`id`
-
-El backend deberá verificar propiedad.
-
-### Gestión de publicaciones
-
-`/publicaciones`
-
-Responsabilidad:
-
-- listar publicaciones pertenecientes a los emprendimientos del usuario autenticado.
-
-### Crear publicación
-
-`/publicaciones/nueva`
-
-### Editar publicación
-
-`/publicaciones/editar`
-
-Parámetro esperado:
-
-`id`
-
-El backend deberá verificar propiedad.
-
-### Pedidos recibidos
-
-`/pedidos/recibidos`
-
-Responsabilidad:
-
-- mostrar pedidos realizados a emprendimientos del usuario autenticado.
-
-### Gestión del estado de un pedido
-
-`/pedidos/estado`
-
-Responsabilidad:
-
-- actualizar el estado de un pedido recibido.
-
-El backend deberá verificar:
-
-- propiedad del emprendimiento;
-- transición válida de estado;
-- permisos del usuario.
-
----
-
-## 6. Rutas administrativas
-
-Estas rutas requerirán:
-
-`ROLE_ADMIN`
-
-Todas las rutas administrativas utilizarán el prefijo:
-
-`/admin`
-
-### Usuarios
-
-`/admin/usuarios`
-
-Responsabilidad:
-
-- consultar usuarios;
-- activar o desactivar usuarios.
+## Rutas previstas de Fase 2
 
 ### Categorías
 
-`/admin/categorias`
-
-Responsabilidad:
-
-- crear;
-- consultar;
-- actualizar;
-- activar o desactivar categorías.
+```text
+/admin/categorias.xhtml
+```
 
 ### Emprendimientos
 
-`/admin/emprendimientos`
-
-Responsabilidad:
-
-- supervisar emprendimientos.
+```text
+/emprendimientos/index.xhtml
+/emprendimientos/formulario.xhtml
+```
 
 ### Publicaciones
 
-`/admin/publicaciones`
+```text
+/publicaciones/index.xhtml
+/publicaciones/formulario.xhtml
+```
 
-Responsabilidad:
+### Catálogo
 
-- supervisar publicaciones.
+```text
+/catalogo/index.xhtml
+/catalogo/detalle.xhtml
+```
 
----
+### Pedidos
 
-## 7. Rutas JSP previstas
+```text
+/pedidos/index.xhtml
+/pedidos/detalle.xhtml
+```
 
-Las vistas JSP se ubicarán bajo:
+Las rutas definitivas podrán ajustarse al implementar cada módulo, pero deben documentarse antes de integrar a `develop`.
 
-`/WEB-INF/views/`
+## Protección
 
-Esto evita acceso directo a los JSP desde el navegador.
+```text
+/admin/* → ROLE_ADMIN
+```
 
-Estructura inicial:
+Los módulos de emprendedor deben comprobar `ROLE_EMPRENDEDOR` y propiedad del recurso.
 
-`/WEB-INF/views/auth/login.jsp`
+Los pedidos privados del cliente deben comprobar `ROLE_CLIENTE` y propiedad del pedido.
 
-`/WEB-INF/views/catalogo/lista.jsp`
+## API REST — Fase 3
 
-`/WEB-INF/views/catalogo/detalle.jsp`
+Ruta base:
 
-`/WEB-INF/views/emprendimientos/lista.jsp`
+```text
+/api/v1
+```
 
-`/WEB-INF/views/emprendimientos/formulario.jsp`
+Previsto:
 
-`/WEB-INF/views/publicaciones/lista.jsp`
+```text
+GET  /api/v1/emprendimientos
+GET  /api/v1/emprendimientos/{id}
+GET  /api/v1/publicaciones
+GET  /api/v1/publicaciones/{id}
+POST /api/v1/pedidos
+GET  /api/v1/pedidos/{id}
+PUT  /api/v1/pedidos/{id}/estado
+```
 
-`/WEB-INF/views/publicaciones/formulario.jsp`
+## Errores
 
-`/WEB-INF/views/pedidos/lista.jsp`
-
-`/WEB-INF/views/pedidos/detalle.jsp`
-
-`/WEB-INF/views/admin/usuarios.jsp`
-
-`/WEB-INF/views/admin/categorias.jsp`
-
-`/WEB-INF/views/error/403.jsp`
-
-`/WEB-INF/views/error/404.jsp`
-
-`/WEB-INF/views/error/500.jsp`
-
----
-
-## 8. API REST
-
-La API utilizará como ruta base:
-
-`/api/v1`
-
-Las rutas REST deberán utilizar:
-
-- minúsculas;
-- recursos en plural;
-- métodos HTTP apropiados.
-
----
-
-## 9. Emprendimientos API
-
-### Listar emprendimientos
-
-`GET /api/v1/emprendimientos`
-
-### Obtener emprendimiento
-
-`GET /api/v1/emprendimientos/{id}`
-
-### Listar publicaciones de un emprendimiento
-
-`GET /api/v1/emprendimientos/{id}/publicaciones`
-
----
-
-## 10. Publicaciones API
-
-### Listar publicaciones
-
-`GET /api/v1/publicaciones`
-
-### Obtener publicación
-
-`GET /api/v1/publicaciones/{id}`
-
-Las búsquedas y filtros podrán agregarse mediante parámetros de consulta.
-
-Ejemplo conceptual:
-
-`GET /api/v1/publicaciones?tipo=PRODUCTO`
-
----
-
-## 11. Pedidos API
-
-### Crear pedido
-
-`POST /api/v1/pedidos`
-
-### Obtener pedido
-
-`GET /api/v1/pedidos/{id}`
-
-### Actualizar estado
-
-`PUT /api/v1/pedidos/{id}/estado`
-
-El acceso dependerá del usuario autenticado y de la propiedad del recurso.
-
----
-
-## 12. Códigos HTTP
-
-La API deberá utilizar códigos HTTP apropiados.
-
-Ejemplos:
-
-- `200 OK`
-- `201 Created`
-- `204 No Content`
-- `400 Bad Request`
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
-- `409 Conflict`
-- `500 Internal Server Error`
-
-No deberá utilizarse siempre `200 OK` para representar errores.
-
----
-
-## 13. Parámetros
-
-Los parámetros deberán utilizar nombres consistentes.
-
-Ejemplos:
-
-- `id`
-- `tipo`
-- `estado`
-- `categoria`
-- `pagina`
-
-No deberán crearse variantes diferentes para representar el mismo valor sin necesidad.
-
-Ejemplo a evitar:
-
-- `publicationId`
-- `id_publicacion`
-- `idPublicacion`
-
-si todos representan el mismo parámetro dentro de un mismo contrato.
-
----
-
-## 14. Separación entre rutas web y API
-
-Las rutas HTML utilizarán rutas como:
-
-`/catalogo`
-
-`/publicaciones`
-
-`/pedidos`
-
-Las rutas REST utilizarán exclusivamente el prefijo:
-
-`/api/v1`
-
-Ejemplo:
-
-Web:
-
-`/publicaciones`
-
-API:
-
-`/api/v1/publicaciones`
-
-Esto permite mantener separados los controladores destinados a vistas y los recursos destinados a clientes externos.
-
----
-
-## 15. Protección de rutas
-
-Las rutas protegidas deberán validarse en el backend.
-
-No será suficiente ocultar enlaces o botones en la interfaz.
-
-Ejemplos:
-
-`ROLE_ADMIN`
-
-deberá ser requerido para:
-
-`/admin/*`
-
-`ROLE_EMPRENDEDOR`
-
-deberá ser requerido para las operaciones de administración de sus propios emprendimientos y publicaciones.
-
-`ROLE_CLIENTE`
-
-deberá ser requerido para operaciones privadas relacionadas con sus pedidos.
-
----
-
-## 16. Propiedad del recurso
-
-Además del rol, algunas operaciones deberán validar que el recurso pertenezca al usuario autenticado.
-
-Ejemplo:
-
-`/publicaciones/editar?id=15`
-
-Un emprendedor solamente podrá editar la publicación si pertenece a uno de sus emprendimientos.
-
-La misma regla deberá aplicarse en REST.
-
----
-
-## 17. Evolución
-
-Estas rutas representan la estructura inicial prevista.
-
-Podrán modificarse o ampliarse si los requisitos funcionales lo requieren.
-
-Si una ruta cambia, deberán revisarse:
-
-- controladores;
-- vistas;
-- enlaces;
-- API;
-- cliente externo;
-- seguridad;
-- pruebas;
-- documentación.
-
-Los cambios deberán actualizar este archivo antes de integrarse a `develop`.
+```text
+/error/403.html
+/error/404.html
+/error/500.html
+```

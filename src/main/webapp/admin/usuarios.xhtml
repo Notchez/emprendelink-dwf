@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+    <title>
+        Administrar usuarios - EmprendeLink
+    </title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h1>Administrar usuarios</h1>
+
+        <p>
+            Sesión iniciada como:
+            <strong>
+                #{authBean.usuario.nombre}
+                #{authBean.usuario.apellido}
+            </strong>
+        </p>
+
+        <h:form id="usuariosForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"/>
+
+            <h:dataTable
+                    value="#{usuarioBean.usuarios}"
+                    var="usuario">
+
+                <h:column>
+
+                    <f:facet name="header">
+                        ID
+                    </f:facet>
+
+                    #{usuario.idUsuario}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Nombre
+                    </f:facet>
+
+                    #{usuario.nombre}
+                    #{usuario.apellido}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Correo
+                    </f:facet>
+
+                    #{usuario.correo}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Rol
+                    </f:facet>
+
+                    #{usuario.rol.nombre}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Estado
+                    </f:facet>
+
+                    <h:outputText
+                            value="#{usuario.activo
+                                ? 'Activo'
+                                : 'Inactivo'}"/>
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Acción
+                    </f:facet>
+
+                    <h:commandButton
+                            value="#{usuario.activo
+                                ? 'Desactivar'
+                                : 'Activar'}"
+                            disabled="#{usuario.idUsuario
+                                eq authBean.usuario.idUsuario}"
+                            action="#{usuarioBean.alternarEstado(
+                                usuario.idUsuario,
+                                usuario.activo
+                            )}">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                </h:column>
+
+            </h:dataTable>
+
+        </h:form>
+
+        <h:form>
+
+            <h:commandButton
+                    value="Cerrar sesión"
+                    action="#{authBean.cerrarSesion}"/>
+
+        </h:form>
+
+    </main>
+
+</h:body>
+
+</html>

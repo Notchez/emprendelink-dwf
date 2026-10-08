@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <title>Iniciar sesión - EmprendeLink</title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h1>Iniciar sesión</h1>
+
+        <ui:fragment rendered="#{param.registro eq 'exitoso'}">
+            <p>
+                Registro completado.
+                Ya puedes iniciar sesión.
+            </p>
+        </ui:fragment>
+
+        <h:form id="loginForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"/>
+
+            <h:outputLabel
+                    for="correo"
+                    value="Correo"/>
+
+            <h:inputText
+                    id="correo"
+                    value="#{authBean.correo}"
+                    required="true"
+                    requiredMessage="El correo es obligatorio."
+                    validator="correoValidator"
+                    maxlength="120">
+
+                <f:ajax
+                        event="blur"
+                        execute="@this"
+                        render="correoMensaje"/>
+
+            </h:inputText>
+
+            <h:message
+                    id="correoMensaje"
+                    for="correo"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="contrasena"
+                    value="Contraseña"/>
+
+            <h:inputSecret
+                    id="contrasena"
+                    value="#{authBean.contrasena}"
+                    required="true"
+                    requiredMessage="La contraseña es obligatoria."
+                    maxlength="128"/>
+
+            <h:message
+                    for="contrasena"/>
+
+            <br/><br/>
+
+            <h:commandButton
+                    value="Ingresar"
+                    action="#{authBean.iniciarSesion}"/>
+
+        </h:form>
+
+        <p>
+            <a href="#{request.contextPath}/registro.xhtml">
+                Crear cuenta
+            </a>
+        </p>
+
+    </main>
+
+</h:body>
+
+</html>

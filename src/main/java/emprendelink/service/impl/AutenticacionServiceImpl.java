@@ -4,13 +4,21 @@ import emprendelink.dao.UsuarioDAO;
 import emprendelink.model.Usuario;
 import emprendelink.security.Contrasenas;
 import emprendelink.service.AutenticacionService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
+@ApplicationScoped
+@Transactional
 public class AutenticacionServiceImpl
         implements AutenticacionService {
 
     private final UsuarioDAO usuarioDAO;
 
-    public AutenticacionServiceImpl(UsuarioDAO usuarioDAO) {
+    @Inject
+    public AutenticacionServiceImpl(
+            UsuarioDAO usuarioDAO) {
+
         this.usuarioDAO = usuarioDAO;
     }
 
@@ -19,22 +27,31 @@ public class AutenticacionServiceImpl
             String correo,
             String contrasena) {
 
-        if (correo == null || correo.isBlank()
-                || contrasena == null || contrasena.isBlank()) {
+        if (correo == null
+                || correo.isBlank()
+                || contrasena == null
+                || contrasena.isBlank()) {
+
             return null;
         }
 
-        Usuario usuario = usuarioDAO.buscarPorCorreo(
-                correo.trim().toLowerCase()
-        ).orElse(null);
+        Usuario usuario =
+                usuarioDAO.buscarPorCorreo(
+                                correo.trim()
+                                        .toLowerCase()
+                        )
+                        .orElse(null);
 
-        if (usuario == null || !usuario.isActivo()) {
+        if (usuario == null
+                || !usuario.isActivo()) {
+
             return null;
         }
 
         if (!Contrasenas.verificar(
                 contrasena,
                 usuario.getContrasenaHash())) {
+
             return null;
         }
 
