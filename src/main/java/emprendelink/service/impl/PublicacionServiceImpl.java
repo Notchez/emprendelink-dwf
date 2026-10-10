@@ -11,19 +11,29 @@ import emprendelink.model.Usuario;
 import emprendelink.model.enums.TipoPublicacion;
 import emprendelink.model.enums.TipoRol;
 import emprendelink.service.PublicacionService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
+@ApplicationScoped
+@Transactional
 public class PublicacionServiceImpl
         implements PublicacionService {
+
+    private static final int MAX_NOMBRE = 150;
+    private static final BigDecimal PRECIO_MAXIMO =
+            new BigDecimal("99999999.99");
 
     private final PublicacionDAO publicacionDAO;
     private final EmprendimientoDAO emprendimientoDAO;
     private final CategoriaDAO categoriaDAO;
     private final UsuarioDAO usuarioDAO;
 
+    @Inject
     public PublicacionServiceImpl(
             PublicacionDAO publicacionDAO,
             EmprendimientoDAO emprendimientoDAO,
@@ -38,6 +48,7 @@ public class PublicacionServiceImpl
 
     @Override
     public List<Publicacion> listarActivas() {
+
         return publicacionDAO.listarTodos()
                 .stream()
                 .filter(this::esVisible)
@@ -123,6 +134,7 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
+        validarEmprendedorActivo(idPropietario);
         validarDatos(tipo, nombre, precio, stock);
 
         Emprendimiento emprendimiento =
@@ -145,9 +157,9 @@ public class PublicacionServiceImpl
                 categoria,
                 tipo,
                 nombre.trim(),
-                descripcion,
+                normalizarOpcional(descripcion),
                 precio,
-                stock == null ? 0 : stock
+                normalizarStock(tipo, stock)
         );
 
         publicacionDAO.crear(publicacion);
@@ -165,6 +177,7 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
+        validarEmprendedorActivo(idPropietario);
         validarDatos(tipo, nombre, precio, stock);
 
         Publicacion publicacion =
@@ -191,7 +204,7 @@ public class PublicacionServiceImpl
                 emprendimiento.getIdEmprendimiento())) {
 
             throw new IllegalArgumentException(
-                    "No se permite trasladar la publicación."
+                    "No se permite trasladar la publicación a otro emprendimiento."
             );
         }
 
@@ -201,9 +214,13 @@ public class PublicacionServiceImpl
         publicacion.setCategoria(categoria);
         publicacion.setTipo(tipo);
         publicacion.setNombre(nombre.trim());
-        publicacion.setDescripcion(descripcion);
+        publicacion.setDescripcion(
+                normalizarOpcional(descripcion)
+        );
         publicacion.setPrecio(precio);
-        publicacion.setStock(stock == null ? 0 : stock);
+        publicacion.setStock(
+                normalizarStock(tipo, stock)
+        );
 
         if (!publicacionDAO.actualizar(publicacion)) {
             throw new IllegalStateException(
@@ -218,23 +235,8 @@ public class PublicacionServiceImpl
             Integer idPublicacion,
             boolean activo) {
 
-        Usuario administrador = usuarioDAO.buscarPorId(
-                idUsuario
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El usuario no existe."
-                )
-        );
-
-        if (!administrador.isActivo()
-                || administrador.getRol() == null
-                || administrador.getRol().getNombre()
-                != TipoRol.ROLE_ADMIN) {
-
-            throw new IllegalArgumentException(
-                    "Se requieren permisos de administrador."
-            );
-        }
+        Usuario usuario =
+                obtenerUsuarioActivo(idUsuario);
 
         Publicacion publicacion =
                 publicacionDAO.buscarPorId(
@@ -245,11 +247,73 @@ public class PublicacionServiceImpl
                         )
                 );
 
+        TipoRol rol = usuario.getRol() != null
+                ? usuario.getRol().getNombre()
+                : null;
+
+        boolean esAdmin =
+                rol == TipoRol.ROLE_ADMIN;
+
+        boolean esPropietario =
+                rol == TipoRol.ROLE_EMPRENDEDOR
+                        && perteneceA(
+                        publicacion.getEmprendimiento(),
+                        usuario.getIdUsuario()
+                );
+
+        if (!esAdmin && !esPropietario) {
+            throw new IllegalArgumentException(
+                    "No tienes permiso para cambiar esta publicación."
+            );
+        }
+
         publicacion.setActivo(activo);
 
         if (!publicacionDAO.actualizar(publicacion)) {
             throw new IllegalStateException(
                     "No se pudo cambiar el estado."
+            );
+        }
+    }
+
+    private Usuario obtenerUsuarioActivo(
+            Integer idUsuario) {
+
+        if (idUsuario == null) {
+            throw new IllegalArgumentException(
+                    "El usuario es obligatorio."
+            );
+        }
+
+        Usuario usuario = usuarioDAO.buscarPorId(
+                idUsuario
+        ).orElseThrow(() ->
+                new IllegalArgumentException(
+                        "El usuario no existe."
+                )
+        );
+
+        if (!usuario.isActivo()) {
+            throw new IllegalArgumentException(
+                    "El usuario está inactivo."
+            );
+        }
+
+        return usuario;
+    }
+
+    private void validarEmprendedorActivo(
+            Integer idUsuario) {
+
+        Usuario usuario =
+                obtenerUsuarioActivo(idUsuario);
+
+        if (usuario.getRol() == null
+                || usuario.getRol().getNombre()
+                != TipoRol.ROLE_EMPRENDEDOR) {
+
+            throw new IllegalArgumentException(
+                    "Se requiere una cuenta de emprendedor."
             );
         }
     }
@@ -274,7 +338,10 @@ public class PublicacionServiceImpl
                         )
                 );
 
-        if (!perteneceA(emprendimiento, idPropietario)) {
+        if (!perteneceA(
+                emprendimiento,
+                idPropietario)) {
+
             throw new IllegalArgumentException(
                     "El emprendimiento no te pertenece."
             );
@@ -322,11 +389,14 @@ public class PublicacionServiceImpl
         );
     }
 
-    private boolean esVisible(Publicacion publicacion) {
+    private boolean esVisible(
+            Publicacion publicacion) {
+
         if (publicacion == null
                 || !publicacion.isActivo()
                 || publicacion.getCategoria() == null
                 || !publicacion.getCategoria().isActivo()) {
+
             return false;
         }
 
@@ -345,16 +415,60 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
-        if (tipo == null
-                || nombre == null
-                || nombre.isBlank()
-                || precio == null
-                || precio.signum() < 0
-                || (stock != null && stock < 0)) {
-
+        if (tipo == null) {
             throw new IllegalArgumentException(
-                    "Los datos de la publicación son inválidos."
+                    "Seleccione el tipo de publicación."
             );
         }
+
+        if (nombre == null
+                || nombre.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El nombre es obligatorio."
+            );
+        }
+
+        if (nombre.trim().length() > MAX_NOMBRE) {
+            throw new IllegalArgumentException(
+                    "El nombre no puede superar 150 caracteres."
+            );
+        }
+
+        if (precio == null
+                || precio.signum() < 0
+                || precio.compareTo(PRECIO_MAXIMO) > 0
+                || precio.stripTrailingZeros().scale() > 2) {
+
+            throw new IllegalArgumentException(
+                    "El precio debe estar entre 0.00 y 99999999.99 con máximo 2 decimales."
+            );
+        }
+
+        if (stock != null && stock < 0) {
+            throw new IllegalArgumentException(
+                    "El stock no puede ser negativo."
+            );
+        }
+    }
+
+    private Integer normalizarStock(
+            TipoPublicacion tipo,
+            Integer stock) {
+
+        if (tipo == TipoPublicacion.SERVICIO) {
+            return 0;
+        }
+
+        return stock == null ? 0 : stock;
+    }
+
+    private String normalizarOpcional(
+            String valor) {
+
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+
+        return valor.trim();
     }
 }
