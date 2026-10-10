@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+    <title>Mis publicaciones - EmprendeLink</title>
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+</h:head>
+
+<h:body>
+
+<main>
+
+    <h1>Mis publicaciones</h1>
+
+    <p>
+        <a href="#{request.contextPath}/inicio.xhtml">
+            Volver al inicio
+        </a>
+    </p>
+
+    <h:form id="gestionForm">
+
+        <h:messages id="mensajes"/>
+
+        <h:inputHidden
+                value="#{publicacionBean.idPublicacion}"/>
+
+        <h2>
+            <h:outputText
+                    value="#{publicacionBean.editando ? 'Editar publicación' : 'Nueva publicación'}"/>
+        </h2>
+
+        <h:outputLabel
+                for="emprendimiento"
+                value="Emprendimiento"/>
+
+        <h:selectOneMenu
+                id="emprendimiento"
+                value="#{publicacionBean.idEmprendimiento}"
+                required="true"
+                requiredMessage="Seleccione un emprendimiento.">
+
+            <f:selectItem
+                    itemLabel="Seleccione..."
+                    itemValue="#{null}"
+                    noSelectionOption="true"/>
+
+            <f:selectItems
+                    value="#{publicacionBean.emprendimientosPropios}"
+                    var="e"
+                    itemValue="#{e.idEmprendimiento}"
+                    itemLabel="#{e.nombre}"/>
+
+        </h:selectOneMenu>
+
+        <h:message for="emprendimiento"/>
+
+        <br/><br/>
+
+        <h:outputLabel
+                for="categoria"
+                value="Categoría"/>
+
+        <h:selectOneMenu
+                id="categoria"
+                value="#{publicacionBean.idCategoria}"
+                required="true"
+                requiredMessage="Seleccione una categoría.">
+
+            <f:selectItem
+                    itemLabel="Seleccione..."
+                    itemValue="#{null}"
+                    noSelectionOption="true"/>
+
+            <f:selectItems
+                    value="#{publicacionBean.categoriasActivas}"
+                    var="c"
+                    itemValue="#{c.idCategoria}"
+                    itemLabel="#{c.nombre}"/>
+
+        </h:selectOneMenu>
+
+        <h:message for="categoria"/>
+
+        <br/><br/>
+
+        <h:outputLabel
+                for="tipo"
+                value="Tipo"/>
+
+        <h:selectOneMenu
+                id="tipo"
+                value="#{publicacionBean.tipo}">
+
+            <f:selectItems
+                    value="#{publicacionBean.tipos}"
+                    var="tipo"
+                    itemValue="#{tipo}"
+                    itemLabel="#{tipo}"/>
+
+            <f:ajax
+                    execute="@this"
+                    render="stockPanel"/>
+
+        </h:selectOneMenu>
+
+        <br/><br/>
+
+        <h:outputLabel
+                for="nombre"
+                value="Nombre"/>
+
+        <h:inputText
+                id="nombre"
+                value="#{publicacionBean.nombre}"
+                required="true"
+                requiredMessage="El nombre es obligatorio."
+                maxlength="150"/>
+
+        <h:message for="nombre"/>
+
+        <br/><br/>
+
+        <h:outputLabel
+                for="descripcion"
+                value="Descripción"/>
+
+        <h:inputTextarea
+                id="descripcion"
+                value="#{publicacionBean.descripcion}"
+                rows="5"
+                cols="50"/>
+
+        <br/><br/>
+
+        <h:outputLabel
+                for="precio"
+                value="Precio"/>
+
+        <h:inputText
+                id="precio"
+                value="#{publicacionBean.precio}"
+                required="true"
+                requiredMessage="El precio es obligatorio.">
+
+            <f:convertNumber
+                    type="number"
+                    maxFractionDigits="2"/>
+
+        </h:inputText>
+
+        <h:message for="precio"/>
+
+        <br/><br/>
+
+        <h:panelGroup
+                id="stockPanel"
+                layout="block">
+
+            <h:outputLabel
+                    for="stock"
+                    value="Stock"/>
+
+            <h:inputText
+                    id="stock"
+                    value="#{publicacionBean.stock}"
+                    disabled="#{publicacionBean.servicio}"/>
+
+            <h:outputText
+                    rendered="#{publicacionBean.servicio}"
+                    value=" Para servicios el stock se guarda en 0."/>
+
+        </h:panelGroup>
+
+        <br/>
+
+        <h:commandButton
+                value="#{publicacionBean.editando ? 'Guardar cambios' : 'Crear publicación'}"
+                action="#{publicacionBean.guardar}">
+
+            <f:ajax
+                    execute="@form"
+                    render="@form"/>
+
+        </h:commandButton>
+
+        <h:commandButton
+                value="Cancelar edición"
+                action="#{publicacionBean.cancelarEdicion}"
+                immediate="true"
+                rendered="#{publicacionBean.editando}">
+
+            <f:ajax
+                    execute="@this"
+                    render="@form"/>
+
+        </h:commandButton>
+
+        <hr/>
+
+        <h2>Publicaciones registradas</h2>
+
+        <h:dataTable
+                id="tabla"
+                value="#{publicacionBean.publicacionesPropias}"
+                var="p"
+                border="1">
+
+            <h:column>
+                <f:facet name="header">ID</f:facet>
+                #{p.idPublicacion}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Nombre</f:facet>
+                #{p.nombre}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Tipo</f:facet>
+                #{p.tipo}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Categoría</f:facet>
+                #{p.categoria.nombre}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Emprendimiento</f:facet>
+                #{p.emprendimiento.nombre}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Precio</f:facet>
+                <h:outputText value="#{p.precio}">
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+                </h:outputText>
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Stock</f:facet>
+                #{p.stock}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Estado</f:facet>
+                #{p.activo ? 'Activa' : 'Inactiva'}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Acciones</f:facet>
+
+                <h:commandButton
+                        value="Editar"
+                        action="#{publicacionBean.editar(p.idPublicacion)}"
+                        immediate="true">
+
+                    <f:ajax
+                            execute="@this"
+                            render="@form"/>
+
+                </h:commandButton>
+
+                <h:commandButton
+                        value="#{p.activo ? 'Desactivar' : 'Activar'}"
+                        action="#{publicacionBean.alternarEstado(p.idPublicacion, p.activo)}"
+                        immediate="true">
+
+                    <f:ajax
+                            execute="@this"
+                            render="@form"/>
+
+                </h:commandButton>
+
+            </h:column>
+
+        </h:dataTable>
+
+    </h:form>
+
+</main>
+
+</h:body>
+
+</html>
