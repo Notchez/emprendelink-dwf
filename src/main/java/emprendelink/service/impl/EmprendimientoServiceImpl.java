@@ -6,36 +6,58 @@ import emprendelink.model.Emprendimiento;
 import emprendelink.model.Usuario;
 import emprendelink.model.enums.TipoRol;
 import emprendelink.service.EmprendimientoService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 
+@ApplicationScoped
+@Transactional
 public class EmprendimientoServiceImpl
         implements EmprendimientoService {
+
+    private static final int MAX_NOMBRE = 120;
+    private static final int MAX_CONTACTO = 120;
 
     private final EmprendimientoDAO emprendimientoDAO;
     private final UsuarioDAO usuarioDAO;
 
+    @Inject
     public EmprendimientoServiceImpl(
             EmprendimientoDAO emprendimientoDAO,
             UsuarioDAO usuarioDAO) {
 
-        this.emprendimientoDAO = emprendimientoDAO;
-        this.usuarioDAO = usuarioDAO;
+        this.emprendimientoDAO =
+                emprendimientoDAO;
+
+        this.usuarioDAO =
+                usuarioDAO;
     }
 
     @Override
     public List<Emprendimiento> listarActivos() {
-        return emprendimientoDAO.listarTodos()
+
+        return emprendimientoDAO
+                .listarTodos()
                 .stream()
-                .filter(Emprendimiento::isActivo)
-                .filter(e -> e.getPropietario() != null)
-                .filter(e -> e.getPropietario().isActivo())
+                .filter(
+                        Emprendimiento::isActivo
+                )
+                .filter(e ->
+                        e.getPropietario() != null
+                )
+                .filter(e ->
+                        e.getPropietario()
+                                .isActivo()
+                )
                 .toList();
     }
 
     @Override
     public List<Emprendimiento> listarTodos() {
+
         return emprendimientoDAO.listarTodos();
     }
 
@@ -44,14 +66,16 @@ public class EmprendimientoServiceImpl
             Integer idPropietario) {
 
         if (idPropietario == null) {
+
             throw new IllegalArgumentException(
                     "El propietario es obligatorio."
             );
         }
 
-        return emprendimientoDAO.listarPorPropietario(
-                idPropietario
-        );
+        return emprendimientoDAO
+                .listarPorPropietario(
+                        idPropietario
+                );
     }
 
     @Override
@@ -63,14 +87,19 @@ public class EmprendimientoServiceImpl
         }
 
         Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
-                        idEmprendimiento
-                ).orElse(null);
+                emprendimientoDAO
+                        .buscarPorId(
+                                idEmprendimiento
+                        )
+                        .orElse(null);
 
         if (emprendimiento == null
                 || !emprendimiento.isActivo()
-                || emprendimiento.getPropietario() == null
-                || !emprendimiento.getPropietario().isActivo()) {
+                || emprendimiento
+                .getPropietario() == null
+                || !emprendimiento
+                .getPropietario()
+                .isActivo()) {
 
             return null;
         }
@@ -85,20 +114,26 @@ public class EmprendimientoServiceImpl
 
         if (idEmprendimiento == null
                 || idPropietario == null) {
+
             return null;
         }
 
         Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
-                        idEmprendimiento
-                ).orElse(null);
+                emprendimientoDAO
+                        .buscarPorId(
+                                idEmprendimiento
+                        )
+                        .orElse(null);
 
         if (emprendimiento == null
-                || emprendimiento.getPropietario() == null
+                || emprendimiento
+                .getPropietario() == null
                 || !Objects.equals(
-                emprendimiento.getPropietario()
+                emprendimiento
+                        .getPropietario()
                         .getIdUsuario(),
-                idPropietario)) {
+                idPropietario
+        )) {
 
             return null;
         }
@@ -113,35 +148,31 @@ public class EmprendimientoServiceImpl
             String descripcion,
             String contacto) {
 
-        validarNombre(nombre);
+        String nombreNormalizado =
+                validarYNormalizarNombre(
+                        nombre
+                );
 
-        Usuario propietario = usuarioDAO.buscarPorId(
-                idPropietario
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El propietario no existe."
-                )
-        );
-
-        if (!propietario.isActivo()
-                || propietario.getRol() == null
-                || propietario.getRol().getNombre()
-                != TipoRol.ROLE_EMPRENDEDOR) {
-
-            throw new IllegalArgumentException(
-                    "El usuario no puede crear emprendimientos."
-            );
-        }
+        Usuario propietario =
+                obtenerEmprendedorActivo(
+                        idPropietario
+                );
 
         Emprendimiento emprendimiento =
                 new Emprendimiento(
                         propietario,
-                        nombre.trim(),
-                        descripcion,
-                        contacto
+                        nombreNormalizado,
+                        normalizarOpcional(
+                                descripcion
+                        ),
+                        normalizarContacto(
+                                contacto
+                        )
                 );
 
-        emprendimientoDAO.crear(emprendimiento);
+        emprendimientoDAO.crear(
+                emprendimiento
+        );
     }
 
     @Override
@@ -152,7 +183,14 @@ public class EmprendimientoServiceImpl
             String descripcion,
             String contacto) {
 
-        validarNombre(nombre);
+        obtenerEmprendedorActivo(
+                idPropietario
+        );
+
+        String nombreNormalizado =
+                validarYNormalizarNombre(
+                        nombre
+                );
 
         Emprendimiento emprendimiento =
                 buscarPropioPorId(
@@ -161,16 +199,32 @@ public class EmprendimientoServiceImpl
                 );
 
         if (emprendimiento == null) {
+
             throw new IllegalArgumentException(
                     "El emprendimiento no existe o no te pertenece."
             );
         }
 
-        emprendimiento.setNombre(nombre.trim());
-        emprendimiento.setDescripcion(descripcion);
-        emprendimiento.setContacto(contacto);
+        emprendimiento.setNombre(
+                nombreNormalizado
+        );
 
-        if (!emprendimientoDAO.actualizar(emprendimiento)) {
+        emprendimiento.setDescripcion(
+                normalizarOpcional(
+                        descripcion
+                )
+        );
+
+        emprendimiento.setContacto(
+                normalizarContacto(
+                        contacto
+                )
+        );
+
+        if (!emprendimientoDAO.actualizar(
+                emprendimiento
+        )) {
+
             throw new IllegalStateException(
                     "No se pudo actualizar el emprendimiento."
             );
@@ -183,17 +237,22 @@ public class EmprendimientoServiceImpl
             Integer idEmprendimiento,
             boolean activo) {
 
-        Usuario administrador = usuarioDAO.buscarPorId(
-                idUsuario
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El usuario no existe."
-                )
-        );
+        Usuario administrador =
+                usuarioDAO
+                        .buscarPorId(
+                                idUsuario
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "El usuario no existe."
+                                )
+                        );
 
         if (!administrador.isActivo()
                 || administrador.getRol() == null
-                || administrador.getRol().getNombre()
+                || administrador
+                .getRol()
+                .getNombre()
                 != TipoRol.ROLE_ADMIN) {
 
             throw new IllegalArgumentException(
@@ -202,28 +261,120 @@ public class EmprendimientoServiceImpl
         }
 
         Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
-                        idEmprendimiento
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El emprendimiento no existe."
+                emprendimientoDAO
+                        .buscarPorId(
+                                idEmprendimiento
                         )
-                );
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "El emprendimiento no existe."
+                                )
+                        );
 
-        emprendimiento.setActivo(activo);
+        emprendimiento.setActivo(
+                activo
+        );
 
-        if (!emprendimientoDAO.actualizar(emprendimiento)) {
+        if (!emprendimientoDAO.actualizar(
+                emprendimiento
+        )) {
+
             throw new IllegalStateException(
                     "No se pudo cambiar el estado."
             );
         }
     }
 
-    private void validarNombre(String nombre) {
-        if (nombre == null || nombre.isBlank()) {
+    private Usuario obtenerEmprendedorActivo(
+            Integer idUsuario) {
+
+        if (idUsuario == null) {
+
+            throw new IllegalArgumentException(
+                    "El propietario es obligatorio."
+            );
+        }
+
+        Usuario usuario =
+                usuarioDAO
+                        .buscarPorId(
+                                idUsuario
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "El propietario no existe."
+                                )
+                        );
+
+        if (!usuario.isActivo()
+                || usuario.getRol() == null
+                || usuario
+                .getRol()
+                .getNombre()
+                != TipoRol.ROLE_EMPRENDEDOR) {
+
+            throw new IllegalArgumentException(
+                    "El usuario no puede administrar emprendimientos."
+            );
+        }
+
+        return usuario;
+    }
+
+    private String validarYNormalizarNombre(
+            String nombre) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
             throw new IllegalArgumentException(
                     "El nombre del emprendimiento es obligatorio."
             );
         }
+
+        String normalizado =
+                nombre.trim();
+
+        if (normalizado.length()
+                > MAX_NOMBRE) {
+
+            throw new IllegalArgumentException(
+                    "El nombre no puede superar 120 caracteres."
+            );
+        }
+
+        return normalizado;
+    }
+
+    private String normalizarContacto(
+            String contacto) {
+
+        String normalizado =
+                normalizarOpcional(
+                        contacto
+                );
+
+        if (normalizado != null
+                && normalizado.length()
+                > MAX_CONTACTO) {
+
+            throw new IllegalArgumentException(
+                    "El contacto no puede superar 120 caracteres."
+            );
+        }
+
+        return normalizado;
+    }
+
+    private String normalizarOpcional(
+            String valor) {
+
+        if (valor == null
+                || valor.isBlank()) {
+
+            return null;
+        }
+
+        return valor.trim();
     }
 }
