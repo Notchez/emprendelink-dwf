@@ -10,14 +10,33 @@
             name="emprendelinkPU"
             transaction-type="JTA">
 
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <provider>
+            org.eclipse.persistence.jpa.PersistenceProvider
+        </provider>
 
-        <jta-data-source>jdbc/EmprendeLinkDS</jta-data-source>
+        <jta-data-source>
+            jdbc/EmprendeLinkDS
+        </jta-data-source>
 
-        <class>emprendelink.persistence.jpa.entity.RolEntity</class>
-        <class>emprendelink.persistence.jpa.entity.UsuarioEntity</class>
+        <class>
+            emprendelink.persistence.jpa.entity.RolEntity
+        </class>
 
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <class>
+            emprendelink.persistence.jpa.entity.UsuarioEntity
+        </class>
+
+        <class>
+            emprendelink.persistence.jpa.entity.CategoriaEntity
+        </class>
+
+        <class>
+            emprendelink.persistence.jpa.entity.EmprendimientoEntity
+        </class>
+
+        <exclude-unlisted-classes>
+            false
+        </exclude-unlisted-classes>
 
     </persistence-unit>
 
