@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+
+    <title>
+        Pedidos recibidos - EmprendeLink
+    </title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h1>Pedidos recibidos</h1>
+
+        <p>
+            <a href="#{request.contextPath}/inicio.xhtml">
+                Volver al inicio
+            </a>
+        </p>
+
+        <h:form id="pedidosForm">
+
+            <h:messages id="mensajes"/>
+
+            <h:dataTable
+                    id="tabla"
+                    value="#{pedidoBean.pedidosRecibidos}"
+                    var="p"
+                    border="1">
+
+                <h:column>
+
+                    <f:facet name="header">
+                        ID
+                    </f:facet>
+
+                    #{p.idPedido}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Cliente
+                    </f:facet>
+
+                    #{p.cliente.nombre}
+                    #{p.cliente.apellido}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Emprendimiento
+                    </f:facet>
+
+                    #{p.emprendimiento.nombre}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Total
+                    </f:facet>
+
+                    <h:outputText value="#{p.total}">
+
+                        <f:convertNumber
+                                type="currency"
+                                currencySymbol="$"/>
+
+                    </h:outputText>
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Estado
+                    </f:facet>
+
+                    #{pedidoBean.etiquetaEstado(p.estado)}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Detalle
+                    </f:facet>
+
+                    <h:link
+                            outcome="/pedidos/detalle.xhtml"
+                            value="Ver detalle">
+
+                        <f:param
+                                name="id"
+                                value="#{p.idPedido}"/>
+
+                    </h:link>
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Acciones
+                    </f:facet>
+
+                    <h:commandButton
+                            value="Confirmar"
+                            rendered="#{pedidoBean.puedeConfirmar(p)}"
+                            action="#{pedidoBean.confirmar(p.idPedido)}">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                    <h:commandButton
+                            value="En camino"
+                            rendered="#{pedidoBean.puedeIniciarProceso(p)}"
+                            action="#{pedidoBean.iniciarProceso(p.idPedido)}">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                    <h:commandButton
+                            value="Entregado"
+                            rendered="#{pedidoBean.puedeCompletar(p)}"
+                            action="#{pedidoBean.completar(p.idPedido)}">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                    <h:commandButton
+                            value="Cancelar"
+                            rendered="#{pedidoBean.puedeCancelar(p)}"
+                            action="#{pedidoBean.cancelar(p.idPedido)}">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                </h:column>
+
+            </h:dataTable>
+
+        </h:form>
+
+    </main>
+
+</h:body>
+
+</html>

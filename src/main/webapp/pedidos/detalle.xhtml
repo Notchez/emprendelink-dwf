@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<f:metadata>
+
+    <f:viewParam
+            name="id"
+            value="#{pedidoBean.idPedido}"/>
+
+    <f:viewAction
+            action="#{pedidoBean.cargarDetalle}"
+            onPostback="false"/>
+
+</f:metadata>
+
+<h:head>
+
+    <title>
+        Detalle del pedido - EmprendeLink
+    </title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h:panelGroup
+                rendered="#{not empty pedidoBean.detalle}">
+
+            <h1>
+                Pedido ##{pedidoBean.detalle.idPedido}
+            </h1>
+
+            <p>
+                Estado:
+                #{pedidoBean.etiquetaEstado(
+                        pedidoBean.detalle.estado
+                        )}
+            </p>
+
+            <p>
+                Cliente:
+                #{pedidoBean.detalle.cliente.nombre}
+                #{pedidoBean.detalle.cliente.apellido}
+            </p>
+
+            <p>
+                Emprendimiento:
+                #{pedidoBean.detalle.emprendimiento.nombre}
+            </p>
+
+            <p>
+                Observaciones:
+                #{empty pedidoBean.detalle.observaciones
+                        ? 'Sin observaciones'
+                        : pedidoBean.detalle.observaciones}
+            </p>
+
+            <h2>Productos / servicios</h2>
+
+            <h:dataTable
+                    value="#{pedidoBean.detalle.detalles}"
+                    var="d"
+                    border="1">
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Publicación
+                    </f:facet>
+
+                    #{d.publicacion.nombre}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Cantidad
+                    </f:facet>
+
+                    #{d.cantidad}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Precio unitario
+                    </f:facet>
+
+                    <h:outputText
+                            value="#{d.precioUnitario}">
+
+                        <f:convertNumber
+                                type="currency"
+                                currencySymbol="$"/>
+
+                    </h:outputText>
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Subtotal
+                    </f:facet>
+
+                    <h:outputText
+                            value="#{d.subtotal}">
+
+                        <f:convertNumber
+                                type="currency"
+                                currencySymbol="$"/>
+
+                    </h:outputText>
+
+                </h:column>
+
+            </h:dataTable>
+
+            <p>
+
+                <strong>Total:</strong>
+
+                <h:outputText
+                        value="#{pedidoBean.detalle.total}">
+
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+
+                </h:outputText>
+
+            </p>
+
+        </h:panelGroup>
+
+        <p>
+            <a href="#{request.contextPath}/inicio.xhtml">
+                Volver al inicio
+            </a>
+        </p>
+
+    </main>
+
+</h:body>
+
+</html>
