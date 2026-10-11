@@ -34,6 +34,10 @@
             emprendelink.persistence.jpa.entity.EmprendimientoEntity
         </class>
 
+        <class>
+            emprendelink.persistence.jpa.entity.PublicacionEntity
+        </class>
+
         <exclude-unlisted-classes>
             false
         </exclude-unlisted-classes>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+    <title>Administrar publicaciones - EmprendeLink</title>
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+</h:head>
+
+<h:body>
+
+<main>
+
+    <h1>Administrar publicaciones</h1>
+
+    <p>
+        <a href="#{request.contextPath}/admin/usuarios.xhtml">
+            Volver a usuarios
+        </a>
+    </p>
+
+    <h:form id="adminPublicacionesForm">
+
+        <h:messages id="mensajes"/>
+
+        <h:dataTable
+                id="tabla"
+                value="#{publicacionBean.publicacionesAdmin}"
+                var="p"
+                border="1">
+
+            <h:column>
+                <f:facet name="header">ID</f:facet>
+                #{p.idPublicacion}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Nombre</f:facet>
+                #{p.nombre}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Emprendimiento</f:facet>
+                #{p.emprendimiento.nombre}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Propietario</f:facet>
+                #{p.emprendimiento.propietario.nombre}
+                #{p.emprendimiento.propietario.apellido}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Categoría</f:facet>
+                #{p.categoria.nombre}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Estado</f:facet>
+                #{p.activo ? 'Activa' : 'Inactiva'}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Acción</f:facet>
+
+                <h:commandButton
+                        value="#{p.activo ? 'Desactivar' : 'Activar'}"
+                        action="#{publicacionBean.alternarEstado(p.idPublicacion, p.activo)}"
+                        immediate="true">
+
+                    <f:ajax
+                            execute="@this"
+                            render="@form"/>
+
+                </h:commandButton>
+
+            </h:column>
+
+        </h:dataTable>
+
+    </h:form>
+
+</main>
+
+</h:body>
+
+</html>
