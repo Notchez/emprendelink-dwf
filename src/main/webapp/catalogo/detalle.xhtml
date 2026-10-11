@@ -7,6 +7,7 @@
       xmlns:f="jakarta.faces.core">
 
 <f:metadata>
+
     <f:viewParam
             name="id"
             value="#{publicacionBean.idDetalle}"/>
@@ -14,69 +15,113 @@
     <f:viewAction
             action="#{publicacionBean.cargarDetalle}"
             onPostback="false"/>
+
 </f:metadata>
 
 <h:head>
-    <title>Detalle de publicación - EmprendeLink</title>
+
+    <title>
+        Detalle de publicación - EmprendeLink
+    </title>
+
     <link rel="stylesheet"
           href="#{request.contextPath}/css/estilos.css"/>
+
 </h:head>
 
 <h:body>
 
-<main>
-
-    <h:panelGroup
-            rendered="#{not empty publicacionBean.detalle}">
-
-        <h1>#{publicacionBean.detalle.nombre}</h1>
-
-        <p>
-            Tipo:
-            #{publicacionBean.detalle.tipo}
-        </p>
-
-        <p>
-            Categoría:
-            #{publicacionBean.detalle.categoria.nombre}
-        </p>
-
-        <p>
-            Emprendimiento:
-            #{publicacionBean.detalle.emprendimiento.nombre}
-        </p>
-
-        <p>
-            #{publicacionBean.detalle.descripcion}
-        </p>
-
-        <p>
-            Precio:
-            <h:outputText
-                    value="#{publicacionBean.detalle.precio}">
-                <f:convertNumber
-                        type="currency"
-                        currencySymbol="$"/>
-            </h:outputText>
-        </p>
+    <main>
 
         <h:panelGroup
-                rendered="#{publicacionBean.detalle.tipo eq 'PRODUCTO'}">
+                rendered="#{not empty publicacionBean.detalle}">
+
+            <h1>
+                #{publicacionBean.detalle.nombre}
+            </h1>
+
             <p>
-                Stock:
-                #{publicacionBean.detalle.stock}
+                Tipo:
+                #{publicacionBean.detalle.tipo}
             </p>
+
+            <p>
+                Categoría:
+                #{publicacionBean.detalle.categoria.nombre}
+            </p>
+
+            <p>
+                Emprendimiento:
+                #{publicacionBean.detalle.emprendimiento.nombre}
+            </p>
+
+            <p>
+                #{publicacionBean.detalle.descripcion}
+            </p>
+
+            <p>
+
+                Precio:
+
+                <h:outputText
+                        value="#{publicacionBean.detalle.precio}">
+
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+
+                </h:outputText>
+
+            </p>
+
+            <h:panelGroup
+                    rendered="#{publicacionBean.detalle.tipo eq 'PRODUCTO'}">
+
+                <p>
+                    Stock:
+                    #{publicacionBean.detalle.stock}
+                </p>
+
+            </h:panelGroup>
+
+            <h:panelGroup
+                    rendered="#{authBean.autenticado
+                and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+
+                <p>
+
+                    <h:link
+                            outcome="/pedidos/nuevo.xhtml"
+                            value="Realizar pedido">
+
+                        <f:param
+                                name="id"
+                                value="#{publicacionBean.detalle.idPublicacion}"/>
+
+                    </h:link>
+
+                </p>
+
+            </h:panelGroup>
+
+            <h:panelGroup
+                    rendered="#{not authBean.autenticado}">
+
+                <p>
+                    Inicia sesión como cliente para realizar un pedido.
+                </p>
+
+            </h:panelGroup>
+
         </h:panelGroup>
 
-    </h:panelGroup>
+        <p>
+            <a href="#{request.contextPath}/catalogo/index.xhtml">
+                Volver al catálogo
+            </a>
+        </p>
 
-    <p>
-        <a href="#{request.contextPath}/catalogo/index.xhtml">
-            Volver al catálogo
-        </a>
-    </p>
-
-</main>
+    </main>
 
 </h:body>
 
