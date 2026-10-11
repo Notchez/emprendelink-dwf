@@ -13,17 +13,24 @@ import emprendelink.model.enums.EstadoPedido;
 import emprendelink.model.enums.TipoPublicacion;
 import emprendelink.model.enums.TipoRol;
 import emprendelink.service.PedidoService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 
-public class PedidoServiceImpl implements PedidoService {
+@ApplicationScoped
+@Transactional
+public class PedidoServiceImpl
+        implements PedidoService {
 
     private final PedidoDAO pedidoDAO;
     private final UsuarioDAO usuarioDAO;
     private final EmprendimientoDAO emprendimientoDAO;
     private final PublicacionDAO publicacionDAO;
 
+    @Inject
     public PedidoServiceImpl(
             PedidoDAO pedidoDAO,
             UsuarioDAO usuarioDAO,
@@ -32,8 +39,10 @@ public class PedidoServiceImpl implements PedidoService {
 
         this.pedidoDAO = pedidoDAO;
         this.usuarioDAO = usuarioDAO;
-        this.emprendimientoDAO = emprendimientoDAO;
-        this.publicacionDAO = publicacionDAO;
+        this.emprendimientoDAO =
+                emprendimientoDAO;
+        this.publicacionDAO =
+                publicacionDAO;
     }
 
     @Override
@@ -45,7 +54,9 @@ public class PedidoServiceImpl implements PedidoService {
                 TipoRol.ROLE_CLIENTE
         );
 
-        return pedidoDAO.listarPorCliente(idCliente);
+        return pedidoDAO.listarPorCliente(
+                idCliente
+        );
     }
 
     @Override
@@ -59,10 +70,12 @@ public class PedidoServiceImpl implements PedidoService {
 
         return pedidoDAO.listarTodos()
                 .stream()
-                .filter(p -> perteneceAEmprendedor(
-                        p,
-                        idEmprendedor
-                ))
+                .filter(pedido ->
+                        perteneceAEmprendedor(
+                                pedido,
+                                idEmprendedor
+                        )
+                )
                 .toList();
     }
 
@@ -71,45 +84,60 @@ public class PedidoServiceImpl implements PedidoService {
             Integer idPedido,
             Integer idUsuario) {
 
-        if (idPedido == null || idUsuario == null) {
+        if (idPedido == null
+                || idUsuario == null) {
+
             return null;
         }
 
-        Usuario usuario = usuarioDAO.buscarPorId(
-                idUsuario
-        ).orElse(null);
+        Usuario usuario =
+                usuarioDAO.buscarPorId(
+                        idUsuario
+                ).orElse(null);
 
-        if (usuario == null || !usuario.isActivo()) {
+        if (usuario == null
+                || !usuario.isActivo()
+                || usuario.getRol() == null) {
+
             return null;
         }
 
-        Pedido pedido = pedidoDAO.buscarPorId(
-                idPedido
-        ).orElse(null);
+        Pedido pedido =
+                pedidoDAO.buscarPorId(
+                        idPedido
+                ).orElse(null);
 
         if (pedido == null) {
             return null;
         }
 
-        boolean esCliente = pedido.getCliente() != null
-                && Objects.equals(
-                pedido.getCliente().getIdUsuario(),
-                idUsuario
-        );
+        TipoRol rol =
+                usuario.getRol()
+                        .getNombre();
 
-        boolean esEmprendedor =
-                perteneceAEmprendedor(
-                        pedido,
-                        idUsuario
-                );
+        return switch (rol) {
 
-        boolean esAdministrador = usuario.getRol() != null
-                && usuario.getRol().getNombre()
-                == TipoRol.ROLE_ADMIN;
+            case ROLE_ADMIN ->
+                    pedido;
 
-        return esCliente || esEmprendedor || esAdministrador
-                ? pedido
-                : null;
+            case ROLE_CLIENTE ->
+                    pedido.getCliente() != null
+                            && Objects.equals(
+                            pedido.getCliente()
+                                    .getIdUsuario(),
+                            idUsuario
+                    )
+                            ? pedido
+                            : null;
+
+            case ROLE_EMPRENDEDOR ->
+                    perteneceAEmprendedor(
+                            pedido,
+                            idUsuario
+                    )
+                            ? pedido
+                            : null;
+        };
     }
 
     @Override
@@ -120,131 +148,107 @@ public class PedidoServiceImpl implements PedidoService {
             List<Integer> cantidades,
             String observaciones) {
 
-        Usuario cliente = requerirUsuarioActivo(
-                idCliente,
-                TipoRol.ROLE_CLIENTE
+        Usuario cliente =
+                requerirUsuarioActivo(
+                        idCliente,
+                        TipoRol.ROLE_CLIENTE
+                );
+
+        validarDatosPedido(
+                idEmprendimiento,
+                idsPublicacion,
+                cantidades
         );
 
-        if (idEmprendimiento == null
-                || idsPublicacion == null
-                || cantidades == null
-                || idsPublicacion.isEmpty()
-                || idsPublicacion.size() != cantidades.size()) {
-
-            throw new IllegalArgumentException(
-                    "Los datos del pedido son inválidos."
-            );
-        }
-
         Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
+                obtenerEmprendimientoDisponible(
                         idEmprendimiento
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El emprendimiento no existe."
+                );
+
+        Pedido pedido =
+                new Pedido(
+                        cliente,
+                        emprendimiento,
+                        normalizarObservaciones(
+                                observaciones
                         )
                 );
 
-        if (!emprendimiento.isActivo()
-                || emprendimiento.getPropietario() == null
-                || !emprendimiento.getPropietario().isActivo()) {
+        for (int i = 0;
+             i < idsPublicacion.size();
+             i++) {
 
-            throw new IllegalArgumentException(
-                    "El emprendimiento no está disponible."
+            Integer idPublicacion =
+                    idsPublicacion.get(i);
+
+            Integer cantidad =
+                    cantidades.get(i);
+
+            validarCantidad(
+                    idPublicacion,
+                    cantidad
             );
-        }
-
-        Pedido pedido = new Pedido(
-                cliente,
-                emprendimiento,
-                observaciones
-        );
-
-        for (int i = 0; i < idsPublicacion.size(); i++) {
-
-            Integer idPublicacion = idsPublicacion.get(i);
-            Integer cantidad = cantidades.get(i);
-
-            if (idPublicacion == null
-                    || cantidad == null
-                    || cantidad <= 0) {
-
-                throw new IllegalArgumentException(
-                        "Las cantidades del pedido son inválidas."
-                );
-            }
 
             Publicacion publicacion =
-                    publicacionDAO.buscarPorId(
-                            idPublicacion
-                    ).orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "Una publicación no existe."
-                            )
+                    obtenerPublicacionDisponible(
+                            idPublicacion,
+                            idEmprendimiento
                     );
 
-            if (!publicacion.isActivo()
-                    || publicacion.getEmprendimiento() == null
-                    || !Objects.equals(
-                    publicacion.getEmprendimiento()
-                            .getIdEmprendimiento(),
-                    idEmprendimiento)
-                    || publicacion.getCategoria() == null
-                    || !publicacion.getCategoria().isActivo()
-                    || publicacion.getPrecio() == null
-                    || publicacion.getPrecio().signum() < 0) {
-
-                throw new IllegalArgumentException(
-                        "Una publicación no está disponible."
-                );
-            }
-
-            if (publicacion.getTipo()
-                    == TipoPublicacion.PRODUCTO
-                    && (publicacion.getStock() == null
-                    || publicacion.getStock() < cantidad)) {
-
-                throw new IllegalArgumentException(
-                        "No hay existencias suficientes."
-                );
-            }
-
-            DetallePedido detalle = new DetallePedido(
+            validarStock(
                     publicacion,
-                    cantidad,
-                    publicacion.getPrecio()
+                    cantidad
             );
 
-            pedido.agregarDetalle(detalle);
+            DetallePedido detalle =
+                    new DetallePedido(
+                            publicacion,
+                            cantidad,
+                            publicacion.getPrecio()
+                    );
+
+            pedido.agregarDetalle(
+                    detalle
+            );
+
+            descontarStock(
+                    publicacion,
+                    cantidad
+            );
         }
 
-        pedidoDAO.crear(pedido);
+        pedidoDAO.crear(
+                pedido
+        );
     }
 
     @Override
     public void actualizarEstado(
             Integer idEmprendedor,
             Integer idPedido,
-            EstadoPedido estado) {
+            EstadoPedido nuevoEstado) {
 
         requerirUsuarioActivo(
                 idEmprendedor,
                 TipoRol.ROLE_EMPRENDEDOR
         );
 
-        if (idPedido == null || estado == null) {
+        if (idPedido == null
+                || nuevoEstado == null) {
+
             throw new IllegalArgumentException(
                     "El pedido y el estado son obligatorios."
             );
         }
 
-        Pedido pedido = pedidoDAO.buscarPorId(
-                idPedido
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El pedido no existe."
-                )
-        );
+        Pedido pedido =
+                pedidoDAO.buscarPorId(
+                        idPedido
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "El pedido no existe."
+                        )
+                );
 
         if (!perteneceAEmprendedor(
                 pedido,
@@ -255,9 +259,22 @@ public class PedidoServiceImpl implements PedidoService {
             );
         }
 
+        validarTransicion(
+                pedido.getEstado(),
+                nuevoEstado
+        );
+
+        if (nuevoEstado
+                == EstadoPedido.CANCELADO) {
+
+            restaurarStock(
+                    pedido
+            );
+        }
+
         if (!pedidoDAO.actualizarEstado(
                 idPedido,
-                estado)) {
+                nuevoEstado)) {
 
             throw new IllegalStateException(
                     "No se pudo actualizar el pedido."
@@ -275,17 +292,19 @@ public class PedidoServiceImpl implements PedidoService {
             );
         }
 
-        Usuario usuario = usuarioDAO.buscarPorId(
-                idUsuario
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El usuario no existe."
-                )
-        );
+        Usuario usuario =
+                usuarioDAO.buscarPorId(
+                        idUsuario
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "El usuario no existe."
+                        )
+                );
 
         if (!usuario.isActivo()
                 || usuario.getRol() == null
-                || usuario.getRol().getNombre()
+                || usuario.getRol()
+                .getNombre()
                 != rolEsperado) {
 
             throw new IllegalArgumentException(
@@ -296,19 +315,258 @@ public class PedidoServiceImpl implements PedidoService {
         return usuario;
     }
 
+    private Emprendimiento obtenerEmprendimientoDisponible(
+            Integer idEmprendimiento) {
+
+        Emprendimiento emprendimiento =
+                emprendimientoDAO.buscarPorId(
+                        idEmprendimiento
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "El emprendimiento no existe."
+                        )
+                );
+
+        if (!emprendimiento.isActivo()
+                || emprendimiento.getPropietario()
+                == null
+                || !emprendimiento
+                .getPropietario()
+                .isActivo()) {
+
+            throw new IllegalArgumentException(
+                    "El emprendimiento no está disponible."
+            );
+        }
+
+        return emprendimiento;
+    }
+
+    private Publicacion obtenerPublicacionDisponible(
+            Integer idPublicacion,
+            Integer idEmprendimiento) {
+
+        Publicacion publicacion =
+                publicacionDAO.buscarPorId(
+                        idPublicacion
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Una publicación no existe."
+                        )
+                );
+
+        boolean disponible =
+                publicacion.isActivo()
+                        && publicacion.getEmprendimiento()
+                        != null
+                        && Objects.equals(
+                        publicacion
+                                .getEmprendimiento()
+                                .getIdEmprendimiento(),
+                        idEmprendimiento
+                )
+                        && publicacion.getCategoria()
+                        != null
+                        && publicacion.getCategoria()
+                        .isActivo()
+                        && publicacion.getTipo()
+                        != null
+                        && publicacion.getPrecio()
+                        != null
+                        && publicacion.getPrecio()
+                        .signum() >= 0;
+
+        if (!disponible) {
+            throw new IllegalArgumentException(
+                    "Una publicación no está disponible."
+            );
+        }
+
+        return publicacion;
+    }
+
+    private void validarDatosPedido(
+            Integer idEmprendimiento,
+            List<Integer> idsPublicacion,
+            List<Integer> cantidades) {
+
+        if (idEmprendimiento == null
+                || idsPublicacion == null
+                || cantidades == null
+                || idsPublicacion.isEmpty()
+                || idsPublicacion.size()
+                != cantidades.size()) {
+
+            throw new IllegalArgumentException(
+                    "Los datos del pedido son inválidos."
+            );
+        }
+    }
+
+    private void validarCantidad(
+            Integer idPublicacion,
+            Integer cantidad) {
+
+        if (idPublicacion == null
+                || cantidad == null
+                || cantidad <= 0) {
+
+            throw new IllegalArgumentException(
+                    "Las cantidades del pedido son inválidas."
+            );
+        }
+    }
+
+    private void validarStock(
+            Publicacion publicacion,
+            Integer cantidad) {
+
+        if (publicacion.getTipo()
+                != TipoPublicacion.PRODUCTO) {
+
+            return;
+        }
+
+        if (publicacion.getStock() == null
+                || publicacion.getStock()
+                < cantidad) {
+
+            throw new IllegalArgumentException(
+                    "No hay existencias suficientes."
+            );
+        }
+    }
+
+    private void descontarStock(
+            Publicacion publicacion,
+            Integer cantidad) {
+
+        if (publicacion.getTipo()
+                != TipoPublicacion.PRODUCTO) {
+
+            return;
+        }
+
+        publicacion.setStock(
+                publicacion.getStock()
+                        - cantidad
+        );
+
+        if (!publicacionDAO.actualizar(
+                publicacion)) {
+
+            throw new IllegalStateException(
+                    "No se pudo actualizar el stock."
+            );
+        }
+    }
+
+    private void restaurarStock(
+            Pedido pedido) {
+
+        for (DetallePedido detalle
+                : pedido.getDetalles()) {
+
+            Publicacion publicacion =
+                    detalle.getPublicacion();
+
+            if (publicacion == null
+                    || publicacion.getTipo()
+                    != TipoPublicacion.PRODUCTO) {
+
+                continue;
+            }
+
+            int stockActual =
+                    publicacion.getStock() == null
+                            ? 0
+                            : publicacion.getStock();
+
+            publicacion.setStock(
+                    stockActual
+                            + detalle.getCantidad()
+            );
+
+            if (!publicacionDAO.actualizar(
+                    publicacion)) {
+
+                throw new IllegalStateException(
+                        "No se pudo restaurar el stock."
+                );
+            }
+        }
+    }
+
+    private void validarTransicion(
+            EstadoPedido actual,
+            EstadoPedido nuevo) {
+
+        if (actual == null) {
+            throw new IllegalStateException(
+                    "El pedido no tiene un estado válido."
+            );
+        }
+
+        boolean permitida =
+                switch (actual) {
+
+                    case PENDIENTE ->
+                            nuevo
+                                    == EstadoPedido.CONFIRMADO
+                                    || nuevo
+                                    == EstadoPedido.CANCELADO;
+
+                    case CONFIRMADO ->
+                            nuevo
+                                    == EstadoPedido.EN_PROCESO
+                                    || nuevo
+                                    == EstadoPedido.CANCELADO;
+
+                    case EN_PROCESO ->
+                            nuevo
+                                    == EstadoPedido.COMPLETADO
+                                    || nuevo
+                                    == EstadoPedido.CANCELADO;
+
+                    case COMPLETADO,
+                         CANCELADO ->
+                            false;
+                };
+
+        if (!permitida) {
+            throw new IllegalArgumentException(
+                    "La transición de estado no está permitida."
+            );
+        }
+    }
+
     private boolean perteneceAEmprendedor(
             Pedido pedido,
             Integer idEmprendedor) {
 
         return pedido != null
-                && pedido.getEmprendimiento() != null
                 && pedido.getEmprendimiento()
-                .getPropietario() != null
+                != null
+                && pedido.getEmprendimiento()
+                .getPropietario()
+                != null
                 && Objects.equals(
                 pedido.getEmprendimiento()
                         .getPropietario()
                         .getIdUsuario(),
                 idEmprendedor
         );
+    }
+
+    private String normalizarObservaciones(
+            String observaciones) {
+
+        if (observaciones == null
+                || observaciones.isBlank()) {
+
+            return null;
+        }
+
+        return observaciones.trim();
     }
 }
