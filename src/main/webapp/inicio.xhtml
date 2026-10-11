@@ -23,17 +23,77 @@
         <h1>EmprendeLink</h1>
 
         <p>
+
             Bienvenido,
+
             <strong>
                 #{authBean.usuario.nombre}
                 #{authBean.usuario.apellido}
             </strong>
+
         </p>
 
         <p>
             Rol:
             #{authBean.usuario.rol.nombre}
         </p>
+
+        <h:panelGroup
+                rendered="#{authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+
+            <h2>Cliente</h2>
+
+            <p>
+                <a href="#{request.contextPath}/catalogo/index.xhtml">
+                    Ver catálogo
+                </a>
+            </p>
+
+            <p>
+                <a href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
+                    Mis pedidos
+                </a>
+            </p>
+
+        </h:panelGroup>
+
+        <h:panelGroup
+                rendered="#{authBean.usuario.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
+
+            <h2>Emprendedor</h2>
+
+            <p>
+                <a href="#{request.contextPath}/publicaciones/index.xhtml">
+                    Mis publicaciones
+                </a>
+            </p>
+
+            <p>
+                <a href="#{request.contextPath}/pedidos/recibidos.xhtml">
+                    Pedidos recibidos
+                </a>
+            </p>
+
+        </h:panelGroup>
+
+        <h:panelGroup
+                rendered="#{authBean.usuario.rol.nombre eq 'ROLE_ADMIN'}">
+
+            <h2>Administración</h2>
+
+            <p>
+                <a href="#{request.contextPath}/admin/usuarios.xhtml">
+                    Administrar usuarios
+                </a>
+            </p>
+
+            <p>
+                <a href="#{request.contextPath}/admin/publicaciones.xhtml">
+                    Administrar publicaciones
+                </a>
+            </p>
+
+        </h:panelGroup>
 
         <h:form>
 
