@@ -38,6 +38,14 @@
             emprendelink.persistence.jpa.entity.PublicacionEntity
         </class>
 
+        <class>
+            emprendelink.persistence.jpa.entity.PedidoEntity
+        </class>
+
+        <class>
+            emprendelink.persistence.jpa.entity.DetallePedidoEntity
+        </class>
+
         <exclude-unlisted-classes>
             false
         </exclude-unlisted-classes>
