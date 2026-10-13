@@ -3,129 +3,145 @@
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html">
+      xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
+<ui:composition template="/WEB-INF/templates/base.xhtml">
 
-    <title>
+    <ui:define name="title">
         Inicio - EmprendeLink
-    </title>
+    </ui:define>
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+    <ui:define name="content">
 
-</h:head>
+        <section class="page-header">
 
-<h:body>
+            <div>
 
-    <main>
+                <div class="eyebrow">
+                    EmprendeLink
+                </div>
 
-        <h1>EmprendeLink</h1>
+                <h1>
+                    Hola, #{authBean.usuario.nombre}
+                </h1>
 
-        <p>
+                <p>
+                    Todo lo que necesitas está aquí.
+                </p>
 
-            Bienvenido,
+            </div>
 
-            <strong>
-                #{authBean.usuario.nombre}
-                #{authBean.usuario.apellido}
-            </strong>
+        </section>
 
-        </p>
+        <div class="dashboard-grid">
 
-        <p>
-            Rol:
-            #{authBean.usuario.rol.nombre}
-        </p>
+            <ui:fragment
+                    rendered="#{authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
 
-        <h:panelGroup
-                rendered="#{authBean.usuario.rol.nombre
-            eq 'ROLE_CLIENTE'}">
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/catalogo/index.xhtml">
 
-            <h2>Cliente</h2>
+                    <strong>Explorar</strong>
 
-            <p>
-                <a href="#{request.contextPath}/catalogo/index.xhtml">
-                    Ver catálogo
+                    <span>
+                        Descubre productos y servicios.
+                    </span>
+
                 </a>
-            </p>
 
-            <p>
-                <a href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
-                    Mis pedidos
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
+
+                    <strong>Mis pedidos</strong>
+
+                    <span>
+                        Revisa el estado de tus compras.
+                    </span>
+
                 </a>
-            </p>
 
-        </h:panelGroup>
+            </ui:fragment>
 
-        <h:panelGroup
-                rendered="#{authBean.usuario.rol.nombre
-            eq 'ROLE_EMPRENDEDOR'}">
+            <ui:fragment
+                    rendered="#{authBean.usuario.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
 
-            <h2>Emprendedor</h2>
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/emprendimientos/index.xhtml">
 
-            <p>
-                <a href="#{request.contextPath}/emprendimientos/index.xhtml">
-                    Mis emprendimientos
+                    <strong>Mis negocios</strong>
+
+                    <span>
+                        Administra tus emprendimientos.
+                    </span>
+
                 </a>
-            </p>
 
-            <p>
-                <a href="#{request.contextPath}/publicaciones/index.xhtml">
-                    Mis publicaciones
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/publicaciones/index.xhtml">
+
+                    <strong>Publicaciones</strong>
+
+                    <span>
+                        Gestiona productos y servicios.
+                    </span>
+
                 </a>
-            </p>
 
-            <p>
-                <a href="#{request.contextPath}/pedidos/recibidos.xhtml">
-                    Pedidos recibidos
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/pedidos/recibidos.xhtml">
+
+                    <strong>Pedidos</strong>
+
+                    <span>
+                        Revisa y procesa pedidos recibidos.
+                    </span>
+
                 </a>
-            </p>
 
-        </h:panelGroup>
+            </ui:fragment>
 
-        <h:panelGroup
-                rendered="#{authBean.usuario.rol.nombre
-            eq 'ROLE_ADMIN'}">
+            <ui:fragment
+                    rendered="#{authBean.usuario.rol.nombre eq 'ROLE_ADMIN'}">
 
-            <h2>Administración</h2>
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/admin/usuarios.xhtml">
 
-            <p>
-                <a href="#{request.contextPath}/admin/usuarios.xhtml">
-                    Administrar usuarios
+                    <strong>Usuarios</strong>
+
+                    <span>
+                        Gestiona cuentas de la plataforma.
+                    </span>
+
                 </a>
-            </p>
 
-            <p>
-                <a href="#{request.contextPath}/admin/categorias.xhtml">
-                    Administrar categorías
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/admin/categorias.xhtml">
+
+                    <strong>Categorías</strong>
+
+                    <span>
+                        Organiza el catálogo.
+                    </span>
+
                 </a>
-            </p>
 
-            <p>
-                <a href="#{request.contextPath}/admin/emprendimientos.xhtml">
-                    Administrar emprendimientos
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/admin/emprendimientos.xhtml">
+
+                    <strong>Negocios</strong>
+
+                    <span>
+                        Supervisa emprendimientos.
+                    </span>
+
                 </a>
-            </p>
 
-            <p>
-                <a href="#{request.contextPath}/admin/publicaciones.xhtml">
-                    Administrar publicaciones
-                </a>
-            </p>
+            </ui:fragment>
 
-        </h:panelGroup>
+        </div>
 
-        <h:form>
+    </ui:define>
 
-            <h:commandButton
-                    value="Cerrar sesión"
-                    action="#{authBean.cerrarSesion}"/>
-
-        </h:form>
-
-    </main>
-
-</h:body>
+</ui:composition>
 
 </html>

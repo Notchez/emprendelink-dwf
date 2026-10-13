@@ -4,122 +4,111 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
+<ui:composition template="/WEB-INF/templates/base.xhtml">
 
-    <title>
+    <ui:define name="title">
         Mis pedidos - EmprendeLink
-    </title>
+    </ui:define>
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+    <ui:define name="content">
 
-</h:head>
+        <div class="page-header">
 
-<h:body>
+            <div>
 
-    <main>
+                <div class="eyebrow">
+                    Tus compras
+                </div>
 
-        <h1>Mis pedidos</h1>
+                <h1>Mis pedidos</h1>
 
-        <p>
-            <a href="#{request.contextPath}/inicio.xhtml">
-                Volver al inicio
+                <p>
+                    Revisa el estado de tus pedidos.
+                </p>
+
+            </div>
+
+            <a class="btn btn-primary"
+               href="#{request.contextPath}/catalogo/index.xhtml">
+                Explorar
             </a>
-        </p>
 
-        <p>
-            <a href="#{request.contextPath}/catalogo/index.xhtml">
-                Ver catálogo
-            </a>
-        </p>
+        </div>
 
-        <h:messages/>
+        <h:messages styleClass="messages"/>
 
-        <h:dataTable
-                value="#{pedidoBean.misPedidos}"
-                var="p"
-                border="1">
+        <div class="order-list">
 
-            <h:column>
+            <ui:repeat
+                    value="#{pedidoBean.misPedidos}"
+                    var="p">
 
-                <f:facet name="header">
-                    ID
-                </f:facet>
+                <article class="order-card">
 
-                #{p.idPedido}
+                    <div class="order-top">
 
-            </h:column>
+                        <div>
 
-            <h:column>
+                            <h3>
+                                #{p.emprendimiento.nombre}
+                            </h3>
 
-                <f:facet name="header">
-                    Emprendimiento
-                </f:facet>
+                            <div class="order-meta">
+                                Pedido ##{p.idPedido}
+                            </div>
 
-                #{p.emprendimiento.nombre}
+                        </div>
 
-            </h:column>
+                        <span class="#{p.estado eq 'CANCELADO'
+                        ? 'status status-danger'
+                        : p.estado eq 'COMPLETADO'
+                        ? 'status status-success'
+                        : p.estado eq 'PENDIENTE'
+                        ? 'status status-pending'
+                        : 'status status-neutral'}">
 
-            <h:column>
+                            #{pedidoBean.etiquetaEstado(p.estado)}
 
-                <f:facet name="header">
-                    Total
-                </f:facet>
+                        </span>
 
-                <h:outputText value="#{p.total}">
+                    </div>
 
-                    <f:convertNumber
-                            type="currency"
-                            currencySymbol="$"/>
+                    <div class="order-footer">
 
-                </h:outputText>
+                        <h:outputText
+                                value="#{p.total}"
+                                styleClass="price">
 
-            </h:column>
+                            <f:convertNumber
+                                    type="currency"
+                                    currencySymbol="$"/>
 
-            <h:column>
+                        </h:outputText>
 
-                <f:facet name="header">
-                    Estado
-                </f:facet>
+                        <h:link
+                                outcome="/pedidos/detalle.xhtml"
+                                value="Ver detalle"
+                                styleClass="btn btn-secondary btn-small">
 
-                #{pedidoBean.etiquetaEstado(p.estado)}
+                            <f:param
+                                    name="id"
+                                    value="#{p.idPedido}"/>
 
-            </h:column>
+                        </h:link>
 
-            <h:column>
+                    </div>
 
-                <f:facet name="header">
-                    Fecha
-                </f:facet>
+                </article>
 
-                #{p.fechaPedido}
+            </ui:repeat>
 
-            </h:column>
+        </div>
 
-            <h:column>
+    </ui:define>
 
-                <f:facet name="header">
-                    Detalle
-                </f:facet>
-
-                <h:link
-                        outcome="/pedidos/detalle.xhtml"
-                        value="Ver pedido">
-
-                    <f:param
-                            name="id"
-                            value="#{p.idPedido}"/>
-
-                </h:link>
-
-            </h:column>
-
-        </h:dataTable>
-
-    </main>
-
-</h:body>
+</ui:composition>
 
 </html>

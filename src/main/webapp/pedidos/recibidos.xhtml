@@ -4,174 +4,189 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
+<ui:composition template="/WEB-INF/templates/base.xhtml">
 
-    <title>
+    <ui:define name="title">
         Pedidos recibidos - EmprendeLink
-    </title>
+    </ui:define>
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+    <ui:define name="content">
 
-</h:head>
+        <div class="page-header">
 
-<h:body>
+            <div>
 
-    <main>
+                <div class="eyebrow">
+                    Operación
+                </div>
 
-        <h1>Pedidos recibidos</h1>
+                <h1>Pedidos recibidos</h1>
 
-        <p>
-            <a href="#{request.contextPath}/inicio.xhtml">
-                Volver al inicio
-            </a>
-        </p>
+                <p>
+                    Procesa los pedidos de tus negocios.
+                </p>
+
+            </div>
+
+        </div>
 
         <h:form id="pedidosForm">
 
-            <h:messages id="mensajes"/>
+            <h:messages
+                    id="mensajes"
+                    styleClass="messages"/>
 
-            <h:dataTable
-                    id="tabla"
-                    value="#{pedidoBean.pedidosRecibidos}"
-                    var="p"
-                    border="1">
+            <div class="table-panel">
 
-                <h:column>
+                <div class="table-wrap">
 
-                    <f:facet name="header">
-                        ID
-                    </f:facet>
+                    <h:dataTable
+                            id="tabla"
+                            value="#{pedidoBean.pedidosRecibidos}"
+                            var="p"
+                            styleClass="data-table">
 
-                    #{p.idPedido}
+                        <h:column>
 
-                </h:column>
+                            <f:facet name="header">
+                                Pedido
+                            </f:facet>
 
-                <h:column>
+                            ##{p.idPedido}
 
-                    <f:facet name="header">
-                        Cliente
-                    </f:facet>
+                        </h:column>
 
-                    #{p.cliente.nombre}
-                    #{p.cliente.apellido}
+                        <h:column>
 
-                </h:column>
+                            <f:facet name="header">
+                                Cliente
+                            </f:facet>
 
-                <h:column>
+                            #{p.cliente.nombre}
+                            #{p.cliente.apellido}
 
-                    <f:facet name="header">
-                        Emprendimiento
-                    </f:facet>
+                        </h:column>
 
-                    #{p.emprendimiento.nombre}
+                        <h:column>
 
-                </h:column>
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
 
-                <h:column>
+                            #{p.emprendimiento.nombre}
 
-                    <f:facet name="header">
-                        Total
-                    </f:facet>
+                        </h:column>
 
-                    <h:outputText value="#{p.total}">
+                        <h:column>
 
-                        <f:convertNumber
-                                type="currency"
-                                currencySymbol="$"/>
+                            <f:facet name="header">
+                                Total
+                            </f:facet>
 
-                    </h:outputText>
+                            <h:outputText value="#{p.total}">
 
-                </h:column>
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
 
-                <h:column>
+                            </h:outputText>
 
-                    <f:facet name="header">
-                        Estado
-                    </f:facet>
+                        </h:column>
 
-                    #{pedidoBean.etiquetaEstado(p.estado)}
+                        <h:column>
 
-                </h:column>
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
 
-                <h:column>
+                            #{pedidoBean.etiquetaEstado(p.estado)}
 
-                    <f:facet name="header">
-                        Detalle
-                    </f:facet>
+                        </h:column>
 
-                    <h:link
-                            outcome="/pedidos/detalle.xhtml"
-                            value="Ver detalle">
+                        <h:column>
 
-                        <f:param
-                                name="id"
-                                value="#{p.idPedido}"/>
+                            <f:facet name="header">
+                                Acciones
+                            </f:facet>
 
-                    </h:link>
+                            <div class="table-actions">
 
-                </h:column>
+                                <h:link
+                                        outcome="/pedidos/detalle.xhtml"
+                                        value="Ver"
+                                        styleClass="btn btn-secondary btn-small">
 
-                <h:column>
+                                    <f:param
+                                            name="id"
+                                            value="#{p.idPedido}"/>
 
-                    <f:facet name="header">
-                        Acciones
-                    </f:facet>
+                                </h:link>
 
-                    <h:commandButton
-                            value="Confirmar"
-                            rendered="#{pedidoBean.puedeConfirmar(p)}"
-                            action="#{pedidoBean.confirmar(p.idPedido)}">
+                                <h:commandButton
+                                        value="Confirmar"
+                                        styleClass="btn btn-secondary btn-small"
+                                        rendered="#{pedidoBean.puedeConfirmar(p)}"
+                                        action="#{pedidoBean.confirmar(p.idPedido)}">
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
 
-                    </h:commandButton>
+                                </h:commandButton>
 
-                    <h:commandButton
-                            value="En camino"
-                            rendered="#{pedidoBean.puedeIniciarProceso(p)}"
-                            action="#{pedidoBean.iniciarProceso(p.idPedido)}">
+                                <h:commandButton
+                                        value="En camino"
+                                        styleClass="btn btn-primary btn-small"
+                                        rendered="#{pedidoBean.puedeIniciarProceso(p)}"
+                                        action="#{pedidoBean.iniciarProceso(p.idPedido)}">
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
 
-                    </h:commandButton>
+                                </h:commandButton>
 
-                    <h:commandButton
-                            value="Entregado"
-                            rendered="#{pedidoBean.puedeCompletar(p)}"
-                            action="#{pedidoBean.completar(p.idPedido)}">
+                                <h:commandButton
+                                        value="Entregado"
+                                        styleClass="btn btn-primary btn-small"
+                                        rendered="#{pedidoBean.puedeCompletar(p)}"
+                                        action="#{pedidoBean.completar(p.idPedido)}">
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
 
-                    </h:commandButton>
+                                </h:commandButton>
 
-                    <h:commandButton
-                            value="Cancelar"
-                            rendered="#{pedidoBean.puedeCancelar(p)}"
-                            action="#{pedidoBean.cancelar(p.idPedido)}">
+                                <h:commandButton
+                                        value="Cancelar"
+                                        styleClass="btn btn-danger btn-small"
+                                        rendered="#{pedidoBean.puedeCancelar(p)}"
+                                        action="#{pedidoBean.cancelar(p.idPedido)}">
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
 
-                    </h:commandButton>
+                                </h:commandButton>
 
-                </h:column>
+                            </div>
 
-            </h:dataTable>
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </div>
 
         </h:form>
 
-    </main>
+    </ui:define>
 
-</h:body>
+</ui:composition>
 
 </html>
