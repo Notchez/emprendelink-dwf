@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+
+    <title>
+        Mis emprendimientos - EmprendeLink
+    </title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h1>Mis emprendimientos</h1>
+
+        <p>
+            <a href="#{request.contextPath}/inicio.xhtml">
+                Volver al inicio
+            </a>
+        </p>
+
+        <p>
+            <a href="#{request.contextPath}/publicaciones/index.xhtml">
+                Mis publicaciones
+            </a>
+        </p>
+
+        <h:form id="emprendimientosForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"/>
+
+            <h2>
+
+                <h:outputText
+                        value="#{emprendimientoBean.editando
+                    ? 'Editar emprendimiento'
+                    : 'Nuevo emprendimiento'}"/>
+
+            </h2>
+
+            <h:outputLabel
+                    for="nombre"
+                    value="Nombre"/>
+
+            <h:inputText
+                    id="nombre"
+                    value="#{emprendimientoBean.nombre}"
+                    required="true"
+                    requiredMessage="El nombre es obligatorio."
+                    maxlength="120">
+
+                <f:ajax
+                        event="blur"
+                        execute="@this"
+                        render="nombreMensaje"/>
+
+            </h:inputText>
+
+            <h:message
+                    id="nombreMensaje"
+                    for="nombre"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="descripcion"
+                    value="Descripción"/>
+
+            <h:inputTextarea
+                    id="descripcion"
+                    value="#{emprendimientoBean.descripcion}"
+                    rows="5"
+                    cols="50"/>
+
+            <br/><br/>
+
+            <h:outputLabel
+                    for="contacto"
+                    value="Contacto"/>
+
+            <h:inputText
+                    id="contacto"
+                    value="#{emprendimientoBean.contacto}"
+                    maxlength="120"/>
+
+            <br/><br/>
+
+            <h:commandButton
+                    value="#{emprendimientoBean.editando
+                ? 'Guardar cambios'
+                : 'Crear emprendimiento'}"
+                    action="#{emprendimientoBean.guardar}">
+
+                <f:ajax
+                        execute="@form"
+                        render="@form"/>
+
+            </h:commandButton>
+
+            <h:commandButton
+                    value="Cancelar edición"
+                    rendered="#{emprendimientoBean.editando}"
+                    action="#{emprendimientoBean.cancelarEdicion}"
+                    immediate="true">
+
+                <f:ajax
+                        execute="@this"
+                        render="@form"/>
+
+            </h:commandButton>
+
+            <hr/>
+
+            <h2>Emprendimientos registrados</h2>
+
+            <h:dataTable
+                    id="tabla"
+                    value="#{emprendimientoBean.emprendimientosPropios}"
+                    var="e"
+                    border="1">
+
+                <h:column>
+
+                    <f:facet name="header">
+                        ID
+                    </f:facet>
+
+                    #{e.idEmprendimiento}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Nombre
+                    </f:facet>
+
+                    #{e.nombre}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Descripción
+                    </f:facet>
+
+                    #{e.descripcion}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Contacto
+                    </f:facet>
+
+                    #{e.contacto}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Estado
+                    </f:facet>
+
+                    #{e.activo ? 'Activo' : 'Inactivo'}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Acción
+                    </f:facet>
+
+                    <h:commandButton
+                            value="Editar"
+                            action="#{emprendimientoBean.editar(
+                        e.idEmprendimiento
+                        )}"
+                            immediate="true">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                </h:column>
+
+            </h:dataTable>
+
+            <p>
+                El estado del emprendimiento es administrado por
+                la plataforma.
+            </p>
+
+        </h:form>
+
+    </main>
+
+</h:body>
+
+</html>

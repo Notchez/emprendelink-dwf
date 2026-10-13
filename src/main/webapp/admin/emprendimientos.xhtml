@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+
+    <title>
+        Administrar emprendimientos - EmprendeLink
+    </title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+
+</h:head>
+
+<h:body>
+
+    <main>
+
+        <h1>Administrar emprendimientos</h1>
+
+        <p>
+            <a href="#{request.contextPath}/admin/usuarios.xhtml">
+                Volver a administración
+            </a>
+        </p>
+
+        <h:form id="emprendimientosAdminForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"/>
+
+            <h:dataTable
+                    id="tabla"
+                    value="#{emprendimientoBean.emprendimientosAdmin}"
+                    var="e"
+                    border="1">
+
+                <h:column>
+
+                    <f:facet name="header">
+                        ID
+                    </f:facet>
+
+                    #{e.idEmprendimiento}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Nombre
+                    </f:facet>
+
+                    #{e.nombre}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Propietario
+                    </f:facet>
+
+                    #{e.propietario.nombre}
+                    #{e.propietario.apellido}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Correo
+                    </f:facet>
+
+                    #{e.propietario.correo}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Contacto
+                    </f:facet>
+
+                    #{e.contacto}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Estado
+                    </f:facet>
+
+                    #{e.activo ? 'Activo' : 'Inactivo'}
+
+                </h:column>
+
+                <h:column>
+
+                    <f:facet name="header">
+                        Acción
+                    </f:facet>
+
+                    <h:commandButton
+                            value="#{e.activo
+                        ? 'Desactivar'
+                        : 'Activar'}"
+                            action="#{emprendimientoBean.alternarEstado(
+                        e.idEmprendimiento,
+                        e.activo
+                        )}"
+                            immediate="true">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                </h:column>
+
+            </h:dataTable>
+
+        </h:form>
+
+    </main>
+
+</h:body>
+
+</html>

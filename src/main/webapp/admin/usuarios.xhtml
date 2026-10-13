@@ -7,12 +7,14 @@
       xmlns:f="jakarta.faces.core">
 
 <h:head>
+
     <title>
         Administrar usuarios - EmprendeLink
     </title>
 
     <link rel="stylesheet"
           href="#{request.contextPath}/css/estilos.css"/>
+
 </h:head>
 
 <h:body>
@@ -22,12 +24,43 @@
         <h1>Administrar usuarios</h1>
 
         <p>
+
             Sesión iniciada como:
+
             <strong>
                 #{authBean.usuario.nombre}
                 #{authBean.usuario.apellido}
             </strong>
+
         </p>
+
+        <nav>
+
+            <a href="#{request.contextPath}/admin/usuarios.xhtml">
+                Usuarios
+            </a>
+
+            |
+
+            <a href="#{request.contextPath}/admin/categorias.xhtml">
+                Categorías
+            </a>
+
+            |
+
+            <a href="#{request.contextPath}/admin/emprendimientos.xhtml">
+                Emprendimientos
+            </a>
+
+            |
+
+            <a href="#{request.contextPath}/admin/publicaciones.xhtml">
+                Publicaciones
+            </a>
+
+        </nav>
+
+        <br/>
 
         <h:form id="usuariosForm">
 
@@ -88,8 +121,8 @@
 
                     <h:outputText
                             value="#{usuario.activo
-                                ? 'Activo'
-                                : 'Inactivo'}"/>
+                        ? 'Activo'
+                        : 'Inactivo'}"/>
 
                 </h:column>
 
@@ -101,14 +134,14 @@
 
                     <h:commandButton
                             value="#{usuario.activo
-                                ? 'Desactivar'
-                                : 'Activar'}"
+                        ? 'Desactivar'
+                        : 'Activar'}"
                             disabled="#{usuario.idUsuario
-                                eq authBean.usuario.idUsuario}"
+                        eq authBean.usuario.idUsuario}"
                             action="#{usuarioBean.alternarEstado(
-                                usuario.idUsuario,
-                                usuario.activo
-                            )}">
+                        usuario.idUsuario,
+                        usuario.activo
+                        )}">
 
                         <f:ajax
                                 execute="@this"
