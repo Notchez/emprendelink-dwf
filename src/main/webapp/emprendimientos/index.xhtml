@@ -4,215 +4,219 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
+<ui:composition template="/WEB-INF/templates/base.xhtml">
 
-    <title>
-        Mis emprendimientos - EmprendeLink
-    </title>
+    <ui:define name="title">
+        Mis negocios - EmprendeLink
+    </ui:define>
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+    <ui:define name="content">
 
-</h:head>
+        <div class="page-header">
 
-<h:body>
+            <div>
 
-    <main>
+                <div class="eyebrow">
+                    Emprendedor
+                </div>
 
-        <h1>Mis emprendimientos</h1>
+                <h1>Mis negocios</h1>
 
-        <p>
-            <a href="#{request.contextPath}/inicio.xhtml">
-                Volver al inicio
-            </a>
-        </p>
+                <p>
+                    Administra la información de tus emprendimientos.
+                </p>
 
-        <p>
-            <a href="#{request.contextPath}/publicaciones/index.xhtml">
-                Mis publicaciones
-            </a>
-        </p>
+            </div>
 
-        <h:form id="emprendimientosForm">
+        </div>
 
-            <h:messages
-                    id="mensajes"
-                    globalOnly="true"/>
+        <div class="split-layout">
 
-            <h2>
+            <section class="panel">
 
-                <h:outputText
-                        value="#{emprendimientoBean.editando
-                    ? 'Editar emprendimiento'
-                    : 'Nuevo emprendimiento'}"/>
+                <h2 class="section-title">
 
-            </h2>
+                    #{emprendimientoBean.editando
+                            ? 'Editar negocio'
+                            : 'Nuevo negocio'}
 
-            <h:outputLabel
-                    for="nombre"
-                    value="Nombre"/>
+                </h2>
 
-            <h:inputText
-                    id="nombre"
-                    value="#{emprendimientoBean.nombre}"
-                    required="true"
-                    requiredMessage="El nombre es obligatorio."
-                    maxlength="120">
+                <h:form id="emprendimientosForm">
 
-                <f:ajax
-                        event="blur"
-                        execute="@this"
-                        render="nombreMensaje"/>
+                    <h:messages
+                            id="mensajes"
+                            styleClass="messages"
+                            globalOnly="true"/>
 
-            </h:inputText>
+                    <div class="form-group">
 
-            <h:message
-                    id="nombreMensaje"
-                    for="nombre"/>
+                        <h:outputLabel
+                                for="nombre"
+                                value="Nombre"/>
 
-            <br/><br/>
+                        <h:inputText
+                                id="nombre"
+                                value="#{emprendimientoBean.nombre}"
+                                required="true"
+                                requiredMessage="El nombre es obligatorio."
+                                maxlength="120">
 
-            <h:outputLabel
-                    for="descripcion"
-                    value="Descripción"/>
+                            <f:ajax
+                                    event="blur"
+                                    execute="@this"
+                                    render="nombreMensaje"/>
 
-            <h:inputTextarea
-                    id="descripcion"
-                    value="#{emprendimientoBean.descripcion}"
-                    rows="5"
-                    cols="50"/>
+                        </h:inputText>
 
-            <br/><br/>
+                        <h:message
+                                id="nombreMensaje"
+                                styleClass="field-error"
+                                for="nombre"/>
 
-            <h:outputLabel
-                    for="contacto"
-                    value="Contacto"/>
+                    </div>
 
-            <h:inputText
-                    id="contacto"
-                    value="#{emprendimientoBean.contacto}"
-                    maxlength="120"/>
+                    <br/>
 
-            <br/><br/>
+                    <div class="form-group">
 
-            <h:commandButton
-                    value="#{emprendimientoBean.editando
-                ? 'Guardar cambios'
-                : 'Crear emprendimiento'}"
-                    action="#{emprendimientoBean.guardar}">
+                        <h:outputLabel
+                                for="descripcion"
+                                value="Descripción"/>
 
-                <f:ajax
-                        execute="@form"
-                        render="@form"/>
+                        <h:inputTextarea
+                                id="descripcion"
+                                value="#{emprendimientoBean.descripcion}"
+                                rows="4"/>
 
-            </h:commandButton>
+                    </div>
 
-            <h:commandButton
-                    value="Cancelar edición"
-                    rendered="#{emprendimientoBean.editando}"
-                    action="#{emprendimientoBean.cancelarEdicion}"
-                    immediate="true">
+                    <br/>
 
-                <f:ajax
-                        execute="@this"
-                        render="@form"/>
+                    <div class="form-group">
 
-            </h:commandButton>
+                        <h:outputLabel
+                                for="contacto"
+                                value="Contacto"/>
 
-            <hr/>
+                        <h:inputText
+                                id="contacto"
+                                value="#{emprendimientoBean.contacto}"
+                                maxlength="120"/>
 
-            <h2>Emprendimientos registrados</h2>
+                    </div>
 
-            <h:dataTable
-                    id="tabla"
-                    value="#{emprendimientoBean.emprendimientosPropios}"
-                    var="e"
-                    border="1">
+                    <div class="button-row">
 
-                <h:column>
+                        <h:commandButton
+                                value="#{emprendimientoBean.editando
+                                ? 'Guardar cambios'
+                                : 'Crear negocio'}"
+                                styleClass="btn btn-primary"
+                                action="#{emprendimientoBean.guardar}">
 
-                    <f:facet name="header">
-                        ID
-                    </f:facet>
+                            <f:ajax
+                                    execute="@form"
+                                    render="@form"/>
 
-                    #{e.idEmprendimiento}
+                        </h:commandButton>
 
-                </h:column>
+                        <h:commandButton
+                                value="Cancelar"
+                                styleClass="btn btn-secondary"
+                                rendered="#{emprendimientoBean.editando}"
+                                action="#{emprendimientoBean.cancelarEdicion}"
+                                immediate="true">
 
-                <h:column>
+                            <f:ajax
+                                    execute="@this"
+                                    render="@form"/>
 
-                    <f:facet name="header">
-                        Nombre
-                    </f:facet>
+                        </h:commandButton>
 
-                    #{e.nombre}
+                    </div>
 
-                </h:column>
+                </h:form>
 
-                <h:column>
+            </section>
 
-                    <f:facet name="header">
-                        Descripción
-                    </f:facet>
+            <section class="table-panel">
 
-                    #{e.descripcion}
+                <div class="table-wrap">
 
-                </h:column>
+                    <h:dataTable
+                            value="#{emprendimientoBean.emprendimientosPropios}"
+                            var="e"
+                            styleClass="data-table">
 
-                <h:column>
+                        <h:column>
 
-                    <f:facet name="header">
-                        Contacto
-                    </f:facet>
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
 
-                    #{e.contacto}
+                            <strong>#{e.nombre}</strong>
 
-                </h:column>
+                        </h:column>
 
-                <h:column>
+                        <h:column>
 
-                    <f:facet name="header">
-                        Estado
-                    </f:facet>
+                            <f:facet name="header">
+                                Contacto
+                            </f:facet>
 
-                    #{e.activo ? 'Activo' : 'Inactivo'}
+                            #{e.contacto}
 
-                </h:column>
+                        </h:column>
 
-                <h:column>
+                        <h:column>
 
-                    <f:facet name="header">
-                        Acción
-                    </f:facet>
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
 
-                    <h:commandButton
-                            value="Editar"
-                            action="#{emprendimientoBean.editar(
-                        e.idEmprendimiento
-                        )}"
-                            immediate="true">
+                            #{e.activo ? 'Activo' : 'Inactivo'}
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                        </h:column>
 
-                    </h:commandButton>
+                        <h:column>
 
-                </h:column>
+                            <f:facet name="header">
+                                Acción
+                            </f:facet>
 
-            </h:dataTable>
+                            <h:form>
 
-            <p>
-                El estado del emprendimiento es administrado por
-                la plataforma.
-            </p>
+                                <h:commandButton
+                                        value="Editar"
+                                        styleClass="btn btn-secondary btn-small"
+                                        action="#{emprendimientoBean.editar(
+                                        e.idEmprendimiento
+                                        )}">
 
-        </h:form>
+                                    <f:ajax
+                                            execute="@this"
+                                            render=":emprendimientosForm"/>
 
-    </main>
+                                </h:commandButton>
 
-</h:body>
+                            </h:form>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </ui:define>
+
+</ui:composition>
 
 </html>
