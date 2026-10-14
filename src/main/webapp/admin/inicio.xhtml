@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
+
+    <ui:param name="activeMenu" value="inicio"/>
+
+    <ui:define name="title">
+        Inicio - Administración - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="admin-page-header">
+
+            <div>
+
+                <span class="admin-eyebrow">
+                    Administración
+                </span>
+
+                <h1>
+                    Bienvenido, #{authBean.usuario.nombre}
+                </h1>
+
+                <p>
+                    Gestiona la operación de EmprendeLink desde un solo lugar.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="admin-module-grid">
+
+            <a href="#{request.contextPath}/admin/usuarios.xhtml"
+               class="admin-module-card">
+
+                <span class="admin-module-kicker">
+                    Accesos
+                </span>
+
+                <h2>Usuarios</h2>
+
+                <p>
+                    Consulta las cuentas registradas y controla su acceso.
+                </p>
+
+                <span class="admin-module-link">
+                    Administrar usuarios →
+                </span>
+
+            </a>
+
+            <a href="#{request.contextPath}/admin/categorias.xhtml"
+               class="admin-module-card">
+
+                <span class="admin-module-kicker">
+                    Catálogo
+                </span>
+
+                <h2>Categorías</h2>
+
+                <p>
+                    Administra las categorías utilizadas en las publicaciones.
+                </p>
+
+                <span class="admin-module-link">
+                    Administrar categorías →
+                </span>
+
+            </a>
+
+            <a href="#{request.contextPath}/admin/emprendimientos.xhtml"
+               class="admin-module-card">
+
+                <span class="admin-module-kicker">
+                    Operación
+                </span>
+
+                <h2>Negocios</h2>
+
+                <p>
+                    Consulta emprendimientos, propietarios y pedidos recibidos.
+                </p>
+
+                <span class="admin-module-link">
+                    Ver negocios →
+                </span>
+
+            </a>
+
+            <a href="#{request.contextPath}/admin/comisiones.xhtml"
+               class="admin-module-card">
+
+                <span class="admin-module-kicker">
+                    Finanzas
+                </span>
+
+                <h2>Comisiones</h2>
+
+                <p>
+                    Consulta ingresos mensuales generados por pedidos completados.
+                </p>
+
+                <span class="admin-module-link">
+                    Ver comisiones →
+                </span>
+
+            </a>
+
+        </section>
+
+    </ui:define>
+
+</ui:composition>

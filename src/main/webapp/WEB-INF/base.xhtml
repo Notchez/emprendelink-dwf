@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+
+    <title>
+        <ui:insert name="title">
+            EmprendeLink
+        </ui:insert>
+    </title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+
+</h:head>
+
+<h:body>
+
+    <header class="topbar">
+
+        <div class="container topbar-content">
+
+            <a class="brand"
+               href="#{request.contextPath}/catalogo/index.xhtml">
+
+                <span class="brand-mark">E</span>
+
+                <span>EmprendeLink</span>
+
+            </a>
+
+            <nav class="main-nav">
+
+                <a href="#{request.contextPath}/catalogo/index.xhtml">
+                    Explorar
+                </a>
+
+                <ui:fragment
+                        rendered="#{authBean.autenticado
+                    and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+
+                    <a href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
+                        Mis pedidos
+                    </a>
+
+                </ui:fragment>
+
+                <ui:fragment
+                        rendered="#{authBean.autenticado
+                    and authBean.usuario.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
+
+                    <a href="#{request.contextPath}/emprendimientos/index.xhtml">
+                        Negocios
+                    </a>
+
+                    <a href="#{request.contextPath}/publicaciones/index.xhtml">
+                        Publicaciones
+                    </a>
+
+                    <a href="#{request.contextPath}/pedidos/recibidos.xhtml">
+                        Pedidos
+                    </a>
+
+                </ui:fragment>
+
+                <ui:fragment
+                        rendered="#{authBean.autenticado
+                    and authBean.usuario.rol.nombre eq 'ROLE_ADMIN'}">
+
+                    <a href="#{request.contextPath}/admin/usuarios.xhtml">
+                        Usuarios
+                    </a>
+
+                    <a href="#{request.contextPath}/admin/categorias.xhtml">
+                        Categorias
+                    </a>
+
+                    <a href="#{request.contextPath}/admin/emprendimientos.xhtml">
+                        Negocios
+                    </a>
+
+
+                </ui:fragment>
+
+            </nav>
+
+            <div class="account-area">
+
+                <ui:fragment rendered="#{authBean.autenticado}">
+
+                <span class="user-name">
+                    #{authBean.usuario.nombre}
+                </span>
+
+                    <h:form styleClass="inline-form">
+
+                        <h:commandButton
+                                value="Salir"
+                                styleClass="btn btn-ghost btn-small"
+                                action="#{authBean.cerrarSesion}"/>
+
+                    </h:form>
+
+                </ui:fragment>
+
+                <ui:fragment rendered="#{not authBean.autenticado}">
+
+                    <a class="btn btn-primary btn-small"
+                       href="#{request.contextPath}/registro.xhtml">
+                        Crear cuenta
+                    </a>
+
+                </ui:fragment>
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <main class="container page">
+
+        <ui:insert name="content"/>
+
+    </main>
+
+    <footer class="footer">
+
+        <div class="container">
+            EmprendeLink · Productos y servicios de emprendedores
+        </div>
+
+    </footer>
+
+</h:body>
+
+</html>

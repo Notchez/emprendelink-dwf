@@ -1,6 +1,13 @@
 package emprendelink.persistence.jpa.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "categorias")
@@ -8,31 +15,63 @@ public class CategoriaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "id_categoria")
+    private Integer idCategoria;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @NotBlank
+    @Size(max = 80)
+    @Column(
+            name = "nombre",
+            nullable = false,
+            unique = true,
+            length = 80
+    )
     private String nombre;
 
-    @Column(length = 255)
+    @Column(
+            name = "descripcion",
+            columnDefinition = "TEXT"
+    )
     private String descripcion;
 
-    @Column(nullable = false)
-    private boolean activo = true;
+    @Column(
+            name = "activo",
+            nullable = false
+    )
+    private boolean activo;
 
-    public CategoriaEntity() {}
-
-    public CategoriaEntity(String nombre, String descripcion) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.activo = true;
+    public CategoriaEntity() {
     }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-    public boolean isActivo() { return activo; }
-    public void setActivo(boolean activo) { this.activo = activo; }
+    public Integer getIdCategoria() {
+        return idCategoria;
+    }
+
+    public void setIdCategoria(Integer idCategoria) {
+        this.idCategoria = idCategoria;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 }

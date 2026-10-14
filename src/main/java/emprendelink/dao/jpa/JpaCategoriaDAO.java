@@ -4,56 +4,133 @@ import emprendelink.dao.CategoriaDAO;
 import emprendelink.model.Categoria;
 import emprendelink.persistence.jpa.entity.CategoriaEntity;
 import emprendelink.persistence.jpa.mapper.CategoriaMapper;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-@RequestScoped
-public class JpaCategoriaDAO implements CategoriaDAO {
+@ApplicationScoped
+public class JpaCategoriaDAO
+        implements CategoriaDAO {
 
-    @PersistenceContext(unitName = "EmprendeLinkPU")
-    private EntityManager em;
+    @PersistenceContext(
+            unitName = "emprendelinkPU"
+    )
+    private EntityManager entityManager;
 
     @Override
-    @Transactional
-    public Categoria crear(Categoria categoria) {
-        CategoriaEntity entity = CategoriaMapper.toEntity(categoria);
-        em.persist(entity);
-        return CategoriaMapper.toDomain(entity);
+    public Categoria crear(
+            Categoria categoria) {
+
+        CategoriaEntity entidad =
+                CategoriaMapper.aEntidad(
+                        categoria
+                );
+
+        entityManager.persist(entidad);
+        entityManager.flush();
+
+        return CategoriaMapper.aDominio(
+                entidad
+        );
     }
 
     @Override
-    public Optional<Categoria> buscarPorId(Integer idCategoria) {
-        CategoriaEntity entity = em.find(CategoriaEntity.class, idCategoria);
-        return Optional.ofNullable(CategoriaMapper.toDomain(entity));
+    public Optional<Categoria> buscarPorId(
+            Integer idCategoria) {
+
+        if (idCategoria == null) {
+            return Optional.empty();
+        }
+
+        CategoriaEntity entidad =
+                entityManager.find(
+                        CategoriaEntity.class,
+                        idCategoria
+                );
+
+        return Optional.ofNullable(
+                CategoriaMapper.aDominio(
+                        entidad
+                )
+        );
     }
 
     @Override
     public List<Categoria> listarTodos() {
-        List<CategoriaEntity> entities = em.createQuery("SELECT c FROM CategoriaEntity c", CategoriaEntity.class).getResultList();
-        return entities.stream().map(CategoriaMapper::toDomain).collect(Collectors.toList());
+
+        return entityManager.createQuery(
+                        """
+                        SELECT c
+                        FROM CategoriaEntity c
+                        ORDER BY c.nombre
+                        """,
+                        CategoriaEntity.class
+                )
+                .getResultStream()
+                .map(
+                        CategoriaMapper::aDominio
+                )
+                .toList();
     }
 
     @Override
-    @Transactional
-    public boolean actualizar(Categoria categoria) {
-        CategoriaEntity entity = CategoriaMapper.toEntity(categoria);
-        em.merge(entity);
+    public boolean actualizar(
+            Categoria categoria) {
+
+        if (categoria == null
+                || categoria.getIdCategoria() == null) {
+
+            return false;
+        }
+
+        CategoriaEntity entidad =
+                entityManager.find(
+                        CategoriaEntity.class,
+                        categoria.getIdCategoria()
+                );
+
+        if (entidad == null) {
+            return false;
+        }
+
+        entidad.setNombre(
+                categoria.getNombre()
+        );
+
+        entidad.setDescripcion(
+                categoria.getDescripcion()
+        );
+
+        entidad.setActivo(
+                categoria.isActivo()
+        );
+
         return true;
     }
 
     @Override
-    @Transactional
-    public boolean eliminar(Integer idCategoria) {
-        CategoriaEntity entity = em.find(CategoriaEntity.class, idCategoria);
-        if (entity != null) {
-            em.remove(entity);
-            return true;
+    public boolean eliminar(
+            Integer idCategoria) {
+
+        if (idCategoria == null) {
+            return false;
         }
-        return false;
+
+        CategoriaEntity entidad =
+                entityManager.find(
+                        CategoriaEntity.class,
+                        idCategoria
+                );
+
+        if (entidad == null) {
+            return false;
+        }
+
+        entityManager.remove(entidad);
+
+        return true;
     }
 }

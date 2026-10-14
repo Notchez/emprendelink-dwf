@@ -1,50 +1,147 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html">
+      xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
+<ui:composition template="/WEB-INF/base.xhtml">
 
-    <title>
+    <ui:define name="title">
         Inicio - EmprendeLink
-    </title>
+    </ui:define>
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+    <ui:define name="content">
 
-</h:head>
+        <section class="page-header">
 
-<h:body>
+            <div>
 
-    <main>
+                <div class="eyebrow">
+                    EmprendeLink
+                </div>
 
-        <h1>EmprendeLink</h1>
+                <h1>
+                    Hola, #{authBean.usuario.nombre}
+                </h1>
 
-        <p>
-            Bienvenido,
-            <strong>
-                #{authBean.usuario.nombre}
-                #{authBean.usuario.apellido}
-            </strong>
-        </p>
+                <p>
+                    Todo lo que necesitas estÃ¡ aquÃ­.
+                </p>
 
-        <p>
-            Rol:
-            #{authBean.usuario.rol.nombre}
-        </p>
+            </div>
 
-        <h:form>
+        </section>
 
-            <h:commandButton
-                    value="Cerrar sesión"
-                    action="#{authBean.cerrarSesion}"/>
+        <div class="dashboard-grid">
 
-        </h:form>
+            <ui:fragment
+                    rendered="#{authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
 
-    </main>
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/catalogo/index.xhtml">
 
-</h:body>
+                    <strong>Explorar</strong>
+
+                    <span>
+                        Descubre productos y servicios.
+                    </span>
+
+                </a>
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
+
+                    <strong>Mis pedidos</strong>
+
+                    <span>
+                        Revisa el estado de tus compras.
+                    </span>
+
+                </a>
+
+            </ui:fragment>
+
+            <ui:fragment
+                    rendered="#{authBean.usuario.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/emprendimientos/index.xhtml">
+
+                    <strong>Mis negocios</strong>
+
+                    <span>
+                        Administra tus emprendimientos.
+                    </span>
+
+                </a>
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/publicaciones/index.xhtml">
+
+                    <strong>Publicaciones</strong>
+
+                    <span>
+                        Gestiona productos y servicios.
+                    </span>
+
+                </a>
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/pedidos/recibidos.xhtml">
+
+                    <strong>Pedidos</strong>
+
+                    <span>
+                        Revisa y procesa pedidos recibidos.
+                    </span>
+
+                </a>
+
+            </ui:fragment>
+
+            <ui:fragment
+                    rendered="#{authBean.usuario.rol.nombre eq 'ROLE_ADMIN'}">
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/admin/usuarios.xhtml">
+
+                    <strong>Usuarios</strong>
+
+                    <span>
+                        Gestiona cuentas de la plataforma.
+                    </span>
+
+                </a>
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/admin/categorias.xhtml">
+
+                    <strong>Categorias</strong>
+
+                    <span>
+                        Organiza el catÃ¡logo.
+                    </span>
+
+                </a>
+
+                <a class="dashboard-card"
+                   href="#{request.contextPath}/admin/emprendimientos.xhtml">
+
+                    <strong>Negocios</strong>
+
+                    <span>
+                        Supervisa emprendimientos.
+                    </span>
+
+                </a>
+
+            </ui:fragment>
+
+        </div>
+
+    </ui:define>
+
+</ui:composition>
 
 </html>

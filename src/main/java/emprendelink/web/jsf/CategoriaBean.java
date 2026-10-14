@@ -2,66 +2,189 @@ package emprendelink.web.jsf;
 
 import emprendelink.model.Categoria;
 import emprendelink.service.CategoriaService;
-import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+
 import java.io.Serializable;
 import java.util.List;
 
-@Named
+@Named("categoriaBean")
 @ViewScoped
 public class CategoriaBean implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Inject
     private CategoriaService categoriaService;
 
-    private Categoria categoriaActual;
-    private List<Categoria> listaCategorias;
+    private Integer idCategoria;
+    private String nombre;
+    private String descripcion;
 
-    @PostConstruct
-    public void init() {
-        categoriaActual = new Categoria();
-        cargarCategorias();
-    }
+    public void guardar() {
 
-    public void cargarCategorias() {
-        listaCategorias = categoriaService.listarTodas();
-    }
-
-    public void guardarCategoria() {
         try {
-            // Evaluamos si es nueva (no tiene ID) o si se está editando
-            if (categoriaActual.getIdCategoria() == null) {
-                categoriaService.crear(categoriaActual.getNombre(), categoriaActual.getDescripcion());
+
+            if (idCategoria == null) {
+
+                categoriaService.crear(
+                        nombre,
+                        descripcion
+                );
+
+                mensajeInfo(
+                        "Categoría creada",
+                        "La categoría fue registrada correctamente."
+                );
+
             } else {
-                categoriaService.actualizar(categoriaActual.getIdCategoria(), categoriaActual.getNombre(), categoriaActual.getDescripcion());
+
+                categoriaService.actualizar(
+                        idCategoria,
+                        nombre,
+                        descripcion
+                );
+
+                mensajeInfo(
+                        "Categoría actualizada",
+                        "Los cambios fueron guardados correctamente."
+                );
             }
 
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Éxito", "Categoría guardada correctamente."));
-            categoriaActual = new Categoria();
-            cargarCategorias();
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo guardar: " + e.getMessage()));
+            limpiarFormulario();
+
+        } catch (IllegalArgumentException
+                 | IllegalStateException e) {
+
+            mensajeError(
+                    "No se pudo guardar",
+                    e.getMessage()
+            );
         }
     }
 
-    public void prepararEdicion(Categoria cat) {
-        this.categoriaActual = cat;
+    public void editar(
+            Categoria categoria) {
+
+        if (categoria == null) {
+            return;
+        }
+
+        idCategoria =
+                categoria.getIdCategoria();
+
+        nombre =
+                categoria.getNombre();
+
+        descripcion =
+                categoria.getDescripcion();
     }
 
-    public void cambiarEstado(Categoria cat) {
-        categoriaService.cambiarEstado(cat.getIdCategoria(), !cat.isActivo());
-        cargarCategorias();
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Éxito", "Estado actualizado."));
+    public void cancelarEdicion() {
+        limpiarFormulario();
     }
 
-    public Categoria getCategoriaActual() { return categoriaActual; }
-    public void setCategoriaActual(Categoria categoriaActual) { this.categoriaActual = categoriaActual; }
-    public List<Categoria> getListaCategorias() { return listaCategorias; }
+    public void alternarEstado(
+            Integer idCategoria,
+            boolean estadoActual) {
+
+        try {
+
+            categoriaService.cambiarEstado(
+                    idCategoria,
+                    !estadoActual
+            );
+
+            mensajeInfo(
+                    "Estado actualizado",
+                    "El estado de la categoría fue actualizado."
+            );
+
+        } catch (IllegalArgumentException
+                 | IllegalStateException e) {
+
+            mensajeError(
+                    "No se pudo actualizar",
+                    e.getMessage()
+            );
+        }
+    }
+
+    public List<Categoria> getCategorias() {
+        return categoriaService.listarTodas();
+    }
+
+    public boolean isEditando() {
+        return idCategoria != null;
+    }
+
+    private void limpiarFormulario() {
+
+        idCategoria = null;
+        nombre = null;
+        descripcion = null;
+    }
+
+    private void mensajeInfo(
+            String resumen,
+            String detalle) {
+
+        FacesContext.getCurrentInstance()
+                .addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                resumen,
+                                detalle
+                        )
+                );
+    }
+
+    private void mensajeError(
+            String resumen,
+            String detalle) {
+
+        FacesContext.getCurrentInstance()
+                .addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                resumen,
+                                detalle
+                        )
+                );
+    }
+
+    public Integer getIdCategoria() {
+        return idCategoria;
+    }
+
+    public void setIdCategoria(
+            Integer idCategoria) {
+
+        this.idCategoria = idCategoria;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(
+            String nombre) {
+
+        this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(
+            String descripcion) {
+
+        this.descripcion = descripcion;
+    }
 }

@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Mis negocios - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <div class="page-header">
+
+            <div>
+
+                <div class="eyebrow">
+                    Emprendedor
+                </div>
+
+                <h1>Mis negocios</h1>
+
+                <p>
+                    Administra la informaciÃ³n de tus emprendimientos.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="split-layout">
+
+            <section class="panel">
+
+                <h2 class="section-title">
+
+                    #{emprendimientoBean.editando
+                            ? 'Editar negocio'
+                            : 'Nuevo negocio'}
+
+                </h2>
+
+                <h:form id="emprendimientosForm">
+
+                    <h:messages
+                            id="mensajes"
+                            styleClass="messages"
+                            globalOnly="true"/>
+
+                    <div class="form-group">
+
+                        <h:outputLabel
+                                for="nombre"
+                                value="Nombre"/>
+
+                        <h:inputText
+                                id="nombre"
+                                value="#{emprendimientoBean.nombre}"
+                                required="true"
+                                requiredMessage="El nombre es obligatorio."
+                                maxlength="120">
+
+                            <f:ajax
+                                    event="blur"
+                                    execute="@this"
+                                    render="nombreMensaje"/>
+
+                        </h:inputText>
+
+                        <h:message
+                                id="nombreMensaje"
+                                styleClass="field-error"
+                                for="nombre"/>
+
+                    </div>
+
+                    <br/>
+
+                    <div class="form-group">
+
+                        <h:outputLabel
+                                for="descripcion"
+                                value="DescripciÃ³n"/>
+
+                        <h:inputTextarea
+                                id="descripcion"
+                                value="#{emprendimientoBean.descripcion}"
+                                rows="4"/>
+
+                    </div>
+
+                    <br/>
+
+                    <div class="form-group">
+
+                        <h:outputLabel
+                                for="contacto"
+                                value="Contacto"/>
+
+                        <h:inputText
+                                id="contacto"
+                                value="#{emprendimientoBean.contacto}"
+                                maxlength="120"/>
+
+                    </div>
+
+                    <div class="button-row">
+
+                        <h:commandButton
+                                value="#{emprendimientoBean.editando
+                                ? 'Guardar cambios'
+                                : 'Crear negocio'}"
+                                styleClass="btn btn-primary"
+                                action="#{emprendimientoBean.guardar}">
+
+                            <f:ajax
+                                    execute="@form"
+                                    render="@form"/>
+
+                        </h:commandButton>
+
+                        <h:commandButton
+                                value="Cancelar"
+                                styleClass="btn btn-secondary"
+                                rendered="#{emprendimientoBean.editando}"
+                                action="#{emprendimientoBean.cancelarEdicion}"
+                                immediate="true">
+
+                            <f:ajax
+                                    execute="@this"
+                                    render="@form"/>
+
+                        </h:commandButton>
+
+                    </div>
+
+                </h:form>
+
+            </section>
+
+            <section class="table-panel">
+
+                <div class="table-wrap">
+
+                    <h:dataTable
+                            value="#{emprendimientoBean.emprendimientosPropios}"
+                            var="e"
+                            styleClass="data-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
+
+                            <strong>#{e.nombre}</strong>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Contacto
+                            </f:facet>
+
+                            #{e.contacto}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
+
+                            #{e.activo ? 'Activo' : 'Inactivo'}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                AcciÃ³n
+                            </f:facet>
+
+                            <h:form>
+
+                                <h:commandButton
+                                        value="Editar"
+                                        styleClass="btn btn-secondary btn-small"
+                                        action="#{emprendimientoBean.editar(
+                                        e.idEmprendimiento
+                                        )}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render=":emprendimientosForm"/>
+
+                                </h:commandButton>
+
+                            </h:form>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

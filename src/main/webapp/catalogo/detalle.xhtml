@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<f:metadata>
+
+    <f:viewParam
+            name="id"
+            value="#{publicacionBean.idDetalle}"/>
+
+    <f:viewAction
+            action="#{publicacionBean.cargarDetalle}"
+            onPostback="false"/>
+
+</f:metadata>
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Detalle - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <h:panelGroup
+                rendered="#{not empty publicacionBean.detalle}"
+                layout="block"
+                styleClass="detail-layout">
+
+            <div class="detail-visual">
+
+                <span class="product-type">
+                    #{publicacionBean.detalle.tipo eq 'PRODUCTO'
+                            ? 'Producto'
+                            : 'Servicio'}
+                </span>
+
+            </div>
+
+            <section class="detail-card">
+
+                <div class="eyebrow">
+                    #{publicacionBean.detalle.emprendimiento.nombre}
+                </div>
+
+                <h1>
+                    #{publicacionBean.detalle.nombre}
+                </h1>
+
+                <p class="muted">
+                    #{publicacionBean.detalle.categoria.nombre}
+                </p>
+
+                <p>
+                    #{publicacionBean.detalle.descripcion}
+                </p>
+
+                <h:outputText
+                        value="#{publicacionBean.detalle.precio}"
+                        styleClass="detail-price">
+
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+
+                </h:outputText>
+
+                <h:panelGroup
+                        rendered="#{publicacionBean.detalle.tipo eq 'PRODUCTO'}">
+
+                    <p class="muted">
+                        #{publicacionBean.detalle.stock}
+                        disponibles
+                    </p>
+
+                </h:panelGroup>
+
+                <div class="button-row">
+
+                    <h:panelGroup
+                            rendered="#{authBean.autenticado
+                            and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+
+                        <h:link
+                                outcome="/pedidos/nuevo.xhtml"
+                                value="Realizar pedido"
+                                styleClass="btn btn-primary">
+
+                            <f:param
+                                    name="id"
+                                    value="#{publicacionBean.detalle.idPublicacion}"/>
+
+                        </h:link>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup
+                            rendered="#{not authBean.autenticado}">
+
+                        <a class="btn btn-primary"
+                           href="#{request.contextPath}/login.xhtml">
+                            Ingresar para pedir
+                        </a>
+
+                    </h:panelGroup>
+
+                    <a class="btn btn-secondary"
+                       href="#{request.contextPath}/catalogo/index.xhtml">
+                        Volver
+                    </a>
+
+                </div>
+
+            </section>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

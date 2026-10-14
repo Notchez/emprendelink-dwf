@@ -3,25 +3,52 @@ package emprendelink.persistence.jpa.mapper;
 import emprendelink.model.Categoria;
 import emprendelink.persistence.jpa.entity.CategoriaEntity;
 
-public class CategoriaMapper {
+public final class CategoriaMapper {
 
-    public static Categoria toDomain(CategoriaEntity entity) {
-        if (entity == null) return null;
-        Categoria cat = new Categoria();
-        cat.setIdCategoria(entity.getId());
-        cat.setNombre(entity.getNombre());
-        cat.setDescripcion(entity.getDescripcion());
-        cat.setActivo(entity.isActivo());
-        return cat;
+    private CategoriaMapper() {
     }
 
-    public static CategoriaEntity toEntity(Categoria domain) {
-        if (domain == null) return null;
-        CategoriaEntity entity = new CategoriaEntity();
-        entity.setId(domain.getIdCategoria());
-        entity.setNombre(domain.getNombre());
-        entity.setDescripcion(domain.getDescripcion());
-        entity.setActivo(domain.isActivo());
-        return entity;
+    public static CategoriaEntity aEntidad(
+            Categoria categoria) {
+
+        if (categoria == null) {
+            return null;
+        }
+
+        CategoriaEntity entidad =
+                new CategoriaEntity();
+
+        entidad.setIdCategoria(
+                categoria.getIdCategoria()
+        );
+
+        entidad.setNombre(
+                categoria.getNombre()
+        );
+
+        entidad.setDescripcion(
+                categoria.getDescripcion()
+        );
+
+        entidad.setActivo(
+                categoria.isActivo()
+        );
+
+        return entidad;
+    }
+
+    public static Categoria aDominio(
+            CategoriaEntity entidad) {
+
+        if (entidad == null) {
+            return null;
+        }
+
+        return new Categoria(
+                entidad.getIdCategoria(),
+                entidad.getNombre(),
+                entidad.getDescripcion(),
+                entidad.isActivo()
+        );
     }
 }

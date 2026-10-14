@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Explorar - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="hero">
+
+            <div class="eyebrow">
+                Compra local
+            </div>
+
+            <h1>
+                Encuentra algo que te guste.
+            </h1>
+
+            <p>
+                Productos y servicios de emprendimientos
+                reunidos en un solo lugar.
+            </p>
+
+        </section>
+
+        <h:form
+                id="catalogoForm"
+                styleClass="catalog-filters">
+
+            <div class="filter-grid">
+
+                <div class="form-group">
+
+                    <h:outputLabel
+                            for="texto"
+                            value="Buscar"/>
+
+                    <h:inputText
+                            id="texto"
+                            value="#{publicacionBean.filtroTexto}">
+
+                        <f:ajax
+                                event="keyup"
+                                execute="@this"
+                                render="resultados"/>
+
+                    </h:inputText>
+
+                </div>
+
+                <div class="form-group">
+
+                    <h:outputLabel
+                            for="tipo"
+                            value="Tipo"/>
+
+                    <h:selectOneMenu
+                            id="tipo"
+                            value="#{publicacionBean.filtroTipo}">
+
+                        <f:selectItem
+                                itemLabel="Todos"
+                                itemValue="#{null}"/>
+
+                        <f:selectItems
+                                value="#{publicacionBean.tipos}"
+                                var="tipo"
+                                itemValue="#{tipo}"
+                                itemLabel="#{tipo eq 'PRODUCTO'
+                                ? 'Productos'
+                                : 'Servicios'}"/>
+
+                        <f:ajax
+                                execute="@this"
+                                render="resultados"/>
+
+                    </h:selectOneMenu>
+
+                </div>
+
+                <div class="form-group">
+
+                    <h:outputLabel
+                            for="categoria"
+                            value="CategorÃ­a"/>
+
+                    <h:selectOneMenu
+                            id="categoria"
+                            value="#{publicacionBean.filtroCategoriaId}">
+
+                        <f:selectItem
+                                itemLabel="Todas"
+                                itemValue="#{null}"/>
+
+                        <f:selectItems
+                                value="#{publicacionBean.categoriasActivas}"
+                                var="c"
+                                itemValue="#{c.idCategoria}"
+                                itemLabel="#{c.nombre}"/>
+
+                        <f:ajax
+                                execute="@this"
+                                render="resultados"/>
+
+                    </h:selectOneMenu>
+
+                </div>
+
+            </div>
+
+            <br/>
+
+            <h:panelGroup
+                    id="resultados"
+                    layout="block">
+
+                <div class="catalog-grid">
+
+                    <ui:repeat
+                            value="#{publicacionBean.catalogoFiltrado}"
+                            var="p">
+
+                        <article class="product-card">
+
+                            <div class="#{p.tipo eq 'SERVICIO'
+                            ? 'product-visual service'
+                            : 'product-visual'}">
+
+                                <span class="product-type">
+                                    #{p.tipo eq 'PRODUCTO'
+                                            ? 'Producto'
+                                            : 'Servicio'}
+                                </span>
+
+                            </div>
+
+                            <div class="product-body">
+
+                                <div class="product-business">
+                                    #{p.emprendimiento.nombre}
+                                </div>
+
+                                <h2 class="product-title">
+                                    #{p.nombre}
+                                </h2>
+
+                                <div class="product-category">
+                                    #{p.categoria.nombre}
+                                </div>
+
+                                <div class="product-footer">
+
+                                    <h:outputText
+                                            value="#{p.precio}"
+                                            styleClass="price">
+
+                                        <f:convertNumber
+                                                type="currency"
+                                                currencySymbol="$"/>
+
+                                    </h:outputText>
+
+                                    <h:link
+                                            outcome="/catalogo/detalle.xhtml"
+                                            value="Ver"
+                                            styleClass="btn btn-secondary btn-small">
+
+                                        <f:param
+                                                name="id"
+                                                value="#{p.idPublicacion}"/>
+
+                                    </h:link>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    </ui:repeat>
+
+                </div>
+
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

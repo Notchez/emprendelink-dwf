@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
+
+    <ui:param name="activeMenu" value="negocios"/>
+
+    <ui:define name="title">
+        Negocios - Administración - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="admin-page-header">
+
+            <div>
+
+                <span class="admin-eyebrow">
+                    Operación
+                </span>
+
+                <h1>Negocios</h1>
+
+                <p>
+                    Consulta los emprendimientos registrados,
+                    propietarios y actividad de pedidos.
+                </p>
+
+            </div>
+
+        </section>
+
+        <h:form
+                id="negociosForm"
+                styleClass="admin-data-form">
+
+            <h:messages
+                    globalOnly="true"
+                    infoClass="admin-message admin-message-info"
+                    errorClass="admin-message admin-message-error"/>
+
+            <section class="admin-panel">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>Negocios registrados</h2>
+
+                        <p>
+                            Selecciona un negocio para consultar sus pedidos.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-table-scroll">
+
+                    <h:dataTable
+                            value="#{emprendimientoBean.emprendimientosAdmin}"
+                            var="negocio"
+                            styleClass="admin-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
+
+                            <div class="admin-business-cell">
+
+                                <strong>
+                                    #{negocio.nombre}
+                                </strong>
+
+                                <span>
+                                    #{negocio.contacto}
+                                </span>
+
+                            </div>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Propietario
+                            </f:facet>
+
+                            <div class="admin-business-cell">
+
+                                <strong>
+                                    #{negocio.propietario.nombre}
+                                    #{negocio.propietario.apellido}
+                                </strong>
+
+                                <span>
+                                    #{negocio.propietario.correo}
+                                </span>
+
+                            </div>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
+
+                            <h:outputText
+                                    value="#{negocio.activo ? 'Activo' : 'Inactivo'}"
+                                    styleClass="admin-status #{negocio.activo ? 'is-active' : 'is-inactive'}"/>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Acciones
+                            </f:facet>
+
+                            <div class="admin-table-actions">
+
+                                <h:link
+                                        outcome="/admin/negocio.xhtml"
+                                        value="Ver negocio"
+                                        styleClass="admin-table-link">
+
+                                    <f:param
+                                            name="id"
+                                            value="#{negocio.idEmprendimiento}"/>
+
+                                </h:link>
+
+                                <h:commandButton
+                                        value="#{negocio.activo ? 'Desactivar' : 'Activar'}"
+                                        action="#{emprendimientoBean.alternarEstado(
+                                            negocio.idEmprendimiento,
+                                            negocio.activo
+                                        )}"
+                                        styleClass="admin-action-button #{negocio.activo ? 'is-danger' : 'is-success'}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
+
+                                </h:commandButton>
+
+                            </div>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

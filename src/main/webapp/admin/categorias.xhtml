@@ -1,60 +1,236 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
-<h:head>
-    <title>Gestión de Categorías</title>
-</h:head>
-<h:body>
-    <h2>Gestión de Categorías</h2>
-    <h:messages id="mensajesGlobales" globalOnly="true" style="color:red;" />
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
-    <h:form id="formCategoria">
-        <h:panelGrid columns="3">
-            <h:outputLabel value="Nombre:" for="nombre" />
-            <h:inputText id="nombre" value="#{categoriaBean.categoriaActual.nombre}">
-                <f:validator validatorId="nombreCategoriaValidator" />
-            </h:inputText>
-            <h:message for="nombre" style="color:red;" />
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
 
-            <h:outputLabel value="Descripción:" for="descripcion" />
-            <h:inputTextarea id="descripcion" value="#{categoriaBean.categoriaActual.descripcion}" />
-            <h:message for="descripcion" style="color:red;" />
-        </h:panelGrid>
+    <ui:param name="activeMenu" value="categorias"/>
 
-        <h:commandButton value="Guardar" action="#{categoriaBean.guardarCategoria}">
-            <f:ajax execute="@form" render="@form :tablaCategorias mensajesGlobales" />
-        </h:commandButton>
-    </h:form>
+    <ui:define name="title">
+        Categorías - Administración - EmprendeLink
+    </ui:define>
 
-    <hr/>
+    <ui:define name="content">
 
-    <h:dataTable id="tablaCategorias" value="#{categoriaBean.listaCategorias}" var="cat" border="1">
-        <h:column>
-            <f:facet name="header">ID</f:facet>
-            #{cat.idCategoria}
-        </h:column>
-        <h:column>
-            <f:facet name="header">Nombre</f:facet>
-            #{cat.nombre}
-        </h:column>
-        <h:column>
-            <f:facet name="header">Estado</f:facet>
-            <h:outputText value="#{cat.activo ? 'Activo' : 'Inactivo'}" />
-        </h:column>
-        <h:column>
-            <f:facet name="header">Acciones</f:facet>
-            <h:form>
-                <h:commandButton value="Editar" action="#{categoriaBean.prepararEdicion(cat)}">
-                    <f:ajax execute="@this" render=":formCategoria" />
-                </h:commandButton>
+        <section class="admin-page-header">
 
-                <h:commandButton value="#{cat.activo ? 'Desactivar' : 'Activar'}"
-                                 action="#{categoriaBean.cambiarEstado(cat)}">
-                    <f:ajax execute="@this" render=":tablaCategorias :mensajesGlobales" />
-                </h:commandButton>
+            <div>
+
+                <span class="admin-eyebrow">
+                    Catálogo
+                </span>
+
+                <h1>Categorías</h1>
+
+                <p>
+                    Organiza las categorías disponibles para las publicaciones.
+                </p>
+
+            </div>
+
+        </section>
+
+        <div class="admin-management-grid">
+
+            <section class="admin-panel">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>
+                            #{categoriaBean.editando
+                                    ? 'Editar categoría'
+                                    : 'Nueva categoría'}
+                        </h2>
+
+                        <p>
+                            Define el nombre y descripción.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <h:form
+                        id="categoriaForm"
+                        styleClass="admin-form">
+
+                    <h:messages
+                            id="mensajes"
+                            globalOnly="true"
+                            errorClass="admin-message admin-message-error"
+                            infoClass="admin-message admin-message-info"/>
+
+                    <div class="admin-field">
+
+                        <h:outputLabel
+                                for="nombre"
+                                value="Nombre"/>
+
+                        <h:inputText
+                                id="nombre"
+                                value="#{categoriaBean.nombre}"
+                                required="true"
+                                requiredMessage="El nombre es obligatorio."/>
+
+                    </div>
+
+                    <div class="admin-field">
+
+                        <h:outputLabel
+                                for="descripcion"
+                                value="Descripción"/>
+
+                        <h:inputTextarea
+                                id="descripcion"
+                                value="#{categoriaBean.descripcion}"
+                                rows="5"/>
+
+                    </div>
+
+                    <div class="admin-form-actions">
+
+                        <h:commandButton
+                                value="#{categoriaBean.editando ? 'Guardar cambios' : 'Crear categoría'}"
+                                action="#{categoriaBean.guardar}"
+                                styleClass="admin-button admin-button-primary">
+
+                            <f:ajax
+                                    execute="@form"
+                                    render="@form categoriasForm"/>
+
+                        </h:commandButton>
+
+                        <h:commandButton
+                                value="Cancelar"
+                                action="#{categoriaBean.cancelarEdicion}"
+                                rendered="#{categoriaBean.editando}"
+                                immediate="true"
+                                styleClass="admin-button admin-button-secondary">
+
+                            <f:ajax
+                                    execute="@this"
+                                    render="@form"/>
+
+                        </h:commandButton>
+
+                    </div>
+
+                </h:form>
+
+            </section>
+
+            <h:form id="categoriasForm"
+                    styleClass="admin-data-form">
+
+                <section class="admin-panel">
+
+                    <div class="admin-panel-header">
+
+                        <div>
+
+                            <h2>Categorías registradas</h2>
+
+                            <p>
+                                Administra las categorías disponibles.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="admin-table-scroll">
+
+                        <h:dataTable
+                                value="#{categoriaBean.categorias}"
+                                var="categoria"
+                                styleClass="admin-table">
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Categoría
+                                </f:facet>
+
+                                <strong>
+                                    #{categoria.nombre}
+                                </strong>
+
+                            </h:column>
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Descripción
+                                </f:facet>
+
+                                #{categoria.descripcion}
+
+                            </h:column>
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Estado
+                                </f:facet>
+
+                                <h:outputText
+                                        value="#{categoria.activo ? 'Activa' : 'Inactiva'}"
+                                        styleClass="admin-status #{categoria.activo ? 'is-active' : 'is-inactive'}"/>
+
+                            </h:column>
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Acciones
+                                </f:facet>
+
+                                <div class="admin-table-actions">
+
+                                    <h:commandButton
+                                            value="Editar"
+                                            action="#{categoriaBean.editar(categoria)}"
+                                            styleClass="admin-action-button is-neutral">
+
+                                        <f:ajax
+                                                execute="@this"
+                                                render=":categoriaForm"/>
+
+                                    </h:commandButton>
+
+                                    <h:commandButton
+                                            value="#{categoria.activo ? 'Desactivar' : 'Activar'}"
+                                            action="#{categoriaBean.alternarEstado(
+                                                categoria.idCategoria,
+                                                categoria.activo
+                                            )}"
+                                            styleClass="admin-action-button #{categoria.activo ? 'is-danger' : 'is-success'}">
+
+                                        <f:ajax
+                                                execute="@this"
+                                                render="@form :categoriaForm"/>
+
+                                    </h:commandButton>
+
+                                </div>
+
+                            </h:column>
+
+                        </h:dataTable>
+
+                    </div>
+
+                </section>
+
             </h:form>
-        </h:column>
-    </h:dataTable>
-</h:body>
-</html>
+
+        </div>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<f:metadata>
+
+    <f:viewParam
+            name="id"
+            value="#{pedidoBean.idPedido}"/>
+
+    <f:viewAction
+            action="#{pedidoBean.cargarDetalle}"
+            onPostback="false"/>
+
+</f:metadata>
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Detalle del pedido - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <h:panelGroup
+                rendered="#{not empty pedidoBean.detalle}"
+                layout="block">
+
+            <div class="page-header">
+
+                <div>
+
+                    <div class="eyebrow">
+                        Pedido ##{pedidoBean.detalle.idPedido}
+                    </div>
+
+                    <h1>
+                        #{pedidoBean.detalle.emprendimiento.nombre}
+                    </h1>
+
+                    <p>
+                        #{pedidoBean.detalle.cliente.nombre}
+                        #{pedidoBean.detalle.cliente.apellido}
+                    </p>
+
+                </div>
+
+                <span class="#{pedidoBean.detalle.estado eq 'CANCELADO'
+                ? 'status status-danger'
+                : pedidoBean.detalle.estado eq 'COMPLETADO'
+                ? 'status status-success'
+                : pedidoBean.detalle.estado eq 'PENDIENTE'
+                ? 'status status-pending'
+                : 'status status-neutral'}">
+
+                    #{pedidoBean.etiquetaEstado(
+                            pedidoBean.detalle.estado
+                            )}
+
+                </span>
+
+            </div>
+
+            <section class="table-panel">
+
+                <div class="table-wrap">
+
+                    <h:dataTable
+                            value="#{pedidoBean.detalle.detalles}"
+                            var="d"
+                            styleClass="data-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Producto / servicio
+                            </f:facet>
+
+                            #{d.publicacion.nombre}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Cantidad
+                            </f:facet>
+
+                            #{d.cantidad}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Precio
+                            </f:facet>
+
+                            <h:outputText value="#{d.precioUnitario}">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Subtotal
+                            </f:facet>
+
+                            <h:outputText value="#{d.subtotal}">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+            <section class="panel section">
+
+                <p class="muted">
+                    Indicaciones
+                </p>
+
+                <p>
+                    #{empty pedidoBean.detalle.observaciones
+                            ? 'Sin indicaciones adicionales.'
+                            : pedidoBean.detalle.observaciones}
+                </p>
+
+                <hr/>
+
+                <p>
+                    <strong>Total</strong>
+                </p>
+
+                <h:outputText
+                        value="#{pedidoBean.detalle.total}"
+                        styleClass="detail-price">
+
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+
+                </h:outputText>
+
+            </section>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

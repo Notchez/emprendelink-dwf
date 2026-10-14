@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Mis pedidos - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <div class="page-header">
+
+            <div>
+
+                <div class="eyebrow">
+                    Tus compras
+                </div>
+
+                <h1>Mis pedidos</h1>
+
+                <p>
+                    Revisa el estado de tus pedidos.
+                </p>
+
+            </div>
+
+            <a class="btn btn-primary"
+               href="#{request.contextPath}/catalogo/index.xhtml">
+                Explorar
+            </a>
+
+        </div>
+
+        <h:messages styleClass="messages"/>
+
+        <div class="order-list">
+
+            <ui:repeat
+                    value="#{pedidoBean.misPedidos}"
+                    var="p">
+
+                <article class="order-card">
+
+                    <div class="order-top">
+
+                        <div>
+
+                            <h3>
+                                #{p.emprendimiento.nombre}
+                            </h3>
+
+                            <div class="order-meta">
+                                Pedido ##{p.idPedido}
+                            </div>
+
+                        </div>
+
+                        <span class="#{p.estado eq 'CANCELADO'
+                        ? 'status status-danger'
+                        : p.estado eq 'COMPLETADO'
+                        ? 'status status-success'
+                        : p.estado eq 'PENDIENTE'
+                        ? 'status status-pending'
+                        : 'status status-neutral'}">
+
+                            #{pedidoBean.etiquetaEstado(p.estado)}
+
+                        </span>
+
+                    </div>
+
+                    <div class="order-footer">
+
+                        <h:outputText
+                                value="#{p.total}"
+                                styleClass="price">
+
+                            <f:convertNumber
+                                    type="currency"
+                                    currencySymbol="$"/>
+
+                        </h:outputText>
+
+                        <h:link
+                                outcome="/pedidos/detalle.xhtml"
+                                value="Ver detalle"
+                                styleClass="btn btn-secondary btn-small">
+
+                            <f:param
+                                    name="id"
+                                    value="#{p.idPedido}"/>
+
+                        </h:link>
+
+                    </div>
+
+                </article>
+
+            </ui:repeat>
+
+        </div>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Pedidos recibidos - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <div class="page-header">
+
+            <div>
+
+                <div class="eyebrow">
+                    OperaciÃ³n
+                </div>
+
+                <h1>Pedidos recibidos</h1>
+
+                <p>
+                    Procesa los pedidos de tus negocios.
+                </p>
+
+            </div>
+
+        </div>
+
+        <h:form id="pedidosForm">
+
+            <h:messages
+                    id="mensajes"
+                    styleClass="messages"/>
+
+            <div class="table-panel">
+
+                <div class="table-wrap">
+
+                    <h:dataTable
+                            id="tabla"
+                            value="#{pedidoBean.pedidosRecibidos}"
+                            var="p"
+                            styleClass="data-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Pedido
+                            </f:facet>
+
+                            ##{p.idPedido}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Cliente
+                            </f:facet>
+
+                            #{p.cliente.nombre}
+                            #{p.cliente.apellido}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
+
+                            #{p.emprendimiento.nombre}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Total
+                            </f:facet>
+
+                            <h:outputText value="#{p.total}">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
+
+                            #{pedidoBean.etiquetaEstado(p.estado)}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Acciones
+                            </f:facet>
+
+                            <div class="table-actions">
+
+                                <h:link
+                                        outcome="/pedidos/detalle.xhtml"
+                                        value="Ver"
+                                        styleClass="btn btn-secondary btn-small">
+
+                                    <f:param
+                                            name="id"
+                                            value="#{p.idPedido}"/>
+
+                                </h:link>
+
+                                <h:commandButton
+                                        value="Confirmar"
+                                        styleClass="btn btn-secondary btn-small"
+                                        rendered="#{pedidoBean.puedeConfirmar(p)}"
+                                        action="#{pedidoBean.confirmar(p.idPedido)}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
+
+                                </h:commandButton>
+
+                                <h:commandButton
+                                        value="En camino"
+                                        styleClass="btn btn-primary btn-small"
+                                        rendered="#{pedidoBean.puedeIniciarProceso(p)}"
+                                        action="#{pedidoBean.iniciarProceso(p.idPedido)}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
+
+                                </h:commandButton>
+
+                                <h:commandButton
+                                        value="Entregado"
+                                        styleClass="btn btn-primary btn-small"
+                                        rendered="#{pedidoBean.puedeCompletar(p)}"
+                                        action="#{pedidoBean.completar(p.idPedido)}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
+
+                                </h:commandButton>
+
+                                <h:commandButton
+                                        value="Cancelar"
+                                        styleClass="btn btn-danger btn-small"
+                                        rendered="#{pedidoBean.puedeCancelar(p)}"
+                                        action="#{pedidoBean.cancelar(p.idPedido)}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
+
+                                </h:commandButton>
+
+                            </div>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </div>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

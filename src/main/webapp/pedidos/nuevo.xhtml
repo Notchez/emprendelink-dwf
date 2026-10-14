@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<f:metadata>
+
+    <f:viewParam
+            name="id"
+            value="#{pedidoBean.idPublicacion}"/>
+
+    <f:viewAction
+            action="#{pedidoBean.cargarNuevaOrden}"
+            onPostback="false"/>
+
+</f:metadata>
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Confirmar pedido - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <div class="page-header">
+
+            <div>
+
+                <div class="eyebrow">
+                    Pedido
+                </div>
+
+                <h1>Confirma tu pedido</h1>
+
+                <p>
+                    Revisa la cantidad antes de continuar.
+                </p>
+
+            </div>
+
+        </div>
+
+        <h:panelGroup
+                rendered="#{not empty pedidoBean.publicacion}"
+                layout="block"
+                styleClass="split-layout">
+
+            <section class="panel">
+
+                <div class="product-business">
+                    #{pedidoBean.publicacion.emprendimiento.nombre}
+                </div>
+
+                <h2>
+                    #{pedidoBean.publicacion.nombre}
+                </h2>
+
+                <p class="muted">
+                    #{pedidoBean.publicacion.tipo eq 'PRODUCTO'
+                            ? 'Producto'
+                            : 'Servicio'}
+                </p>
+
+                <h:outputText
+                        value="#{pedidoBean.publicacion.precio}"
+                        styleClass="detail-price">
+
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+
+                </h:outputText>
+
+                <h:panelGroup
+                        rendered="#{pedidoBean.publicacion.tipo eq 'PRODUCTO'}">
+
+                    <p class="small muted">
+                        Stock disponible:
+                        #{pedidoBean.publicacion.stock}
+                    </p>
+
+                </h:panelGroup>
+
+            </section>
+
+            <section class="panel">
+
+                <h:form id="pedidoForm">
+
+                    <h:messages
+                            id="mensajes"
+                            styleClass="messages"/>
+
+                    <div class="form-group">
+
+                        <h:outputLabel
+                                for="cantidad"
+                                value="Cantidad"/>
+
+                        <h:inputText
+                                id="cantidad"
+                                value="#{pedidoBean.cantidad}"
+                                required="true"
+                                requiredMessage="La cantidad es obligatoria.">
+
+                            <f:validateLongRange minimum="1"/>
+
+                            <f:ajax
+                                    event="blur"
+                                    execute="@this"
+                                    render="cantidadMensaje"/>
+
+                        </h:inputText>
+
+                        <h:message
+                                id="cantidadMensaje"
+                                styleClass="field-error"
+                                for="cantidad"/>
+
+                    </div>
+
+                    <br/>
+
+                    <div class="form-group">
+
+                        <h:outputLabel
+                                for="observaciones"
+                                value="Indicaciones"/>
+
+                        <h:inputTextarea
+                                id="observaciones"
+                                value="#{pedidoBean.observaciones}"
+                                rows="4"/>
+
+                    </div>
+
+                    <div class="button-row">
+
+                        <h:commandButton
+                                value="Confirmar pedido"
+                                styleClass="btn btn-primary"
+                                action="#{pedidoBean.crear}"/>
+
+                        <a class="btn btn-secondary"
+                           href="#{request.contextPath}/catalogo/index.xhtml">
+                            Cancelar
+                        </a>
+
+                    </div>
+
+                </h:form>
+
+            </section>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>
