@@ -143,7 +143,7 @@ public class AuthBean {
         if (rol == TipoRol.ROLE_ADMIN) {
 
             destino =
-                    "/admin/usuarios.xhtml";
+                    "/admin/inicio.xhtml";
         }
 
         FacesContext contexto =
