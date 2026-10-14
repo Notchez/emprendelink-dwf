@@ -72,12 +72,13 @@
                         value="Negocios"
                         styleClass="admin-nav-link #{activeMenu eq 'negocios' ? 'is-active' : ''}"/>
 
-                <span class="admin-nav-label admin-nav-label-secondary">
-                Finanzas
-            </span>
+                <span class="admin-nav-label admin-nav-label-secondary">Finanzas</span>
 
-                <h:link
-                        outcome="/admin/comisiones.xhtml"
+                <h:link outcome="/admin/planes.xhtml"
+                        value="Planes"
+                        styleClass="admin-nav-link #{activeMenu eq 'planes' ? 'is-active' : ''}"/>
+
+                <h:link outcome="/admin/comisiones.xhtml"
                         value="Comisiones"
                         styleClass="admin-nav-link #{activeMenu eq 'comisiones' ? 'is-active' : ''}"/>
 

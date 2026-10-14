@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
+
+    <ui:param
+            name="activeMenu"
+            value="planes"/>
+
+    <ui:define name="title">
+        Planes - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <div class="admin-page-header">
+            <div>
+                <span class="admin-page-eyebrow">
+                    Finanzas
+                </span>
+
+                <h1>Planes</h1>
+
+                <p>
+                    Configura los límites de publicaciones
+                    y la comisión aplicada a cada plan.
+                </p>
+            </div>
+        </div>
+
+        <h:form id="planesForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"
+                    layout="list"
+                    styleClass="admin-messages"/>
+
+            <div class="admin-management-grid">
+
+                <section class="admin-panel">
+
+                    <div class="admin-panel-header">
+                        <div>
+                            <h2>
+                                #{planBean.editando
+                                        ? 'Editar plan'
+                                        : 'Nuevo plan'}
+                            </h2>
+
+                            <p>
+                                Define las condiciones comerciales
+                                del plan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="admin-form">
+
+                        <div class="admin-field">
+                            <h:outputLabel
+                                    for="nombre"
+                                    value="Nombre"/>
+
+                            <h:inputText
+                                    id="nombre"
+                                    value="#{planBean.nombre}"
+                                    required="true"
+                                    requiredMessage="El nombre del plan es obligatorio."
+                                    maxlength="80"/>
+
+                            <h:message
+                                    for="nombre"/>
+                        </div>
+
+                        <div class="admin-field">
+                            <h:outputLabel
+                                    for="maxProductos"
+                                    value="Máximo de publicaciones activas"/>
+
+                            <h:inputText
+                                    id="maxProductos"
+                                    value="#{planBean.maxProductosActivos}"
+                                    required="true"
+                                    requiredMessage="El límite de publicaciones es obligatorio.">
+
+                                <f:validateLongRange
+                                        minimum="1"/>
+
+                            </h:inputText>
+
+                            <h:message
+                                    for="maxProductos"/>
+                        </div>
+
+                        <div class="admin-field">
+                            <h:outputLabel
+                                    for="comision"
+                                    value="Comisión (%)"/>
+
+                            <h:inputText
+                                    id="comision"
+                                    value="#{planBean.porcentajeComision}"
+                                    required="true"
+                                    requiredMessage="La comisión es obligatoria.">
+
+                                <f:validateDoubleRange
+                                        minimum="0"
+                                        maximum="100"/>
+
+                            </h:inputText>
+
+                            <h:message
+                                    for="comision"/>
+
+                            <small>
+                                Ejemplo: escribe 7 para una comisión del 7%.
+                            </small>
+                        </div>
+
+                        <div class="admin-form-actions">
+
+                            <h:commandButton
+                                    value="#{planBean.editando
+                                        ? 'Guardar cambios'
+                                        : 'Crear plan'}"
+                                    action="#{planBean.guardar}"
+                                    styleClass="admin-button admin-button-primary">
+
+                                <f:ajax
+                                        execute="@form"
+                                        render="@form"/>
+
+                            </h:commandButton>
+
+                            <h:commandButton
+                                    value="Cancelar"
+                                    action="#{planBean.cancelarEdicion}"
+                                    rendered="#{planBean.editando}"
+                                    immediate="true"
+                                    styleClass="admin-button admin-button-secondary">
+
+                                <f:ajax
+                                        execute="@this"
+                                        render="@form"/>
+
+                            </h:commandButton>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <section class="admin-panel">
+
+                    <div class="admin-panel-header">
+                        <div>
+                            <h2>Planes disponibles</h2>
+
+                            <p>
+                                Edita sus condiciones o controla
+                                su disponibilidad.
+                            </p>
+                        </div>
+                    </div>
+
+                    <h:panelGroup
+                            rendered="#{not empty planBean.planes}">
+
+                        <div class="admin-table-wrapper">
+
+                            <h:dataTable
+                                    value="#{planBean.planes}"
+                                    var="plan"
+                                    styleClass="admin-table">
+
+                                <h:column>
+                                    <f:facet name="header">
+                                        Plan
+                                    </f:facet>
+
+                                    <strong>
+                                        #{plan.nombre}
+                                    </strong>
+                                </h:column>
+
+                                <h:column>
+                                    <f:facet name="header">
+                                        Publicaciones
+                                    </f:facet>
+
+                                    #{plan.maxProductosActivos}
+                                </h:column>
+
+                                <h:column>
+                                    <f:facet name="header">
+                                        Comisión
+                                    </f:facet>
+
+                                    <span class="admin-money">
+                                        #{planBean.porcentaje(plan)}%
+                                    </span>
+                                </h:column>
+
+                                <h:column>
+                                    <f:facet name="header">
+                                        Estado
+                                    </f:facet>
+
+                                    <span class="#{plan.activo
+                                        ? 'admin-status-badge is-active'
+                                        : 'admin-status-badge is-inactive'}">
+
+                                        #{plan.activo
+                                                ? 'Activo'
+                                                : 'Inactivo'}
+
+                                    </span>
+                                </h:column>
+
+                                <h:column>
+                                    <f:facet name="header">
+                                        Acciones
+                                    </f:facet>
+
+                                    <div class="admin-table-actions">
+
+                                        <h:commandButton
+                                                value="Editar"
+                                                action="#{planBean.editar(plan)}"
+                                                immediate="true"
+                                                styleClass="admin-button admin-button-secondary">
+
+                                            <f:ajax
+                                                    execute="@this"
+                                                    render="@form"/>
+
+                                        </h:commandButton>
+
+                                        <h:commandButton
+                                                value="#{plan.activo
+                                                    ? 'Desactivar'
+                                                    : 'Activar'}"
+                                                action="#{planBean.cambiarEstado(plan)}"
+                                                immediate="true"
+                                                styleClass="admin-button admin-button-neutral">
+
+                                            <f:ajax
+                                                    execute="@this"
+                                                    render="@form"/>
+
+                                        </h:commandButton>
+
+                                    </div>
+
+                                </h:column>
+
+                            </h:dataTable>
+
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup
+                            rendered="#{empty planBean.planes}">
+
+                        <div class="admin-empty-state">
+                            <strong>
+                                No hay planes registrados.
+                            </strong>
+
+                            <p>
+                                Crea el primer plan desde el formulario.
+                            </p>
+                        </div>
+
+                    </h:panelGroup>
+
+                </section>
+
+            </div>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
