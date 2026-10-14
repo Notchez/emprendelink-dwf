@@ -15,7 +15,7 @@ import emprendelink.persistence.jpa.mapper.PedidoMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -296,6 +296,16 @@ public class JpaPedidoDAO
 
             entidad.setMontoComision(
                     monto
+            );
+        }
+
+        if (nuevoEstado
+                == EstadoPedido.COMPLETADO
+                && entidad.getFechaCompletado()
+                == null) {
+
+            entidad.setFechaCompletado(
+                    LocalDateTime.now()
             );
         }
 

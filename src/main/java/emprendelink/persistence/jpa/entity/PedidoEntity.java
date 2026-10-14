@@ -107,6 +107,8 @@ public class PedidoEntity {
             nullable = false
     )
     private LocalDateTime fechaPedido;
+    @Column(name = "fecha_completado")
+    private LocalDateTime fechaCompletado;
 
     @OneToMany(
             mappedBy = "pedido",
@@ -228,6 +230,17 @@ public class PedidoEntity {
 
         this.fechaPedido =
                 fechaPedido;
+    }
+
+    public LocalDateTime getFechaCompletado() {
+        return fechaCompletado;
+    }
+
+    public void setFechaCompletado(
+            LocalDateTime fechaCompletado) {
+
+        this.fechaCompletado =
+                fechaCompletado;
     }
 
     public List<DetallePedidoEntity> getDetalles() {

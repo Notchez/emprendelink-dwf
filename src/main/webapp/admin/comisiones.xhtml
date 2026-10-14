@@ -7,7 +7,9 @@
         xmlns:ui="jakarta.faces.facelets"
         template="/WEB-INF/admin-layout.xhtml">
 
-    <ui:param name="activeMenu" value="comisiones"/>
+    <ui:param
+            name="activeMenu"
+            value="comisiones"/>
 
     <ui:define name="title">
         Comisiones - Administración - EmprendeLink
@@ -26,7 +28,8 @@
                 <h1>Comisiones</h1>
 
                 <p>
-                    Consulta los ingresos generados por pedidos completados.
+                    Consulta las comisiones generadas
+                    por pedidos completados.
                 </p>
 
             </div>
@@ -153,10 +156,10 @@
 
                 <article class="admin-summary-card">
 
-                    <span>Tasa de comisión</span>
+                    <span>Negocios con ventas</span>
 
                     <strong>
-                        7%
+                        #{adminComisionBean.totalNegocios}
                     </strong>
 
                 </article>
@@ -189,60 +192,82 @@
 
                 </div>
 
-                <div class="admin-table-scroll">
+                <h:panelGroup
+                        rendered="#{not empty adminComisionBean.resumenes}">
 
-                    <h:dataTable
-                            value="#{adminComisionBean.resumenes}"
-                            var="resumen"
-                            styleClass="admin-table">
+                    <div class="admin-table-scroll">
 
-                        <h:column>
+                        <h:dataTable
+                                value="#{adminComisionBean.resumenes}"
+                                var="resumen"
+                                styleClass="admin-table">
 
-                            <f:facet name="header">
-                                Negocio
-                            </f:facet>
+                            <h:column>
 
-                            <strong>
-                                #{resumen.emprendimiento.nombre}
-                            </strong>
+                                <f:facet name="header">
+                                    Negocio
+                                </f:facet>
 
-                        </h:column>
+                                <strong>
+                                    #{resumen.emprendimiento.nombre}
+                                </strong>
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Pedidos completados
-                            </f:facet>
+                            <h:column>
 
-                            #{resumen.cantidadPedidos}
+                                <f:facet name="header">
+                                    Pedidos completados
+                                </f:facet>
 
-                        </h:column>
+                                #{resumen.cantidadPedidos}
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Ventas
-                            </f:facet>
+                            <h:column>
 
-                            $#{resumen.ventas}
+                                <f:facet name="header">
+                                    Ventas
+                                </f:facet>
 
-                        </h:column>
+                                $#{resumen.ventas}
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Comisión
-                            </f:facet>
+                            <h:column>
 
-                            <strong class="admin-money">
-                                $#{resumen.comision}
-                            </strong>
+                                <f:facet name="header">
+                                    Comisión
+                                </f:facet>
 
-                        </h:column>
+                                <strong class="admin-money">
+                                    $#{resumen.comision}
+                                </strong>
 
-                    </h:dataTable>
+                            </h:column>
 
-                </div>
+                        </h:dataTable>
+
+                    </div>
+
+                </h:panelGroup>
+
+                <h:panelGroup
+                        rendered="#{empty adminComisionBean.resumenes}">
+
+                    <div class="admin-empty-state">
+
+                        <strong>
+                            No hay comisiones en este período.
+                        </strong>
+
+                        <p>
+                            Prueba con otro negocio, mes o año.
+                        </p>
+
+                    </div>
+
+                </h:panelGroup>
 
             </section>
 
@@ -255,75 +280,112 @@
                         <h2>Pedidos que generaron comisión</h2>
 
                         <p>
-                            Solo se incluyen pedidos en estado COMPLETADO.
+                            La tasa y el monto corresponden
+                            a lo almacenado cuando el pedido
+                            fue completado.
                         </p>
 
                     </div>
 
                 </div>
 
-                <div class="admin-table-scroll">
+                <h:panelGroup
+                        rendered="#{not empty adminComisionBean.pedidos}">
 
-                    <h:dataTable
-                            value="#{adminComisionBean.pedidos}"
-                            var="pedido"
-                            styleClass="admin-table">
+                    <div class="admin-table-scroll">
 
-                        <h:column>
+                        <h:dataTable
+                                value="#{adminComisionBean.pedidos}"
+                                var="pedido"
+                                styleClass="admin-table">
 
-                            <f:facet name="header">
-                                Pedido
-                            </f:facet>
+                            <h:column>
 
-                            ##{pedido.idPedido}
+                                <f:facet name="header">
+                                    Pedido
+                                </f:facet>
 
-                        </h:column>
+                                <strong>
+                                    ##{pedido.idPedido}
+                                </strong>
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Negocio
-                            </f:facet>
+                            <h:column>
 
-                            #{pedido.emprendimiento.nombre}
+                                <f:facet name="header">
+                                    Negocio
+                                </f:facet>
 
-                        </h:column>
+                                #{pedido.emprendimiento.nombre}
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Fecha
-                            </f:facet>
+                            <h:column>
 
-                            #{pedido.fechaPedido}
+                                <f:facet name="header">
+                                    Fecha
+                                </f:facet>
 
-                        </h:column>
+                                #{pedido.fechaCompletado}
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Venta
-                            </f:facet>
+                            <h:column>
 
-                            $#{pedido.total}
+                                <f:facet name="header">
+                                    Venta
+                                </f:facet>
 
-                        </h:column>
+                                $#{pedido.total}
 
-                        <h:column>
+                            </h:column>
 
-                            <f:facet name="header">
-                                Comisión
-                            </f:facet>
+                            <h:column>
 
-                            <strong class="admin-money">
-                                $#{adminComisionBean.getComisionPedido(pedido)}
-                            </strong>
+                                <f:facet name="header">
+                                    Tasa aplicada
+                                </f:facet>
 
-                        </h:column>
+                                #{adminComisionBean.porcentajeComision(pedido)}%
 
-                    </h:dataTable>
+                            </h:column>
 
-                </div>
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Comisión
+                                </f:facet>
+
+                                <strong class="admin-money">
+                                    $#{adminComisionBean.getComisionPedido(pedido)}
+                                </strong>
+
+                            </h:column>
+
+                        </h:dataTable>
+
+                    </div>
+
+                </h:panelGroup>
+
+                <h:panelGroup
+                        rendered="#{empty adminComisionBean.pedidos}">
+
+                    <div class="admin-empty-state">
+
+                        <strong>
+                            No hay pedidos completados.
+                        </strong>
+
+                        <p>
+                            No se generaron comisiones
+                            para los filtros seleccionados.
+                        </p>
+
+                    </div>
+
+                </h:panelGroup>
 
             </section>
 

@@ -3,6 +3,7 @@ package emprendelink.web.jsf;
 import emprendelink.model.Emprendimiento;
 import emprendelink.model.Pedido;
 import emprendelink.model.Plan;
+import emprendelink.model.enums.EstadoPedido;
 import emprendelink.service.AdminConsultaService;
 import emprendelink.service.EmprendimientoService;
 import emprendelink.service.PlanService;
@@ -168,11 +169,12 @@ public class AdminNegocioBean implements Serializable {
 
     public BigDecimal getTotalVentas() {
 
-        return pedidos
-                .stream()
-                .map(
-                        Pedido::getTotal
+        return pedidos.stream()
+                .filter(pedido ->
+                        pedido.getEstado()
+                                == EstadoPedido.COMPLETADO
                 )
+                .map(Pedido::getTotal)
                 .filter(total ->
                         total != null
                 )

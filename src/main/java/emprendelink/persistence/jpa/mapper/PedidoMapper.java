@@ -60,6 +60,10 @@ public final class PedidoMapper {
                 pedido.getFechaPedido()
         );
 
+        entidad.setFechaCompletado(
+                pedido.getFechaCompletado()
+        );
+
         for (DetallePedido detalle
                 : pedido.getDetalles()) {
 
@@ -97,6 +101,10 @@ public final class PedidoMapper {
                         entidad.getObservaciones(),
                         entidad.getFechaPedido()
                 );
+
+        pedido.setFechaCompletado(
+                entidad.getFechaCompletado()
+        );
 
         pedido.setTasaComision(
                 entidad.getTasaComision()

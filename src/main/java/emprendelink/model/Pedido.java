@@ -18,6 +18,7 @@ public class Pedido {
     private BigDecimal montoComision;
     private String observaciones;
     private LocalDateTime fechaPedido;
+    private LocalDateTime fechaCompletado;
 
     private final List<DetallePedido> detalles;
 
@@ -261,6 +262,17 @@ public class Pedido {
 
         this.fechaPedido =
                 fechaPedido;
+    }
+
+    public LocalDateTime getFechaCompletado() {
+        return fechaCompletado;
+    }
+
+    public void setFechaCompletado(
+            LocalDateTime fechaCompletado) {
+
+        this.fechaCompletado =
+                fechaCompletado;
     }
 
     public List<DetallePedido> getDetalles() {

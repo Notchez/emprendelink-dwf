@@ -63,16 +63,16 @@ public class AdminConsultaServiceImpl
                                 == EstadoPedido.COMPLETADO
                 )
                 .filter(pedido ->
-                        pedido.getFechaPedido()
+                        pedido.getFechaCompletado()
                                 != null
                 )
                 .filter(pedido ->
-                        pedido.getFechaPedido()
+                        pedido.getFechaCompletado()
                                 .getMonthValue()
                                 == mes
                 )
                 .filter(pedido ->
-                        pedido.getFechaPedido()
+                        pedido.getFechaCompletado()
                                 .getYear()
                                 == anio
                 )
