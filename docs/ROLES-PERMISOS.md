@@ -8,56 +8,119 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-## Visitante
+La autorización se aplica mediante:
+
+- filtros HTTP;
+- sesión;
+- Services;
+- validación de propiedad de recursos.
+
+---
+
+# 1. Visitante
 
 Puede:
 
 - abrir login;
 - registrarse;
-- crear una cuenta Cliente o Emprendedor.
+- consultar el catálogo público;
+- consultar el detalle de publicaciones activas.
+
+Puede registrarse como:
+
+```text
+ROLE_CLIENTE
+ROLE_EMPRENDEDOR
+```
 
 No puede:
 
+- crear `ROLE_ADMIN`;
+- crear pedidos sin autenticarse;
 - acceder a administración;
-- crear un rol Admin;
-- acceder a datos privados.
+- consultar información privada;
+- gestionar emprendimientos;
+- gestionar publicaciones.
 
-## ROLE_CLIENTE
+---
+
+# 2. ROLE_CLIENTE
 
 Puede:
 
-- iniciar/cerrar sesión;
-- acceder al inicio autenticado;
-- consultar catálogo cuando esté implementado;
-- crear pedidos cuando el módulo esté implementado;
-- consultar únicamente sus propios pedidos.
+- iniciar sesión;
+- cerrar sesión;
+- consultar catálogo;
+- consultar detalle de publicaciones;
+- crear pedidos;
+- consultar sus propios pedidos;
+- consultar el detalle de pedidos visibles para él.
 
 No puede:
 
 - administrar usuarios;
 - administrar categorías;
-- gestionar emprendimientos;
-- gestionar publicaciones de emprendedores;
-- consultar pedidos de otros clientes.
+- administrar emprendimientos;
+- gestionar publicaciones;
+- acceder a pedidos de otros clientes;
+- cambiar estados de pedidos recibidos.
 
-## ROLE_EMPRENDEDOR
+Rutas principales:
+
+```text
+/catalogo/*
+/pedidos/nuevo.xhtml
+/pedidos/mis-pedidos.xhtml
+/pedidos/detalle.xhtml
+```
+
+---
+
+# 3. ROLE_EMPRENDEDOR
 
 Puede:
 
 - iniciar/cerrar sesión;
-- acceder al inicio autenticado;
-- gestionar sus propios emprendimientos;
-- gestionar publicaciones de sus propios emprendimientos;
-- consultar pedidos dirigidos a sus emprendimientos;
-- gestionar estados permitidos de esos pedidos.
+- gestionar sus emprendimientos;
+- crear emprendimientos;
+- editar emprendimientos propios;
+- gestionar publicaciones de sus emprendimientos;
+- consultar pedidos recibidos;
+- cambiar estados permitidos de pedidos correspondientes a sus negocios.
+
+Puede realizar:
+
+```text
+PENDIENTE → CONFIRMADO
+
+CONFIRMADO → EN_PROCESO
+
+EN_PROCESO → COMPLETADO
+```
+
+También puede cancelar pedidos desde estados permitidos.
 
 No puede:
 
-- editar recursos de otro emprendedor;
+- editar emprendimientos ajenos;
+- editar publicaciones ajenas;
+- modificar pedidos de otros emprendimientos;
 - administrar usuarios;
-- administrar categorías globales.
+- administrar categorías globales;
+- acceder al área administrativa.
 
-## ROLE_ADMIN
+Rutas principales:
+
+```text
+/emprendimientos/*
+/publicaciones/*
+/pedidos/recibidos.xhtml
+/pedidos/detalle.xhtml
+```
+
+---
+
+# 4. ROLE_ADMIN
 
 Puede:
 
@@ -65,48 +128,202 @@ Puede:
 - consultar usuarios;
 - activar/desactivar usuarios;
 - administrar categorías;
-- supervisar módulos administrativos según se implementen.
+- consultar emprendimientos;
+- activar/desactivar emprendimientos;
+- consultar publicaciones;
+- activar/desactivar publicaciones;
+- supervisar información general del sistema según las funciones administrativas implementadas.
 
-No puede desactivar su propia cuenta desde la gestión de usuarios.
+No puede desactivar su propia cuenta desde la tabla de administración de usuarios.
 
-## Seguridad de rutas
-
-Actualmente:
+Rutas:
 
 ```text
-/admin/* → ROLE_ADMIN
-/inicio.xhtml → sesión válida
+/admin/*
 ```
 
-Los módulos nuevos deben agregar protección equivalente según rol y propiedad.
+---
 
-## Propiedad
+# 5. Propiedad de recursos
 
-El rol no es suficiente para operaciones sobre recursos propios.
+El rol por sí solo no autoriza todas las operaciones.
 
-Ejemplos:
+También se comprueba propiedad.
 
-- un Emprendedor solo modifica sus emprendimientos;
-- una publicación solo puede modificarse si pertenece a un emprendimiento del usuario;
-- un Cliente solo consulta sus pedidos;
-- un Emprendedor solo gestiona pedidos de sus emprendimientos.
+## Emprendimiento
 
-## Contraseñas
+Un emprendedor únicamente puede editar un emprendimiento cuando:
 
-Nunca deben:
+```text
+emprendimiento.propietario.idUsuario
+==
+usuarioAutenticado.idUsuario
+```
 
-- persistirse en texto plano;
+---
+
+## Publicación
+
+Una publicación solamente puede ser gestionada por el propietario del emprendimiento correspondiente.
+
+---
+
+## Pedido — Cliente
+
+Un cliente solamente puede consultar pedidos asociados a su usuario.
+
+---
+
+## Pedido — Emprendedor
+
+Un emprendedor solamente puede gestionar pedidos cuando:
+
+```text
+pedido.emprendimiento.propietario.idUsuario
+==
+usuarioAutenticado.idUsuario
+```
+
+---
+
+# 6. Seguridad por filtros
+
+## AutenticacionFilter
+
+Protege:
+
+```text
+/inicio.xhtml
+```
+
+Requiere sesión.
+
+---
+
+## AdminFilter
+
+Protege:
+
+```text
+/admin/*
+```
+
+Requiere:
+
+```text
+ROLE_ADMIN
+```
+
+---
+
+## EmprendedorFilter
+
+Protege:
+
+```text
+/emprendimientos/*
+/publicaciones/*
+```
+
+Requiere:
+
+```text
+ROLE_EMPRENDEDOR
+```
+
+---
+
+## PedidosFilter
+
+Aplica reglas según la ruta.
+
+Cliente:
+
+```text
+/pedidos/nuevo.xhtml
+/pedidos/mis-pedidos.xhtml
+```
+
+Emprendedor:
+
+```text
+/pedidos/recibidos.xhtml
+```
+
+El detalle vuelve a validarse en la capa Service.
+
+---
+
+# 7. Autenticación
+
+La sesión utiliza:
+
+```text
+usuarioAutenticado
+```
+
+Al cerrar sesión:
+
+- se invalida la sesión;
+- el usuario vuelve a login.
+
+---
+
+# 8. Contraseñas
+
+Las contraseñas nunca deben:
+
+- almacenarse en texto plano;
 - mostrarse en UI;
-- guardarse en sesión;
-- incluirse en DTO;
-- aparecer en logs.
+- incluirse en logs;
+- exponerse en servicios externos;
+- almacenarse directamente en sesión.
 
-El sistema almacena hashes PBKDF2.
+El sistema utiliza:
 
-## Fase 3
+```text
+PBKDF2
+```
 
-La API REST debe aplicar las mismas reglas de autorización.
+La columna persistida es:
 
-## Fase 4
+```text
+contrasena_hash
+```
 
-Spring Security podrá reutilizar los mismos roles y reglas.
+---
+
+# 9. Eliminación lógica
+
+Para preservar datos históricos y relaciones, se utiliza activación/desactivación en:
+
+```text
+Usuario
+Categoria
+Emprendimiento
+Publicacion
+```
+
+Un registro inactivo permanece en la base de datos, pero sus operaciones disponibles se restringen.
+
+---
+
+# 10. Fase 3
+
+La futura API REST deberá aplicar las mismas reglas de:
+
+- autenticación;
+- rol;
+- propiedad;
+- estado;
+- disponibilidad.
+
+Los endpoints no deben duplicar reglas de autorización que ya viven en Services.
+
+---
+
+# 11. Fase 4
+
+Spring Security podrá reemplazar o complementar parte de la protección HTTP.
+
+Sin embargo, las reglas de negocio y propiedad deberán mantenerse independientes de la tecnología de presentación.

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE html>
 
@@ -7,87 +7,123 @@
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
-    <title>Iniciar sesión - EmprendeLink</title>
+<ui:composition template="/WEB-INF/base.xhtml">
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
-</h:head>
+    <ui:define name="title">
+        Iniciar sesion - EmprendeLink
+    </ui:define>
 
-<h:body>
+    <ui:define name="content">
 
-    <main>
+        <section class="auth-layout">
 
-        <h1>Iniciar sesión</h1>
+            <div class="auth-brand">
 
-        <ui:fragment rendered="#{param.registro eq 'exitoso'}">
-            <p>
-                Registro completado.
-                Ya puedes iniciar sesión.
-            </p>
-        </ui:fragment>
+                <span class="brand-mark">E</span>
 
-        <h:form id="loginForm">
+                <h1>Bienvenido</h1>
 
-            <h:messages
-                    id="mensajes"
-                    globalOnly="true"/>
+                <p>
+                    Ingresa a tu cuenta para continuar.
+                </p>
 
-            <h:outputLabel
-                    for="correo"
-                    value="Correo"/>
+            </div>
 
-            <h:inputText
-                    id="correo"
-                    value="#{authBean.correo}"
-                    required="true"
-                    requiredMessage="El correo es obligatorio."
-                    validator="correoValidator"
-                    maxlength="120">
+            <div class="auth-card">
 
-                <f:ajax
-                        event="blur"
-                        execute="@this"
-                        render="correoMensaje"/>
+                <ui:fragment
+                        rendered="#{param.registro eq 'exitoso'}">
 
-            </h:inputText>
+                    <div class="messages">
+                        Registro completado.
+                        Ya puedes iniciar sesionn.
+                    </div>
 
-            <h:message
-                    id="correoMensaje"
-                    for="correo"/>
+                </ui:fragment>
 
-            <br/><br/>
+                <h:form id="loginForm">
 
-            <h:outputLabel
-                    for="contrasena"
-                    value="Contraseña"/>
+                    <h:messages
+                            id="mensajes"
+                            styleClass="messages"
+                            globalOnly="true"/>
 
-            <h:inputSecret
-                    id="contrasena"
-                    value="#{authBean.contrasena}"
-                    required="true"
-                    requiredMessage="La contraseña es obligatoria."
-                    maxlength="128"/>
+                    <div class="form-group">
 
-            <h:message
-                    for="contrasena"/>
+                        <h:outputLabel
+                                for="correo"
+                                value="Correo"/>
 
-            <br/><br/>
+                        <h:inputText
+                                id="correo"
+                                value="#{authBean.correo}"
+                                required="true"
+                                requiredMessage="El correo es obligatorio."
+                                validator="correoValidator"
+                                maxlength="120">
 
-            <h:commandButton
-                    value="Ingresar"
-                    action="#{authBean.iniciarSesion}"/>
+                            <f:ajax
+                                    event="blur"
+                                    execute="@this"
+                                    render="correoMensaje"/>
 
-        </h:form>
+                        </h:inputText>
 
-        <p>
-            <a href="#{request.contextPath}/registro.xhtml">
-                Crear cuenta
-            </a>
-        </p>
+                        <h:message
+                                id="correoMensaje"
+                                styleClass="field-error"
+                                for="correo"/>
 
-    </main>
+                    </div>
 
-</h:body>
+                    <br/>
+
+                    <div class="form-group">
+
+                        <h:outputLabel
+                                for="contrasena"
+                                value="Contraseña"/>
+
+                        <h:inputSecret
+                                id="contrasena"
+                                value="#{authBean.contrasena}"
+                                required="true"
+                                requiredMessage="La contraseña es obligatoria."
+                                maxlength="128"/>
+
+                        <h:message
+                                styleClass="field-error"
+                                for="contrasena"/>
+
+                    </div>
+
+                    <div class="button-row">
+
+                        <h:commandButton
+                                value="Ingresar"
+                                styleClass="btn btn-primary"
+                                action="#{authBean.iniciarSesion}"/>
+
+                    </div>
+
+                </h:form>
+
+                <div class="auth-footer">
+
+                    ¿No tienes cuenta?
+
+                    <a href="#{request.contextPath}/registro.xhtml">
+                        <strong>Crear cuenta</strong>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </ui:define>
+
+</ui:composition>
 
 </html>

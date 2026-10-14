@@ -1,137 +1,169 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE html>
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
 
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+    <ui:param name="activeMenu" value="negocios"/>
 
-<h:head>
+    <ui:define name="title">
+        Negocios - Administración - EmprendeLink
+    </ui:define>
 
-    <title>
-        Administrar emprendimientos - EmprendeLink
-    </title>
+    <ui:define name="content">
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+        <section class="admin-page-header">
 
-</h:head>
+            <div>
 
-<h:body>
+                <span class="admin-eyebrow">
+                    Operación
+                </span>
 
-    <main>
+                <h1>Negocios</h1>
 
-        <h1>Administrar emprendimientos</h1>
+                <p>
+                    Consulta los emprendimientos registrados,
+                    propietarios y actividad de pedidos.
+                </p>
 
-        <p>
-            <a href="#{request.contextPath}/admin/usuarios.xhtml">
-                Volver a administración
-            </a>
-        </p>
+            </div>
 
-        <h:form id="emprendimientosAdminForm">
+        </section>
+
+        <h:form
+                id="negociosForm"
+                styleClass="admin-data-form">
 
             <h:messages
-                    id="mensajes"
-                    globalOnly="true"/>
+                    globalOnly="true"
+                    infoClass="admin-message admin-message-info"
+                    errorClass="admin-message admin-message-error"/>
 
-            <h:dataTable
-                    id="tabla"
-                    value="#{emprendimientoBean.emprendimientosAdmin}"
-                    var="e"
-                    border="1">
+            <section class="admin-panel">
 
-                <h:column>
+                <div class="admin-panel-header">
 
-                    <f:facet name="header">
-                        ID
-                    </f:facet>
+                    <div>
 
-                    #{e.idEmprendimiento}
+                        <h2>Negocios registrados</h2>
 
-                </h:column>
+                        <p>
+                            Selecciona un negocio para consultar sus pedidos.
+                        </p>
 
-                <h:column>
+                    </div>
 
-                    <f:facet name="header">
-                        Nombre
-                    </f:facet>
+                </div>
 
-                    #{e.nombre}
+                <div class="admin-table-scroll">
 
-                </h:column>
+                    <h:dataTable
+                            value="#{emprendimientoBean.emprendimientosAdmin}"
+                            var="negocio"
+                            styleClass="admin-table">
 
-                <h:column>
+                        <h:column>
 
-                    <f:facet name="header">
-                        Propietario
-                    </f:facet>
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
 
-                    #{e.propietario.nombre}
-                    #{e.propietario.apellido}
+                            <div class="admin-business-cell">
 
-                </h:column>
+                                <strong>
+                                    #{negocio.nombre}
+                                </strong>
 
-                <h:column>
+                                <span>
+                                    #{negocio.contacto}
+                                </span>
 
-                    <f:facet name="header">
-                        Correo
-                    </f:facet>
+                            </div>
 
-                    #{e.propietario.correo}
+                        </h:column>
 
-                </h:column>
+                        <h:column>
 
-                <h:column>
+                            <f:facet name="header">
+                                Propietario
+                            </f:facet>
 
-                    <f:facet name="header">
-                        Contacto
-                    </f:facet>
+                            <div class="admin-business-cell">
 
-                    #{e.contacto}
+                                <strong>
+                                    #{negocio.propietario.nombre}
+                                    #{negocio.propietario.apellido}
+                                </strong>
 
-                </h:column>
+                                <span>
+                                    #{negocio.propietario.correo}
+                                </span>
 
-                <h:column>
+                            </div>
 
-                    <f:facet name="header">
-                        Estado
-                    </f:facet>
+                        </h:column>
 
-                    #{e.activo ? 'Activo' : 'Inactivo'}
+                        <h:column>
 
-                </h:column>
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
 
-                <h:column>
+                            <h:outputText
+                                    value="#{negocio.activo ? 'Activo' : 'Inactivo'}"
+                                    styleClass="admin-status #{negocio.activo ? 'is-active' : 'is-inactive'}"/>
 
-                    <f:facet name="header">
-                        Acción
-                    </f:facet>
+                        </h:column>
 
-                    <h:commandButton
-                            value="#{e.activo
-                        ? 'Desactivar'
-                        : 'Activar'}"
-                            action="#{emprendimientoBean.alternarEstado(
-                        e.idEmprendimiento,
-                        e.activo
-                        )}"
-                            immediate="true">
+                        <h:column>
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                            <f:facet name="header">
+                                Acciones
+                            </f:facet>
 
-                    </h:commandButton>
+                            <div class="admin-table-actions">
 
-                </h:column>
+                                <h:link
+                                        outcome="/admin/negocio.xhtml"
+                                        value="Ver negocio"
+                                        styleClass="admin-table-link">
 
-            </h:dataTable>
+                                    <f:param
+                                            name="id"
+                                            value="#{negocio.idEmprendimiento}"/>
+
+                                </h:link>
+
+                                <h:commandButton
+                                        value="#{negocio.activo ? 'Desactivar' : 'Activar'}"
+                                        action="#{emprendimientoBean.alternarEstado(
+                                            negocio.idEmprendimiento,
+                                            negocio.activo
+                                        )}"
+                                        styleClass="admin-action-button #{negocio.activo ? 'is-danger' : 'is-success'}">
+
+                                    <f:ajax
+                                            execute="@this"
+                                            render="@form"/>
+
+                                </h:commandButton>
+
+                            </div>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
 
         </h:form>
 
-    </main>
+    </ui:define>
 
-</h:body>
-
-</html>
+</ui:composition>

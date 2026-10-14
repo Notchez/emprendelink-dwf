@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/publicaciones/*", "/admin/publicaciones.xhtml"})
+@WebFilter(urlPatterns = "/publicaciones/*")
 public class PublicacionFilter implements Filter {
 
     @Override
@@ -44,16 +44,6 @@ public class PublicacionFilter implements Filter {
 
         if (!(valor instanceof Usuario usuario)) {
             redirigirLogin(solicitud, respuesta);
-            return;
-        }
-
-        if (solicitud.getServletPath().equals("/admin/publicaciones.xhtml")) {
-            if (!usuario.isActivo() || usuario.getRol() == null
-                    || usuario.getRol().getNombre() != TipoRol.ROLE_ADMIN) {
-                respuesta.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
-            chain.doFilter(request, response);
             return;
         }
 

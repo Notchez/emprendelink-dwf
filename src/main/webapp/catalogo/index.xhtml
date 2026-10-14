@@ -1,155 +1,201 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
 
-<h:head>
-    <title>Catálogo - EmprendeLink</title>
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
-</h:head>
+<ui:composition template="/WEB-INF/base.xhtml">
 
-<h:body>
+    <ui:define name="title">
+        Explorar - EmprendeLink
+    </ui:define>
 
-<main>
+    <ui:define name="content">
 
-    <h1>Catálogo</h1>
+        <section class="hero">
 
-    <p>
-        <a href="#{request.contextPath}/login.xhtml">
-            Iniciar sesión
-        </a>
-    </p>
+            <div class="eyebrow">
+                Compra local
+            </div>
 
-    <h:form id="catalogoForm">
+            <h1>
+                Encuentra algo que te guste.
+            </h1>
 
-        <h:outputLabel
-                for="texto"
-                value="Buscar"/>
+            <p>
+                Productos y servicios de emprendimientos
+                reunidos en un solo lugar.
+            </p>
 
-        <h:inputText
-                id="texto"
-                value="#{publicacionBean.filtroTexto}">
+        </section>
 
-            <f:ajax
-                    event="keyup"
-                    execute="@this"
-                    render="resultados"/>
+        <h:form
+                id="catalogoForm"
+                styleClass="catalog-filters">
 
-        </h:inputText>
+            <div class="filter-grid">
 
-        <h:outputLabel
-                for="tipo"
-                value=" Tipo"/>
+                <div class="form-group">
 
-        <h:selectOneMenu
-                id="tipo"
-                value="#{publicacionBean.filtroTipo}">
+                    <h:outputLabel
+                            for="texto"
+                            value="Buscar"/>
 
-            <f:selectItem
-                    itemLabel="Todos"
-                    itemValue="#{null}"/>
+                    <h:inputText
+                            id="texto"
+                            value="#{publicacionBean.filtroTexto}">
 
-            <f:selectItems
-                    value="#{publicacionBean.tipos}"
-                    var="tipo"
-                    itemValue="#{tipo}"
-                    itemLabel="#{tipo}"/>
+                        <f:ajax
+                                event="keyup"
+                                execute="@this"
+                                render="resultados"/>
 
-            <f:ajax
-                    execute="@this"
-                    render="resultados"/>
+                    </h:inputText>
 
-        </h:selectOneMenu>
+                </div>
 
-        <h:outputLabel
-                for="categoria"
-                value=" Categoría"/>
+                <div class="form-group">
 
-        <h:selectOneMenu
-                id="categoria"
-                value="#{publicacionBean.filtroCategoriaId}">
+                    <h:outputLabel
+                            for="tipo"
+                            value="Tipo"/>
 
-            <f:selectItem
-                    itemLabel="Todas"
-                    itemValue="#{null}"/>
+                    <h:selectOneMenu
+                            id="tipo"
+                            value="#{publicacionBean.filtroTipo}">
 
-            <f:selectItems
-                    value="#{publicacionBean.categoriasActivas}"
-                    var="c"
-                    itemValue="#{c.idCategoria}"
-                    itemLabel="#{c.nombre}"/>
+                        <f:selectItem
+                                itemLabel="Todos"
+                                itemValue="#{null}"/>
 
-            <f:ajax
-                    execute="@this"
-                    render="resultados"/>
+                        <f:selectItems
+                                value="#{publicacionBean.tipos}"
+                                var="tipo"
+                                itemValue="#{tipo}"
+                                itemLabel="#{tipo eq 'PRODUCTO'
+                                ? 'Productos'
+                                : 'Servicios'}"/>
 
-        </h:selectOneMenu>
+                        <f:ajax
+                                execute="@this"
+                                render="resultados"/>
 
-        <h:panelGroup
-                id="resultados"
-                layout="block">
+                    </h:selectOneMenu>
 
-            <h:dataTable
-                    value="#{publicacionBean.catalogoFiltrado}"
-                    var="p"
-                    border="1">
+                </div>
 
-                <h:column>
-                    <f:facet name="header">Nombre</f:facet>
-                    #{p.nombre}
-                </h:column>
+                <div class="form-group">
 
-                <h:column>
-                    <f:facet name="header">Tipo</f:facet>
-                    #{p.tipo}
-                </h:column>
+                    <h:outputLabel
+                            for="categoria"
+                            value="CategorÃ­a"/>
 
-                <h:column>
-                    <f:facet name="header">Categoría</f:facet>
-                    #{p.categoria.nombre}
-                </h:column>
+                    <h:selectOneMenu
+                            id="categoria"
+                            value="#{publicacionBean.filtroCategoriaId}">
 
-                <h:column>
-                    <f:facet name="header">Emprendimiento</f:facet>
-                    #{p.emprendimiento.nombre}
-                </h:column>
+                        <f:selectItem
+                                itemLabel="Todas"
+                                itemValue="#{null}"/>
 
-                <h:column>
-                    <f:facet name="header">Precio</f:facet>
-                    <h:outputText value="#{p.precio}">
-                        <f:convertNumber
-                                type="currency"
-                                currencySymbol="$"/>
-                    </h:outputText>
-                </h:column>
+                        <f:selectItems
+                                value="#{publicacionBean.categoriasActivas}"
+                                var="c"
+                                itemValue="#{c.idCategoria}"
+                                itemLabel="#{c.nombre}"/>
 
-                <h:column>
-                    <f:facet name="header">Detalle</f:facet>
+                        <f:ajax
+                                execute="@this"
+                                render="resultados"/>
 
-                    <h:link
-                            outcome="/catalogo/detalle.xhtml"
-                            value="Ver detalle">
+                    </h:selectOneMenu>
 
-                        <f:param
-                                name="id"
-                                value="#{p.idPublicacion}"/>
+                </div>
 
-                    </h:link>
+            </div>
 
-                </h:column>
+            <br/>
 
-            </h:dataTable>
+            <h:panelGroup
+                    id="resultados"
+                    layout="block">
 
-        </h:panelGroup>
+                <div class="catalog-grid">
 
-    </h:form>
+                    <ui:repeat
+                            value="#{publicacionBean.catalogoFiltrado}"
+                            var="p">
 
-</main>
+                        <article class="product-card">
 
-</h:body>
+                            <div class="#{p.tipo eq 'SERVICIO'
+                            ? 'product-visual service'
+                            : 'product-visual'}">
+
+                                <span class="product-type">
+                                    #{p.tipo eq 'PRODUCTO'
+                                            ? 'Producto'
+                                            : 'Servicio'}
+                                </span>
+
+                            </div>
+
+                            <div class="product-body">
+
+                                <div class="product-business">
+                                    #{p.emprendimiento.nombre}
+                                </div>
+
+                                <h2 class="product-title">
+                                    #{p.nombre}
+                                </h2>
+
+                                <div class="product-category">
+                                    #{p.categoria.nombre}
+                                </div>
+
+                                <div class="product-footer">
+
+                                    <h:outputText
+                                            value="#{p.precio}"
+                                            styleClass="price">
+
+                                        <f:convertNumber
+                                                type="currency"
+                                                currencySymbol="$"/>
+
+                                    </h:outputText>
+
+                                    <h:link
+                                            outcome="/catalogo/detalle.xhtml"
+                                            value="Ver"
+                                            styleClass="btn btn-secondary btn-small">
+
+                                        <f:param
+                                                name="id"
+                                                value="#{p.idPublicacion}"/>
+
+                                    </h:link>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    </ui:repeat>
+
+                </div>
+
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
 
 </html>

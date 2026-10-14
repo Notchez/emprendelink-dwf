@@ -26,17 +26,33 @@ CREATE TABLE usuarios (
     FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
 );
 
+-- planes
+CREATE TABLE planes (
+  id_plan               INT AUTO_INCREMENT PRIMARY KEY,
+  nombre                VARCHAR(80) NOT NULL UNIQUE,
+  max_productos_activos INT NOT NULL,
+  tasa_comision         DECIMAL(5,4) NOT NULL,
+  activo                BOOLEAN NOT NULL DEFAULT TRUE,
+  CONSTRAINT chk_planes_max_productos
+      CHECK (max_productos_activos > 0),
+  CONSTRAINT chk_planes_tasa
+      CHECK (tasa_comision >= 0 AND tasa_comision <= 1)
+);
+
 -- emprendimientos
 CREATE TABLE emprendimientos (
   id_emprendimiento  INT AUTO_INCREMENT PRIMARY KEY,
   id_propietario     INT NOT NULL,
+  id_plan            INT NOT NULL,
   nombre             VARCHAR(120) NOT NULL,
   descripcion        TEXT,
   contacto           VARCHAR(120),
   activo             BOOLEAN NOT NULL DEFAULT TRUE,
   fecha_registro     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_emprendimientos_propietario
-    FOREIGN KEY (id_propietario) REFERENCES usuarios(id_usuario)
+    FOREIGN KEY (id_propietario) REFERENCES usuarios(id_usuario),
+  CONSTRAINT fk_emprendimientos_plan
+    FOREIGN KEY (id_plan) REFERENCES planes(id_plan)
 );
 
 -- categorias
@@ -77,11 +93,20 @@ CREATE TABLE pedidos (
   total              DECIMAL(10,2) NOT NULL DEFAULT 0,
   observaciones      TEXT,
   fecha_pedido       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_completado DATETIME NULL,
+  tasa_comision    DECIMAL(5,4) NULL,
+  monto_comision   DECIMAL(10,2) NULL,
   CONSTRAINT fk_pedidos_cliente
     FOREIGN KEY (id_cliente) REFERENCES usuarios(id_usuario),
   CONSTRAINT fk_pedidos_emprendimiento
     FOREIGN KEY (id_emprendimiento) REFERENCES emprendimientos(id_emprendimiento),
-  CONSTRAINT chk_pedidos_total CHECK (total >= 0)
+  CONSTRAINT chk_pedidos_total
+    CHECK (total >= 0),
+  CONSTRAINT chk_pedidos_tasa_comision
+    CHECK (tasa_comision IS NULL
+      OR (tasa_comision >= 0 AND tasa_comision <= 1)),
+  CONSTRAINT chk_pedidos_monto_comision
+    CHECK (monto_comision IS NULL OR monto_comision >= 0)
 );
 
 -- detalle_pedido

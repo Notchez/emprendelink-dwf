@@ -19,12 +19,21 @@ public final class EmprendimientoMapper {
                 new EmprendimientoEntity();
 
         entidad.setIdEmprendimiento(
-                emprendimiento.getIdEmprendimiento()
+                emprendimiento
+                        .getIdEmprendimiento()
         );
 
         entidad.setPropietario(
                 UsuarioMapper.aEntidad(
-                        emprendimiento.getPropietario()
+                        emprendimiento
+                                .getPropietario()
+                )
+        );
+
+        entidad.setPlan(
+                PlanMapper.aEntidad(
+                        emprendimiento
+                                .getPlan()
                 )
         );
 
@@ -62,6 +71,9 @@ public final class EmprendimientoMapper {
                 entidad.getIdEmprendimiento(),
                 UsuarioMapper.aDominio(
                         entidad.getPropietario()
+                ),
+                PlanMapper.aDominio(
+                        entidad.getPlan()
                 ),
                 entidad.getNombre(),
                 entidad.getDescripcion(),

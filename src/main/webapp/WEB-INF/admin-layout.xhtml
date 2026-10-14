@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<f:metadata>
+    <ui:insert name="metadata"/>
+</f:metadata>
+
+<h:head>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"/>
+
+    <title>
+        <ui:insert name="title">
+            Administración - EmprendeLink
+        </ui:insert>
+    </title>
+
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/estilos.css"/>
+
+</h:head>
+
+<h:body styleClass="admin-body">
+
+    <div class="admin-shell">
+
+        <aside class="admin-sidebar">
+
+            <div class="admin-brand">
+
+                <div class="admin-brand-mark">
+                    E
+                </div>
+
+                <div class="admin-brand-copy">
+                    <strong>EmprendeLink</strong>
+                    <span>Administración</span>
+                </div>
+
+            </div>
+
+            <nav class="admin-nav">
+
+            <span class="admin-nav-label">
+                Principal
+            </span>
+
+                <h:link
+                        outcome="/admin/inicio.xhtml"
+                        value="Inicio"
+                        styleClass="admin-nav-link #{activeMenu eq 'inicio' ? 'is-active' : ''}"/>
+
+                <h:link
+                        outcome="/admin/usuarios.xhtml"
+                        value="Usuarios"
+                        styleClass="admin-nav-link #{activeMenu eq 'usuarios' ? 'is-active' : ''}"/>
+
+                <h:link
+                        outcome="/admin/categorias.xhtml"
+                        value="Categorías"
+                        styleClass="admin-nav-link #{activeMenu eq 'categorias' ? 'is-active' : ''}"/>
+
+                <h:link
+                        outcome="/admin/emprendimientos.xhtml"
+                        value="Negocios"
+                        styleClass="admin-nav-link #{activeMenu eq 'negocios' ? 'is-active' : ''}"/>
+
+                <span class="admin-nav-label admin-nav-label-secondary">Finanzas</span>
+
+                <h:link outcome="/admin/planes.xhtml"
+                        value="Planes"
+                        styleClass="admin-nav-link #{activeMenu eq 'planes' ? 'is-active' : ''}"/>
+
+                <h:link outcome="/admin/comisiones.xhtml"
+                        value="Comisiones"
+                        styleClass="admin-nav-link #{activeMenu eq 'comisiones' ? 'is-active' : ''}"/>
+
+            </nav>
+
+            <div class="admin-sidebar-footer">
+
+                <div class="admin-user-card">
+
+                    <div class="admin-user-avatar">
+                        A
+                    </div>
+
+                    <div class="admin-user-info">
+
+                        <strong>
+                            #{authBean.usuario.nombre}
+                            #{authBean.usuario.apellido}
+                        </strong>
+
+                        <span>Administrador</span>
+
+                    </div>
+
+                </div>
+
+                <h:form styleClass="admin-logout-form">
+
+                    <h:commandButton
+                            value="Cerrar sesión"
+                            action="#{authBean.cerrarSesion}"
+                            styleClass="admin-logout-button"/>
+
+                </h:form>
+
+            </div>
+
+        </aside>
+
+        <section class="admin-main">
+
+            <header class="admin-topbar">
+
+            <span class="admin-topbar-label">
+                Panel administrativo
+            </span>
+
+                <div class="admin-topbar-user">
+
+                <span>
+                    #{authBean.usuario.nombre}
+                </span>
+
+                    <span class="admin-online-dot"></span>
+
+                </div>
+
+            </header>
+
+            <main class="admin-content">
+
+                <ui:insert name="content"/>
+
+            </main>
+
+        </section>
+
+    </div>
+
+</h:body>
+
+</html>

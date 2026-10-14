@@ -35,6 +35,17 @@ public class EmprendimientoEntity {
     )
     private UsuarioEntity propietario;
 
+    @NotNull
+    @ManyToOne(
+            fetch = FetchType.EAGER,
+            optional = false
+    )
+    @JoinColumn(
+            name = "id_plan",
+            nullable = false
+    )
+    private PlanEntity plan;
+
     @NotBlank
     @Size(max = 120)
     @Column(
@@ -95,6 +106,17 @@ public class EmprendimientoEntity {
                 propietario;
     }
 
+    public PlanEntity getPlan() {
+        return plan;
+    }
+
+    public void setPlan(
+            PlanEntity plan) {
+
+        this.plan =
+                plan;
+    }
+
     public String getNombre() {
         return nombre;
     }
@@ -102,7 +124,8 @@ public class EmprendimientoEntity {
     public void setNombre(
             String nombre) {
 
-        this.nombre = nombre;
+        this.nombre =
+                nombre;
     }
 
     public String getDescripcion() {
@@ -112,7 +135,8 @@ public class EmprendimientoEntity {
     public void setDescripcion(
             String descripcion) {
 
-        this.descripcion = descripcion;
+        this.descripcion =
+                descripcion;
     }
 
     public String getContacto() {
@@ -122,7 +146,8 @@ public class EmprendimientoEntity {
     public void setContacto(
             String contacto) {
 
-        this.contacto = contacto;
+        this.contacto =
+                contacto;
     }
 
     public boolean isActivo() {
@@ -132,7 +157,8 @@ public class EmprendimientoEntity {
     public void setActivo(
             boolean activo) {
 
-        this.activo = activo;
+        this.activo =
+                activo;
     }
 
     public LocalDateTime getFechaRegistro() {

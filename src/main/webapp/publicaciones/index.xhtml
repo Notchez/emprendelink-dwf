@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE html>
 
@@ -33,7 +33,7 @@
 
         <h2>
             <h:outputText
-                    value="#{publicacionBean.editando ? 'Editar publicación' : 'Nueva publicación'}"/>
+                    value="#{publicacionBean.editando ? 'Editar publicaciÃ³n' : 'Nueva publicaciÃ³n'}"/>
         </h2>
 
         <h:outputLabel
@@ -65,13 +65,13 @@
 
         <h:outputLabel
                 for="categoria"
-                value="Categoría"/>
+                value="CategorÃ­a"/>
 
         <h:selectOneMenu
                 id="categoria"
                 value="#{publicacionBean.idCategoria}"
                 required="true"
-                requiredMessage="Seleccione una categoría.">
+                requiredMessage="Seleccione una categorÃ­a.">
 
             <f:selectItem
                     itemLabel="Seleccione..."
@@ -129,7 +129,7 @@
 
         <h:outputLabel
                 for="descripcion"
-                value="Descripción"/>
+                value="DescripciÃ³n"/>
 
         <h:inputTextarea
                 id="descripcion"
@@ -181,7 +181,7 @@
         <br/>
 
         <h:commandButton
-                value="#{publicacionBean.editando ? 'Guardar cambios' : 'Crear publicación'}"
+                value="#{publicacionBean.editando ? 'Guardar cambios' : 'Crear publicaciÃ³n'}"
                 action="#{publicacionBean.guardar}">
 
             <f:ajax
@@ -191,7 +191,7 @@
         </h:commandButton>
 
         <h:commandButton
-                value="Cancelar edición"
+                value="Cancelar ediciÃ³n"
                 action="#{publicacionBean.cancelarEdicion}"
                 immediate="true"
                 rendered="#{publicacionBean.editando}">
@@ -228,7 +228,7 @@
             </h:column>
 
             <h:column>
-                <f:facet name="header">Categoría</f:facet>
+                <f:facet name="header">CategorÃ­a</f:facet>
                 #{p.categoria.nombre}
             </h:column>
 
@@ -292,3 +292,4 @@
 </h:body>
 
 </html>
+
