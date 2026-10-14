@@ -1,395 +1,543 @@
 # Modelo de dominio — EmprendeLink DWF
 
-Este documento define el modelo de dominio inicial de EmprendeLink.
+## 1. Principio general
 
-El objetivo es establecer una única interpretación de las entidades principales del sistema para evitar duplicaciones o inconsistencias durante el desarrollo.
+El dominio de EmprendeLink representa usuarios, emprendimientos, publicaciones, planes y pedidos sin depender directamente de JSF ni de las entidades JPA.
+
+Ubicación:
+
+```text
+src/main/java/emprendelink/model/
+```
+
+Enumeraciones:
+
+```text
+src/main/java/emprendelink/model/enums/
+```
 
 ---
 
-## 1. Rol
+## 2. `Rol`
 
-Representa el tipo de usuario dentro del sistema.
+Representa el rol asignado a un usuario.
 
-Permite diferenciar permisos y responsabilidades.
+### Atributos
 
-### Atributos principales
+```text
+idRol
+nombre
+```
 
-- `idRol`
-- `nombre`
+`nombre` utiliza:
 
-### Valores oficiales
+```text
+TipoRol
+```
 
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
+Valores:
+
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
+
+### Relación
+
+```text
+Rol 1:N Usuario
+```
+
+---
+
+## 3. `Usuario`
+
+Representa una cuenta registrada.
+
+### Atributos
+
+```text
+idUsuario
+rol
+nombre
+apellido
+correo
+contrasenaHash
+telefono
+activo
+fechaRegistro
+```
+
+### Reglas
+
+- cada usuario debe poseer un rol;
+- el correo identifica la cuenta;
+- la contraseña se almacena como hash;
+- un usuario inactivo no debe poder operar normalmente dentro de las funciones protegidas;
+- el registro público únicamente permite Cliente o Emprendedor.
 
 ### Relaciones
 
-Un `Rol` puede estar asociado a muchos `Usuario`.
-
-Relación:
-
-`Rol 1 --- N Usuario`
+```text
+Usuario → Rol
+Usuario → Emprendimiento
+Usuario → Pedido
+```
 
 ---
 
-## 2. Usuario
+## 4. `Plan`
 
-Representa una persona registrada dentro de EmprendeLink.
+Representa las condiciones comerciales asignadas a un emprendimiento.
 
-Un usuario puede actuar como administrador, emprendedor o cliente según el rol asignado.
+### Atributos
 
-### Atributos principales
+```text
+idPlan
+nombre
+maxProductosActivos
+tasaComision
+activo
+```
 
-- `idUsuario`
-- `rol`
-- `nombre`
-- `apellido`
-- `correo`
-- `contrasenaHash`
-- `telefono`
-- `activo`
-- `fechaRegistro`
+### Planes actuales
 
-### Reglas generales
+```text
+Básico    → 10 publicaciones  → 7%
+Estándar  → 30 publicaciones  → 5%
+Premium   → 60 publicaciones  → 3%
+Max       → 100 publicaciones → 1%
+```
 
-- El correo deberá identificar de manera única al usuario.
-- La contraseña no deberá almacenarse en texto plano.
-- Un usuario deberá tener un rol asignado.
-- Un usuario podrá marcarse como activo o inactivo.
+### Reglas
+
+- el nombre es obligatorio;
+- el máximo de publicaciones debe ser mayor que cero;
+- la tasa debe encontrarse entre 0 y 1;
+- un plan asignado a negocios no debe desactivarse si ello deja referencias inválidas;
+- un negocio no puede cambiar a un plan cuyo límite sea inferior a su cantidad actual de publicaciones activas.
 
 ### Relaciones
 
-Un `Usuario` pertenece a un `Rol`.
-
-Un usuario con rol emprendedor podrá ser propietario de uno o varios `Emprendimiento`.
-
-Un usuario con rol cliente podrá realizar uno o varios `Pedido`.
+```text
+Plan 1:N Emprendimiento
+```
 
 ---
 
-## 3. Emprendimiento
+## 5. `Emprendimiento`
 
-Representa un negocio, proyecto o iniciativa registrada por un emprendedor.
+Representa un negocio registrado por un emprendedor.
 
-### Atributos principales
+### Atributos
 
-- `idEmprendimiento`
-- `propietario`
-- `nombre`
-- `descripcion`
-- `contacto`
-- `activo`
-- `fechaRegistro`
+```text
+idEmprendimiento
+propietario
+plan
+nombre
+descripcion
+contacto
+activo
+fechaRegistro
+```
 
-### Reglas generales
+### Reglas
 
-- Todo emprendimiento deberá tener un propietario.
-- El propietario deberá corresponder a un usuario con permisos de emprendedor.
-- Un emprendimiento podrá publicar múltiples productos o servicios.
-- Un emprendimiento podrá recibir múltiples pedidos.
+- debe tener propietario;
+- el propietario debe tener rol de emprendedor;
+- debe tener un plan válido;
+- únicamente el propietario puede modificar sus datos;
+- el administrador puede gestionar su estado;
+- un emprendimiento inactivo no debe aparecer como opción disponible en los flujos normales.
 
 ### Relaciones
 
-Un `Usuario` puede administrar varios `Emprendimiento`.
-
-Relación:
-
-`Usuario 1 --- N Emprendimiento`
-
-Un `Emprendimiento` puede tener muchas `Publicacion`.
-
-Relación:
-
-`Emprendimiento 1 --- N Publicacion`
-
-Un `Emprendimiento` puede recibir muchos `Pedido`.
-
-Relación:
-
-`Emprendimiento 1 --- N Pedido`
+```text
+Emprendimiento → Usuario
+Emprendimiento → Plan
+Emprendimiento 1:N Publicacion
+Emprendimiento 1:N Pedido
+```
 
 ---
 
-## 4. Categoria
+## 6. `Categoria`
 
-Representa una clasificación utilizada para organizar las publicaciones.
+Representa una clasificación de publicaciones.
 
-Ejemplos conceptuales:
+### Atributos
 
-- alimentos;
-- tecnología;
-- artesanías;
-- servicios profesionales;
-- moda.
+```text
+idCategoria
+nombre
+descripcion
+activo
+```
 
-### Atributos principales
+### Reglas
 
-- `idCategoria`
-- `nombre`
-- `descripcion`
-- `activo`
-
-### Reglas generales
-
-- Una categoría podrá asociarse a múltiples publicaciones.
-- Una categoría podrá desactivarse sin eliminar necesariamente su información histórica.
+- el nombre es obligatorio;
+- no deben existir categorías duplicadas;
+- una categoría inactiva no puede utilizarse para nuevas publicaciones.
 
 ### Relaciones
 
-Una `Categoria` puede contener muchas `Publicacion`.
-
-Relación:
-
-`Categoria 1 --- N Publicacion`
+```text
+Categoria 1:N Publicacion
+```
 
 ---
 
-## 5. Publicacion
+## 7. `Publicacion`
 
 Representa un producto o servicio ofrecido por un emprendimiento.
 
-Se utilizará una única entidad para ambos tipos con el objetivo de evitar duplicación innecesaria.
+### Atributos
 
-### Atributos principales
+```text
+idPublicacion
+emprendimiento
+categoria
+tipo
+nombre
+descripcion
+precio
+stock
+activo
+fechaPublicacion
+```
 
-- `idPublicacion`
-- `emprendimiento`
-- `categoria`
-- `tipo`
-- `nombre`
-- `descripcion`
-- `precio`
-- `stock`
-- `activo`
-- `fechaPublicacion`
+### Tipo
 
-### Tipo de publicación
+Utiliza:
 
-El atributo `tipo` utilizará la enumeración `TipoPublicacion`.
-
-Valores oficiales:
-
-- `PRODUCTO`
-- `SERVICIO`
-
-### Reglas generales
-
-- Toda publicación deberá pertenecer a un emprendimiento.
-- Toda publicación deberá estar asociada a una categoría.
-- El precio no deberá ser negativo.
-- El stock podrá utilizarse principalmente para publicaciones de tipo producto.
-- La lógica relacionada con stock para servicios podrá definirse posteriormente según los requisitos funcionales.
-- Una publicación podrá activarse o desactivarse.
-
-### Relaciones
-
-Un `Emprendimiento` puede tener muchas `Publicacion`.
-
-Una `Categoria` puede contener muchas `Publicacion`.
-
-Una `Publicacion` puede aparecer en muchos `DetallePedido`.
-
----
-
-## 6. Pedido
-
-Representa una solicitud realizada por un cliente a un emprendimiento.
-
-### Atributos principales
-
-- `idPedido`
-- `cliente`
-- `emprendimiento`
-- `estado`
-- `total`
-- `observaciones`
-- `fechaPedido`
-
-### Estado del pedido
-
-El atributo `estado` utilizará la enumeración `EstadoPedido`.
-
-Valores oficiales:
-
-- `PENDIENTE`
-- `CONFIRMADO`
-- `EN_PROCESO`
-- `COMPLETADO`
-- `CANCELADO`
-
-### Reglas generales
-
-- Todo pedido deberá pertenecer a un cliente.
-- Todo pedido deberá estar dirigido a un emprendimiento.
-- Un pedido deberá contener al menos un detalle.
-- El total deberá corresponder a la suma de los subtotales de sus detalles.
-- El estado inicial será `PENDIENTE`.
-- Los cambios de estado deberán respetar las reglas de negocio definidas por el sistema.
-
-### Relaciones
-
-Un `Usuario` con rol cliente puede realizar muchos `Pedido`.
-
-Relación:
-
-`Usuario 1 --- N Pedido`
-
-Un `Emprendimiento` puede recibir muchos `Pedido`.
-
-Relación:
-
-`Emprendimiento 1 --- N Pedido`
-
-Un `Pedido` contiene uno o varios `DetallePedido`.
-
-Relación:
-
-`Pedido 1 --- N DetallePedido`
-
----
-
-## 7. DetallePedido
-
-Representa cada elemento incluido dentro de un pedido.
-
-Permite relacionar un pedido con una publicación específica y conservar la información necesaria para calcular su importe.
-
-### Atributos principales
-
-- `idDetallePedido`
-- `pedido`
-- `publicacion`
-- `cantidad`
-- `precioUnitario`
-- `subtotal`
-
-### Reglas generales
-
-- Todo detalle deberá pertenecer a un pedido.
-- Todo detalle deberá referenciar una publicación.
-- La cantidad deberá ser mayor que cero.
-- El precio unitario deberá conservar el precio utilizado al momento de realizar el pedido.
-- El subtotal será calculado utilizando:
-
-`cantidad × precioUnitario`
-
-### Relaciones
-
-Un `Pedido` puede contener muchos `DetallePedido`.
-
-Una `Publicacion` puede aparecer en muchos `DetallePedido`.
-
----
-
-## 8. Enumeración TipoRol
-
-Representa los roles válidos dentro del sistema.
+```text
+TipoPublicacion
+```
 
 Valores:
 
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
+```text
+PRODUCTO
+SERVICIO
+```
+
+### Reglas
+
+- debe pertenecer a un emprendimiento;
+- debe utilizar una categoría válida;
+- nombre obligatorio;
+- precio no negativo;
+- stock no negativo;
+- solamente el propietario del emprendimiento puede administrarla;
+- el emprendimiento debe estar activo;
+- la categoría debe estar activa;
+- no puede superar el límite de publicaciones activas definido por el plan.
+
+El límite se valida:
+
+```text
+al crear
+al reactivar
+```
+
+### Productos
+
+Para:
+
+```text
+PRODUCTO
+```
+
+se utiliza el stock como control de inventario.
+
+### Servicios
+
+Para:
+
+```text
+SERVICIO
+```
+
+el stock se normaliza a:
+
+```text
+0
+```
+
+### Relaciones
+
+```text
+Publicacion → Emprendimiento
+Publicacion → Categoria
+Publicacion 1:N DetallePedido
+```
 
 ---
 
-## 9. Enumeración TipoPublicacion
+## 8. `Pedido`
 
-Representa el tipo de contenido comercial publicado por un emprendimiento.
+Representa una compra realizada por un cliente a un emprendimiento.
 
-Valores:
+### Atributos
 
-- `PRODUCTO`
-- `SERVICIO`
+```text
+idPedido
+cliente
+emprendimiento
+estado
+total
+tasaComision
+montoComision
+observaciones
+fechaPedido
+fechaCompletado
+detalles
+```
+
+### Estado inicial
+
+```text
+PENDIENTE
+```
+
+### Estados
+
+```text
+PENDIENTE
+CONFIRMADO
+EN_PROCESO
+COMPLETADO
+CANCELADO
+```
+
+### Transiciones permitidas
+
+```text
+PENDIENTE → CONFIRMADO
+PENDIENTE → CANCELADO
+
+CONFIRMADO → EN_PROCESO
+CONFIRMADO → CANCELADO
+
+EN_PROCESO → COMPLETADO
+EN_PROCESO → CANCELADO
+```
+
+Estados terminales:
+
+```text
+COMPLETADO
+CANCELADO
+```
+
+### Reglas
+
+- debe pertenecer a un cliente;
+- debe estar asociado a un emprendimiento;
+- sus publicaciones deben pertenecer al mismo emprendimiento;
+- cantidades mayores que cero;
+- debe existir stock suficiente;
+- el total se calcula desde los detalles;
+- un emprendedor únicamente puede administrar pedidos de sus propios negocios;
+- un cliente únicamente puede consultar pedidos autorizados para él.
+
+### Comisión
+
+Al completar el pedido se conserva:
+
+```text
+fechaCompletado
+tasaComision
+montoComision
+```
+
+Cálculo:
+
+```text
+montoComision = total × tasaComision
+```
+
+La tasa se almacena como snapshot histórico del plan utilizado al completar la venta.
+
+### Relaciones
+
+```text
+Pedido → Usuario
+Pedido → Emprendimiento
+Pedido 1:N DetallePedido
+```
 
 ---
 
-## 10. Enumeración EstadoPedido
+## 9. `DetallePedido`
 
-Representa el estado actual de un pedido.
+Representa una línea de un pedido.
 
-Valores:
+### Atributos
 
-- `PENDIENTE`
-- `CONFIRMADO`
-- `EN_PROCESO`
-- `COMPLETADO`
-- `CANCELADO`
+```text
+idDetallePedido
+pedido
+publicacion
+cantidad
+precioUnitario
+subtotal
+```
+
+### Reglas
+
+```text
+cantidad > 0
+precioUnitario >= 0
+```
+
+Cálculo:
+
+```text
+subtotal = precioUnitario × cantidad
+```
+
+Cuando se agrega un detalle al pedido, el total del pedido se recalcula a partir de todos los subtotales.
+
+### Relaciones
+
+```text
+DetallePedido → Pedido
+DetallePedido → Publicacion
+```
 
 ---
 
-## 11. Relaciones generales
+## 10. `TipoRol`
 
-Las relaciones principales del modelo son:
+Enumeración:
 
-`Rol 1 --- N Usuario`
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
 
-`Usuario 1 --- N Emprendimiento`
-
-`Emprendimiento 1 --- N Publicacion`
-
-`Categoria 1 --- N Publicacion`
-
-`Usuario 1 --- N Pedido`
-
-`Emprendimiento 1 --- N Pedido`
-
-`Pedido 1 --- N DetallePedido`
-
-`Publicacion 1 --- N DetallePedido`
+Se utiliza para autorización y control de funciones.
 
 ---
 
-## 12. Vista general del dominio
+## 11. `TipoPublicacion`
 
-La estructura conceptual puede representarse así:
+Enumeración:
 
-Rol
-↓
+```text
+PRODUCTO
+SERVICIO
+```
+
+Permite diferenciar publicaciones que manejan inventario de aquellas que representan servicios.
+
+---
+
+## 12. `EstadoPedido`
+
+Enumeración:
+
+```text
+PENDIENTE
+CONFIRMADO
+EN_PROCESO
+COMPLETADO
+CANCELADO
+```
+
+La interfaz puede mostrar nombres diferentes sin modificar el valor interno.
+
+Ejemplo:
+
+```text
+EN_PROCESO → En camino
+COMPLETADO → Entregado
+```
+
+---
+
+## 13. Inventario
+
+Cuando se crea un pedido con productos:
+
+```text
+stock -= cantidad
+```
+
+Al cancelar un pedido cuando corresponde:
+
+```text
+stock += cantidad
+```
+
+No se permite generar un pedido cuando el stock solicitado no está disponible.
+
+---
+
+## 14. Planes y publicaciones
+
+Cada emprendimiento tiene un plan.
+
+```text
+Emprendimiento
+      ↓
+     Plan
+      ↓
+maxProductosActivos
+tasaComision
+```
+
+El límite de publicaciones se aplica exclusivamente sobre publicaciones activas.
+
+---
+
+## 15. Eliminación lógica
+
+Las siguientes clases poseen estado:
+
+```text
+activo
+```
+
+```text
 Usuario
-├── Emprendimiento
-│   ├── Publicacion
-│   │   └── DetallePedido
-│   └── Pedido
-└── Pedido
-└── DetallePedido
-
+Plan
+Emprendimiento
 Categoria
-└── Publicacion
+Publicacion
+```
 
----
+El objetivo es preservar:
 
-## 13. Principio de diseño
-
-El modelo de dominio deberá permanecer independiente de las tecnologías utilizadas en cada fase.
-
-Las entidades conceptuales no deberán depender directamente de:
-
-- Servlets;
-- JSP;
-- JSF;
-- REST;
-- Spring MVC;
-- interfaces gráficas.
-
-Las tecnologías de presentación y persistencia deberán trabajar alrededor del modelo y no redefinirlo.
-
----
-
-## 14. Evolución
-
-Este modelo representa la base inicial del proyecto.
-
-Podrán agregarse nuevos atributos, reglas o entidades si los requisitos funcionales lo requieren.
-
-Sin embargo, cualquier cambio estructural deberá revisarse antes de modificar:
-
-- clases;
-- tablas;
+- referencias históricas;
+- pedidos;
 - relaciones;
-- contratos DAO;
-- servicios;
-- API.
+- trazabilidad.
 
-El objetivo es evitar que diferentes integrantes implementen interpretaciones distintas del mismo concepto.
+---
+
+## 16. Separación del dominio
+
+El modelo no conoce directamente:
+
+```text
+JSF
+XHTML
+EntityManager
+JPA Entity
+REST
+Spring
+```
+
+La adaptación hacia persistencia se realiza mediante mappers:
+
+```text
+Domain Model ↔ JPA Entity
+```
+
+Esta separación permite reutilizar el dominio y los Services en fases posteriores.

@@ -2,46 +2,16 @@
 
 ## Sprint II — Persistencia Empresarial e Integración JSF
 
-Este documento resume el incremento desarrollado durante la Fase 2 del proyecto EmprendeLink.
+EmprendeLink completa el incremento técnico correspondiente a la Fase 2 mediante Jakarta Faces, CDI, JPA, JTA, EclipseLink, GlassFish y MySQL.
 
 ---
 
-# 1. Objetivo alcanzado
-
-La aplicación evolucionó desde la arquitectura utilizada en Fase 1 hacia una solución empresarial basada en:
-
-```text
-Jakarta Faces
-Jakarta CDI
-Jakarta Persistence
-Jakarta Transactions
-EclipseLink
-GlassFish
-MySQL
-```
-
-La aplicación integra:
-
-```text
-Interfaz
-↓
-Lógica de negocio
-↓
-Persistencia
-↓
-Base de datos
-```
-
-manteniendo separación de responsabilidades.
-
----
-
-# 2. Arquitectura final de Fase 2
+## 1. Arquitectura
 
 ```text
 XHTML / JSF
       ↓
-Managed Beans
+Managed Beans CDI
       ↓
 Services
       ↓
@@ -58,101 +28,107 @@ GlassFish
 MySQL
 ```
 
+La aplicación mantiene separadas:
+
+```text
+Presentación
+Negocio
+Persistencia
+```
+
+La arquitectura JDBC/Servlet/JSP anterior fue retirada del runtime.
+
 ---
 
-# 3. Módulos entregados
+## 2. Módulos entregados
 
-## Autenticación
-
-Incluye:
+### Autenticación
 
 - login;
 - logout;
-- sesión;
 - registro;
+- sesión;
 - roles;
 - contraseña segura.
 
----
-
-## Usuarios
-
-Incluye:
+### Usuarios
 
 - listado;
 - roles;
 - activación/desactivación;
-- restricciones de administración.
+- validaciones;
+- AJAX.
 
----
-
-## Categorías
-
-Incluye:
+### Categorías
 
 - crear;
 - listar;
 - editar;
-- activar/desactivar.
+- activar/desactivar;
+- AJAX.
 
----
-
-## Emprendimientos
-
-Incluye:
+### Emprendimientos
 
 - crear;
 - listar propios;
 - editar;
-- validación de propietario;
-- activación/desactivación administrativa.
+- propiedad;
+- estado administrativo;
+- plan.
 
----
-
-## Publicaciones
-
-Incluye:
+### Publicaciones
 
 - productos;
 - servicios;
 - categorías;
-- emprendimiento;
+- negocio;
 - precio;
 - stock;
 - creación;
 - edición;
-- estado.
+- estado;
+- límite de publicaciones por plan.
 
----
+### Catálogo
 
-## Catálogo
-
-Incluye:
-
-- listado público;
+- publicaciones activas;
 - búsqueda;
 - filtros;
 - detalle.
 
----
-
-## Pedidos
-
-Incluye:
+### Pedidos
 
 - creación;
-- detalle;
-- cálculo de total;
-- validación de stock;
-- descuento de inventario;
-- restauración de inventario;
-- consulta por cliente;
-- consulta por emprendedor;
-- cambios de estado.
+- detalles;
+- total;
+- inventario;
+- pedidos propios;
+- pedidos recibidos;
+- estados;
+- cancelación.
+
+### Planes
+
+```text
+Básico    → 10  → 7%
+Estándar  → 30  → 5%
+Premium   → 60  → 3%
+Max       → 100 → 1%
+```
+
+### Comisiones
+
+Al completar un pedido se conserva:
+
+```text
+fechaCompletado
+tasaComision
+montoComision
+```
 
 ---
 
-# 4. Persistencia JPA
+## 3. Persistencia JPA
 
 Entidades:
 
@@ -160,16 +136,11 @@ Entidades:
 RolEntity
 UsuarioEntity
 CategoriaEntity
+PlanEntity
 EmprendimientoEntity
 PublicacionEntity
 PedidoEntity
 DetallePedidoEntity
-```
-
-Proveedor:
-
-```text
-EclipseLink
 ```
 
 Persistence Unit:
@@ -178,20 +149,34 @@ Persistence Unit:
 emprendelinkPU
 ```
 
+Proveedor:
+
+```text
+EclipseLink
+```
+
 DataSource:
 
 ```text
 jdbc/EmprendeLinkDS
 ```
 
+Transacciones:
+
+```text
+JTA
+```
+
 ---
 
-# 5. Relaciones principales
+## 4. Relaciones
 
 ```text
 Rol 1:N Usuario
 
 Usuario 1:N Emprendimiento
+
+Plan 1:N Emprendimiento
 
 Emprendimiento 1:N Publicacion
 
@@ -208,64 +193,70 @@ Publicacion 1:N DetallePedido
 
 ---
 
-# 6. Reglas principales
+## 5. Reglas de negocio
 
-## Usuarios
+### Usuarios
 
-Un usuario inactivo no puede utilizar normalmente las funciones protegidas del sistema.
+Un usuario inactivo no puede operar normalmente en rutas protegidas.
 
----
+### Emprendimientos
 
-## Emprendimientos
+Solo el propietario puede modificar sus emprendimientos.
 
-Solo el propietario puede editar sus emprendimientos.
+El administrador gestiona su estado y plan.
 
-La activación/desactivación administrativa corresponde al administrador.
-
----
-
-## Publicaciones
+### Publicaciones
 
 Una publicación debe:
 
 - pertenecer a un emprendimiento válido;
-- utilizar una categoría válida;
+- utilizar una categoría activa;
 - tener precio válido;
-- respetar stock cuando sea producto.
+- respetar stock;
+- respetar el límite de publicaciones activas del plan.
 
----
+El límite se valida:
 
-## Pedidos
+```text
+al crear
+al reactivar
+al asignar plan
+```
+
+### Pedidos
 
 Un pedido debe:
 
 - pertenecer a un cliente;
 - dirigirse a un emprendimiento;
-- incluir publicaciones del emprendimiento correspondiente;
+- contener publicaciones válidas;
 - utilizar cantidades válidas;
 - respetar stock;
-- calcular correctamente su total.
+- calcular su total.
 
 ---
 
-# 7. Estados de pedido
+## 6. Estados de pedido
 
 ```text
 PENDIENTE
-    ↓
 CONFIRMADO
-    ↓
 EN_PROCESO
-    ↓
 COMPLETADO
+CANCELADO
 ```
 
-Cancelación posible desde:
+Transiciones:
 
 ```text
-PENDIENTE
-CONFIRMADO
-EN_PROCESO
+PENDIENTE → CONFIRMADO
+PENDIENTE → CANCELADO
+
+CONFIRMADO → EN_PROCESO
+CONFIRMADO → CANCELADO
+
+EN_PROCESO → COMPLETADO
+EN_PROCESO → CANCELADO
 ```
 
 Estados terminales:
@@ -275,7 +266,7 @@ COMPLETADO
 CANCELADO
 ```
 
-Presentación al cliente:
+Presentación:
 
 ```text
 EN_PROCESO = En camino
@@ -284,7 +275,7 @@ COMPLETADO = Entregado
 
 ---
 
-# 8. Inventario
+## 7. Inventario
 
 Al realizar un pedido de producto:
 
@@ -298,68 +289,142 @@ Al cancelar:
 stock += cantidad
 ```
 
-El comportamiento fue probado manualmente durante la integración del módulo.
+Las publicaciones de tipo servicio no utilizan stock como restricción de inventario.
 
 ---
 
-# 9. Eliminación lógica
+## 8. Planes
 
-Se utiliza eliminación lógica mediante:
+Cada emprendimiento puede tener un plan.
+
+Planes:
+
+```text
+Básico
+Estándar
+Premium
+Max
+```
+
+El plan define:
+
+```text
+maxProductosActivos
+tasaComision
+```
+
+Configuración:
+
+```text
+Básico    → 10 publicaciones  → 7%
+Estándar  → 30 publicaciones  → 5%
+Premium   → 60 publicaciones  → 3%
+Max       → 100 publicaciones → 1%
+```
+
+La aplicación impide superar el máximo de publicaciones activas.
+
+---
+
+## 9. Comisiones
+
+Cuando un pedido pasa a:
+
+```text
+COMPLETADO
+```
+
+se toma la tasa del plan del emprendimiento.
+
+Cálculo:
+
+```text
+montoComision = total × tasaComision
+```
+
+Se persisten:
+
+```text
+tasaComision
+montoComision
+fechaCompletado
+```
+
+Esto conserva la información histórica aunque el plan sea modificado posteriormente.
+
+---
+
+## 10. Eliminación lógica
+
+Utilizan estado:
 
 ```text
 activo
 ```
 
-en:
+los módulos:
 
 ```text
 Usuario
 Categoria
+Plan
 Emprendimiento
 Publicacion
 ```
 
-Esta decisión permite preservar:
-
-- integridad referencial;
-- historial;
-- pedidos existentes;
-- relaciones.
+La eliminación lógica preserva relaciones e historial.
 
 ---
 
-# 10. AJAX
+## 11. AJAX
 
-Se utilizan operaciones AJAX mediante:
+Se utiliza:
 
 ```xml
 <f:ajax>
 ```
 
-Ejemplos:
+en operaciones de:
 
-- validaciones;
+- validación;
+- formularios;
 - edición;
 - filtros;
 - activación/desactivación;
-- cambios de estado.
+- estados;
+- administración.
 
 ---
 
-# 11. Validación
+## 12. Validaciones
 
 La solución utiliza:
 
-- validación JSF;
-- validadores personalizados;
-- converters;
-- validación en Services;
-- Bean Validation;
-- reglas de base de datos.
+```text
+JSF
+Validadores personalizados
+Converters
+Services
+Bean Validation
+Base de datos
+```
+
+Validadores activos:
+
+```text
+CorreoValidator
+ContrasenaValidator
+```
+
+Converter activo:
+
+```text
+TipoRolConverter
+```
 
 ---
 
-# 12. Seguridad
+## 13. Seguridad
 
 Roles:
 
@@ -369,51 +434,51 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-Protección:
+Filtros:
 
 ```text
-AdminFilter
 AutenticacionFilter
+AdminFilter
 EmprendedorFilter
 PedidosFilter
+PublicacionFilter
 ```
 
 Los Services también aplican autorización funcional.
 
 ---
 
-# 13. Pruebas automatizadas
+## 14. Pruebas automatizadas
 
-La línea estable ejecuta:
+Regresión:
+
+```text
+41 pruebas
+0 failures
+0 errors
+0 skipped
+BUILD SUCCESS
+```
+
+Comando:
 
 ```bash
 mvn clean test
 ```
 
-Total actual:
-
-```text
-39 pruebas automatizadas
-```
-
-Objetivo:
-
-```text
-Failures: 0
-Errors: 0
-```
-
----
-
-# 14. Build
-
-Comando:
+Build:
 
 ```bash
 mvn clean package
 ```
 
-Artefacto generado:
+Resultado:
+
+```text
+BUILD SUCCESS
+```
+
+Artefacto:
 
 ```text
 target/emprendelink.war
@@ -421,7 +486,38 @@ target/emprendelink.war
 
 ---
 
-# 15. Deploy
+## 15. Integración continua
+
+GitHub Actions ejecuta:
+
+```text
+mvn -B clean test
+```
+
+El Pull Request utilizado para integrar el incremento completo de Fase 2 pasó correctamente el pipeline.
+
+---
+
+## 16. Base de datos
+
+Base:
+
+```text
+emprendelink_dwf
+```
+
+Scripts:
+
+```text
+database/schema.sql
+database/seed.sql
+database/migrations/002_planes_comisiones.sql
+database/migrations/003_fecha_completado.sql
+```
+
+---
+
+## 17. Deploy
 
 Servidor:
 
@@ -438,28 +534,60 @@ Context path:
 Aplicación:
 
 ```text
-http://localhost:8080/emprendelink/
+http://localhost:8080/emprendelink/login.xhtml
 ```
 
 ---
 
-# 16. Preparación para Fase 3
+## 18. Estado del cierre
 
-La Fase 3 podrá utilizar:
+Completado:
+
+```text
+Arquitectura
+JPA
+JTA
+JSF
+CDI
+CRUD
+AJAX
+Validaciones
+Roles
+Pedidos
+Inventario
+Planes
+Comisiones
+41 pruebas automatizadas
+Build WAR
+CI
+Documentación técnica
+```
+
+Pendiente antes de generar el documento final:
+
+```text
+Smoke test manual final
+Actualización definitiva de MATRIZ-PRUEBAS.md
+Capturas de evidencias
+PDF de Sprint Review
+```
+
+---
+
+## 19. Preparación para Fase 3
+
+La siguiente fase podrá reutilizar:
 
 ```text
 REST
  ↓
-Services existentes
+Services
  ↓
-DAO JPA
+DAO
+ ↓
+JPA
  ↓
 MySQL
 ```
 
-Esto evita duplicar:
-
-- reglas de negocio;
-- validaciones;
-- autorización funcional;
-- persistencia.
+Sin duplicar reglas de negocio ni persistencia.

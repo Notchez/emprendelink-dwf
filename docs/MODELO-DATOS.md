@@ -1,425 +1,616 @@
 # Modelo de datos — EmprendeLink DWF
 
-Este documento define la estructura relacional inicial de la base de datos de EmprendeLink.
+## 1. Base de datos
 
-Nombre oficial de la base de datos:
+Base oficial:
 
-`emprendelink_dwf`
+```text
+emprendelink_dwf
+```
 
-La implementación SQL real se mantendrá en:
+Motor utilizado:
 
-`database/schema.sql`
+```text
+MySQL 8.x
+```
 
----
-
-## 1. Tabla roles
-
-Representa los roles disponibles dentro del sistema.
-
-### Columnas
-
-- `id_rol`
-- `nombre`
-
-### Llave primaria
-
-- `id_rol`
-
-### Restricciones principales
-
-- `nombre` deberá ser único.
-- `nombre` no deberá permitir valores nulos.
-
-### Valores iniciales previstos
-
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
+La persistencia de la aplicación se realiza mediante JPA utilizando EclipseLink como proveedor y JTA para el manejo de transacciones.
 
 ---
 
-## 2. Tabla usuarios
+## 2. Tabla `roles`
 
-Representa los usuarios registrados dentro del sistema.
+Representa los roles disponibles dentro de la aplicación.
 
 ### Columnas
 
-- `id_usuario`
-- `id_rol`
-- `nombre`
-- `apellido`
-- `correo`
-- `contrasena_hash`
-- `telefono`
-- `activo`
-- `fecha_registro`
+```text
+id_rol
+nombre
+```
 
 ### Llave primaria
 
-- `id_usuario`
+```text
+id_rol
+```
+
+### Valores oficiales
+
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
+
+### Restricciones
+
+- `nombre` es obligatorio;
+- `nombre` es único.
+
+---
+
+## 3. Tabla `usuarios`
+
+Representa las cuentas registradas en EmprendeLink.
+
+### Columnas
+
+```text
+id_usuario
+id_rol
+nombre
+apellido
+correo
+contrasena_hash
+telefono
+activo
+fecha_registro
+```
+
+### Llave primaria
+
+```text
+id_usuario
+```
 
 ### Llave foránea
 
-`id_rol` → `roles.id_rol`
+```text
+id_rol → roles.id_rol
+```
 
 ### Restricciones principales
 
-- `correo` deberá ser único.
-- `correo` no deberá permitir valores nulos.
-- `contrasena_hash` no deberá permitir valores nulos.
-- `id_rol` deberá referenciar un rol existente.
-- `activo` deberá indicar si el usuario puede utilizar el sistema.
+- rol obligatorio;
+- nombre obligatorio;
+- apellido obligatorio;
+- correo obligatorio y único;
+- contraseña almacenada únicamente como hash;
+- estado activo obligatorio;
+- fecha de registro obligatoria.
+
+La contraseña nunca se almacena en texto plano.
 
 ---
 
-## 3. Tabla emprendimientos
+## 4. Tabla `planes`
 
-Representa los emprendimientos registrados por los usuarios emprendedores.
+Representa los planes disponibles para los emprendimientos.
 
 ### Columnas
 
-- `id_emprendimiento`
-- `id_propietario`
-- `nombre`
-- `descripcion`
-- `contacto`
-- `activo`
-- `fecha_registro`
+```text
+id_plan
+nombre
+max_productos_activos
+tasa_comision
+activo
+```
 
 ### Llave primaria
 
-- `id_emprendimiento`
+```text
+id_plan
+```
 
-### Llave foránea
+### Restricciones
 
-`id_propietario` → `usuarios.id_usuario`
+```text
+nombre UNIQUE
+max_productos_activos > 0
+0 <= tasa_comision <= 1
+```
 
-### Restricciones principales
+### Planes definidos
 
-- Todo emprendimiento deberá tener un propietario.
-- `nombre` no deberá permitir valores nulos.
-- `id_propietario` deberá referenciar un usuario existente.
+```text
+Básico    → 10 publicaciones activas  → 0.0700 → 7%
+Estándar  → 30 publicaciones activas  → 0.0500 → 5%
+Premium   → 60 publicaciones activas  → 0.0300 → 3%
+Max       → 100 publicaciones activas → 0.0100 → 1%
+```
 
-La validación de que el propietario posea rol de emprendedor será responsabilidad de la lógica de negocio.
+El plan determina:
+
+- cantidad máxima de publicaciones activas;
+- porcentaje de comisión aplicado a ventas completadas.
 
 ---
 
-## 4. Tabla categorias
+## 5. Tabla `emprendimientos`
 
-Representa las categorías utilizadas para clasificar publicaciones.
-
-### Columnas
-
-- `id_categoria`
-- `nombre`
-- `descripcion`
-- `activo`
-
-### Llave primaria
-
-- `id_categoria`
-
-### Restricciones principales
-
-- `nombre` deberá ser único.
-- `nombre` no deberá permitir valores nulos.
-
----
-
-## 5. Tabla publicaciones
-
-Representa los productos o servicios ofrecidos por los emprendimientos.
+Representa los negocios registrados por usuarios emprendedores.
 
 ### Columnas
 
-- `id_publicacion`
-- `id_emprendimiento`
-- `id_categoria`
-- `tipo`
-- `nombre`
-- `descripcion`
-- `precio`
-- `stock`
-- `activo`
-- `fecha_publicacion`
+```text
+id_emprendimiento
+id_propietario
+id_plan
+nombre
+descripcion
+contacto
+activo
+fecha_registro
+```
 
 ### Llave primaria
 
-- `id_publicacion`
+```text
+id_emprendimiento
+```
 
 ### Llaves foráneas
 
-`id_emprendimiento` → `emprendimientos.id_emprendimiento`
-
-`id_categoria` → `categorias.id_categoria`
-
-### Valores permitidos para tipo
-
-- `PRODUCTO`
-- `SERVICIO`
+```text
+id_propietario → usuarios.id_usuario
+id_plan        → planes.id_plan
+```
 
 ### Restricciones principales
 
-- Toda publicación deberá pertenecer a un emprendimiento.
-- Toda publicación deberá pertenecer a una categoría.
-- `nombre` no deberá permitir valores nulos.
-- `tipo` no deberá permitir valores nulos.
-- `precio` no deberá ser negativo.
-- `stock` no deberá ser negativo cuando sea utilizado.
-- `activo` permitirá ocultar una publicación sin eliminarla físicamente.
+- propietario obligatorio;
+- plan obligatorio;
+- nombre obligatorio;
+- estado obligatorio;
+- fecha de registro obligatoria.
+
+Cada emprendimiento pertenece a un único propietario y utiliza un plan.
 
 ---
 
-## 6. Tabla pedidos
+## 6. Tabla `categorias`
 
-Representa los pedidos realizados por clientes a emprendimientos.
+Representa la clasificación de las publicaciones.
 
 ### Columnas
 
-- `id_pedido`
-- `id_cliente`
-- `id_emprendimiento`
-- `estado`
-- `total`
-- `observaciones`
-- `fecha_pedido`
+```text
+id_categoria
+nombre
+descripcion
+activo
+```
 
 ### Llave primaria
 
-- `id_pedido`
+```text
+id_categoria
+```
 
-### Llaves foráneas
+### Restricciones
 
-`id_cliente` → `usuarios.id_usuario`
+- nombre obligatorio;
+- nombre único;
+- estado obligatorio.
 
-`id_emprendimiento` → `emprendimientos.id_emprendimiento`
-
-### Valores permitidos para estado
-
-- `PENDIENTE`
-- `CONFIRMADO`
-- `EN_PROCESO`
-- `COMPLETADO`
-- `CANCELADO`
-
-### Restricciones principales
-
-- Todo pedido deberá tener un cliente.
-- Todo pedido deberá pertenecer a un emprendimiento.
-- `estado` no deberá permitir valores nulos.
-- `total` no deberá ser negativo.
-- El estado inicial será `PENDIENTE`.
-
-La validación de que el usuario asociado a `id_cliente` posea permisos de cliente será responsabilidad de la lógica de negocio.
+Las categorías utilizan eliminación lógica mediante `activo`.
 
 ---
 
-## 7. Tabla detalle_pedido
+## 7. Tabla `publicaciones`
 
-Representa los elementos incluidos dentro de un pedido.
+Representa productos y servicios ofrecidos por los emprendimientos.
 
 ### Columnas
 
-- `id_detalle_pedido`
-- `id_pedido`
-- `id_publicacion`
-- `cantidad`
-- `precio_unitario`
-- `subtotal`
+```text
+id_publicacion
+id_emprendimiento
+id_categoria
+tipo
+nombre
+descripcion
+precio
+stock
+activo
+fecha_publicacion
+```
 
 ### Llave primaria
 
-- `id_detalle_pedido`
+```text
+id_publicacion
+```
 
 ### Llaves foráneas
 
-`id_pedido` → `pedidos.id_pedido`
+```text
+id_emprendimiento → emprendimientos.id_emprendimiento
+id_categoria      → categorias.id_categoria
+```
 
-`id_publicacion` → `publicaciones.id_publicacion`
+### Valores de `tipo`
 
-### Restricciones principales
+```text
+PRODUCTO
+SERVICIO
+```
 
-- Todo detalle deberá pertenecer a un pedido.
-- Todo detalle deberá referenciar una publicación.
-- `cantidad` deberá ser mayor que cero.
-- `precio_unitario` no deberá ser negativo.
-- `subtotal` no deberá ser negativo.
+### Restricciones
 
-El valor de `precio_unitario` deberá conservar el precio utilizado al momento de crear el pedido.
+```text
+precio >= 0
+stock >= 0
+```
 
----
+Además:
 
-## 8. Relaciones
+- nombre obligatorio;
+- emprendimiento obligatorio;
+- categoría obligatoria;
+- tipo obligatorio;
+- fecha de publicación obligatoria.
 
-Las relaciones principales serán:
+Los Services verifican adicionalmente:
 
-`roles.id_rol`
-→ `usuarios.id_rol`
-
-`usuarios.id_usuario`
-→ `emprendimientos.id_propietario`
-
-`emprendimientos.id_emprendimiento`
-→ `publicaciones.id_emprendimiento`
-
-`categorias.id_categoria`
-→ `publicaciones.id_categoria`
-
-`usuarios.id_usuario`
-→ `pedidos.id_cliente`
-
-`emprendimientos.id_emprendimiento`
-→ `pedidos.id_emprendimiento`
-
-`pedidos.id_pedido`
-→ `detalle_pedido.id_pedido`
-
-`publicaciones.id_publicacion`
-→ `detalle_pedido.id_publicacion`
+- propiedad del emprendimiento;
+- categoría activa;
+- emprendimiento activo;
+- límite de publicaciones activas definido por el plan.
 
 ---
 
-## 9. Cardinalidades
+## 8. Tabla `pedidos`
 
-- `roles` 1:N `usuarios`
-- `usuarios` 1:N `emprendimientos`
-- `emprendimientos` 1:N `publicaciones`
-- `categorias` 1:N `publicaciones`
-- `usuarios` 1:N `pedidos`
-- `emprendimientos` 1:N `pedidos`
-- `pedidos` 1:N `detalle_pedido`
-- `publicaciones` 1:N `detalle_pedido`
+Representa una compra realizada por un cliente a un emprendimiento.
 
----
+### Columnas
 
-## 10. Convenciones de tipos SQL
+```text
+id_pedido
+id_cliente
+id_emprendimiento
+estado
+total
+observaciones
+fecha_pedido
+fecha_completado
+tasa_comision
+monto_comision
+```
 
-Como referencia inicial:
+### Llave primaria
 
-### Identificadores
+```text
+id_pedido
+```
 
-Utilizar tipos enteros positivos autoincrementales cuando corresponda.
+### Llaves foráneas
 
-### Texto corto
+```text
+id_cliente        → usuarios.id_usuario
+id_emprendimiento → emprendimientos.id_emprendimiento
+```
 
-Utilizar `VARCHAR` con longitud apropiada.
+### Estados
 
-Ejemplos:
+```text
+PENDIENTE
+CONFIRMADO
+EN_PROCESO
+COMPLETADO
+CANCELADO
+```
 
-- nombres;
-- correo;
-- teléfono;
-- estado;
-- tipo.
+### Restricciones
 
-### Texto largo
+```text
+total >= 0
 
-Utilizar `TEXT` cuando corresponda.
+tasa_comision IS NULL
+o
+0 <= tasa_comision <= 1
 
-Ejemplos:
+monto_comision IS NULL
+o
+monto_comision >= 0
+```
 
-- descripciones;
-- observaciones.
+El estado inicial es:
 
-### Valores monetarios
+```text
+PENDIENTE
+```
 
-Utilizar `DECIMAL`.
+### Comisión
 
-No utilizar `FLOAT` o `DOUBLE` para valores monetarios.
+Mientras el pedido no ha sido completado:
 
-### Fechas
+```text
+fecha_completado = NULL
+tasa_comision    = NULL
+monto_comision   = NULL
+```
 
-Utilizar tipos de fecha y hora apropiados de MySQL.
+Cuando el pedido pasa a:
 
-### Booleanos
+```text
+COMPLETADO
+```
 
-Los campos como `activo` deberán representarse mediante un tipo compatible con valores booleanos en MySQL.
+se almacenan:
 
----
+```text
+fecha_completado
+tasa_comision
+monto_comision
+```
 
-## 11. Integridad referencial
+Cálculo:
 
-Las relaciones deberán implementarse mediante llaves foráneas.
+```text
+monto_comision = total × tasa_comision
+```
 
-No se deberán guardar identificadores que referencien registros inexistentes.
-
-Las reglas específicas de eliminación y actualización como:
-
-- `CASCADE`
-- `RESTRICT`
-- `SET NULL`
-
-serán definidas cuidadosamente en `schema.sql` según el comportamiento requerido por cada relación.
-
-No se utilizará eliminación en cascada de forma indiscriminada.
-
----
-
-## 12. Eliminación lógica
-
-Las entidades que posean el atributo `activo` podrán utilizar eliminación lógica.
-
-Inicialmente aplica a:
-
-- usuarios;
-- emprendimientos;
-- categorias;
-- publicaciones.
-
-Esto permitirá conservar información histórica sin eliminar físicamente registros relacionados.
-
----
-
-## 13. Seguridad de datos
-
-Las contraseñas nunca deberán almacenarse en texto plano.
-
-La columna:
-
-`contrasena_hash`
-
-almacenará únicamente el resultado de un mecanismo seguro de hashing.
-
-Las credenciales de conexión a MySQL tampoco deberán guardarse dentro de los scripts del repositorio.
+La tasa queda almacenada como información histórica del pedido.
 
 ---
 
-## 14. Datos iniciales
+## 9. Tabla `detalle_pedido`
 
-El archivo:
+Representa cada elemento incluido dentro de un pedido.
 
-`database/seed.sql`
+### Columnas
 
-contendrá datos mínimos necesarios para inicializar el sistema.
+```text
+id_detalle_pedido
+id_pedido
+id_publicacion
+cantidad
+precio_unitario
+subtotal
+```
 
-Como mínimo podrá incluir:
+### Llave primaria
 
-- roles oficiales;
-- categorías de prueba;
-- datos controlados necesarios para desarrollo.
+```text
+id_detalle_pedido
+```
 
-No deberán incluirse contraseñas reales ni información sensible.
+### Llaves foráneas
+
+```text
+id_pedido      → pedidos.id_pedido
+id_publicacion → publicaciones.id_publicacion
+```
+
+### Restricciones
+
+```text
+cantidad > 0
+precio_unitario >= 0
+subtotal >= 0
+```
+
+Al eliminar físicamente un pedido, sus detalles utilizan:
+
+```text
+ON DELETE CASCADE
+```
+
+La aplicación normalmente conserva los pedidos como información histórica.
 
 ---
 
-## 15. Evolución del esquema
+## 10. Relaciones
 
-La estructura definida en este documento representa la versión inicial del modelo de datos.
+```text
+Rol 1:N Usuario
 
-Si durante el proyecto se requiere:
+Usuario 1:N Emprendimiento
 
-- agregar una tabla;
-- agregar una columna;
-- modificar una relación;
-- cambiar una restricción;
+Plan 1:N Emprendimiento
 
-el cambio deberá actualizar simultáneamente:
+Emprendimiento 1:N Publicacion
 
-- `docs/MODELO-DATOS.md`
-- `database/schema.sql`
-- clases relacionadas;
-- DAO;
-- servicios;
-- pruebas afectadas.
+Categoria 1:N Publicacion
 
-Los cambios estructurales deberán integrarse de forma coordinada para evitar incompatibilidades entre los integrantes del equipo.
+Usuario 1:N Pedido
+
+Emprendimiento 1:N Pedido
+
+Pedido 1:N DetallePedido
+
+Publicacion 1:N DetallePedido
+```
+
+Representación:
+
+```text
+roles
+  │
+  └── usuarios
+        │
+        ├── emprendimientos ─── planes
+        │       │
+        │       ├── publicaciones ─── categorias
+        │       │         │
+        │       │         └── detalle_pedido
+        │       │
+        │       └── pedidos
+        │             │
+        │             └── detalle_pedido
+        │
+        └── pedidos
+```
+
+---
+
+## 11. Inventario
+
+Las publicaciones de tipo:
+
+```text
+PRODUCTO
+```
+
+utilizan `stock`.
+
+Al crear un pedido válido:
+
+```text
+stock -= cantidad
+```
+
+Al cancelar un pedido cuando corresponde:
+
+```text
+stock += cantidad
+```
+
+Las publicaciones de tipo:
+
+```text
+SERVICIO
+```
+
+no utilizan el stock como restricción de inventario.
+
+---
+
+## 12. Límites de planes
+
+El límite se aplica sobre publicaciones con:
+
+```text
+activo = TRUE
+```
+
+La aplicación verifica el límite:
+
+```text
+al crear una publicación
+al reactivar una publicación
+al asignar un plan a un emprendimiento
+```
+
+No se permite que el número de publicaciones activas sea superior a:
+
+```text
+planes.max_productos_activos
+```
+
+---
+
+## 13. Eliminación lógica
+
+Utilizan eliminación lógica mediante `activo`:
+
+```text
+usuarios
+planes
+emprendimientos
+categorias
+publicaciones
+```
+
+Esto permite conservar:
+
+- historial;
+- relaciones;
+- pedidos anteriores;
+- integridad referencial.
+
+---
+
+## 14. Integridad
+
+La integridad se controla mediante:
+
+```text
+FOREIGN KEY
+UNIQUE
+NOT NULL
+CHECK
+Bean Validation
+reglas de Service
+JTA
+```
+
+Las reglas que dependen del usuario, rol, propiedad o estado se validan en la capa Service.
+
+---
+
+## 15. Scripts
+
+Esquema completo:
+
+```text
+database/schema.sql
+```
+
+Datos iniciales:
+
+```text
+database/seed.sql
+```
+
+Migraciones adicionales:
+
+```text
+database/migrations/002_planes_comisiones.sql
+database/migrations/003_fecha_completado.sql
+```
+
+---
+
+## 16. Persistencia Java
+
+Las tablas se representan mediante entidades JPA ubicadas en:
+
+```text
+src/main/java/emprendelink/persistence/jpa/entity/
+```
+
+Entidades:
+
+```text
+RolEntity
+UsuarioEntity
+CategoriaEntity
+PlanEntity
+EmprendimientoEntity
+PublicacionEntity
+PedidoEntity
+DetallePedidoEntity
+```
+
+Persistence Unit:
+
+```text
+emprendelinkPU
+```
+
+DataSource:
+
+```text
+jdbc/EmprendeLinkDS
+```
+
+Proveedor:
+
+```text
+EclipseLink
+```

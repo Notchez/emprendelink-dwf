@@ -1,10 +1,14 @@
 # Arquitectura — EmprendeLink DWF
 
-## 1. Estado actual
+## 1. Estado
 
-EmprendeLink se encuentra en la Fase 2 — Persistencia Empresarial e Integración JSF.
+EmprendeLink completa la arquitectura correspondiente a la Fase 2:
 
-La arquitectura activa es:
+```text
+Persistencia Empresarial e Integración JSF
+```
+
+Arquitectura activa:
 
 ```text
 XHTML / JSF
@@ -28,13 +32,11 @@ GlassFish DataSource
 MySQL
 ```
 
-La arquitectura anterior basada en JDBC, Servlets y JSP fue retirada del runtime para evitar mantener dos implementaciones paralelas.
+La arquitectura JDBC/Servlet/JSP utilizada durante el incremento anterior fue retirada del runtime.
 
 ---
 
-## 2. Principio de separación
-
-La aplicación separa presentación, negocio y persistencia.
+## 2. Separación de responsabilidades
 
 ### Presentación
 
@@ -46,13 +48,13 @@ src/main/java/emprendelink/web/jsf/
 Responsabilidades:
 
 - mostrar información;
-- recibir datos del usuario;
-- ejecutar acciones JSF;
-- utilizar AJAX;
-- mostrar mensajes;
+- recibir interacción;
+- navegación;
+- AJAX;
+- mensajes JSF;
 - invocar Services.
 
-Los Managed Beans no ejecutan consultas JPA directamente.
+Los Managed Beans no ejecutan consultas JPA.
 
 ### Negocio
 
@@ -64,9 +66,14 @@ src/main/java/emprendelink/service/impl/
 Responsabilidades:
 
 - reglas de negocio;
-- autorización funcional;
-- validaciones independientes de la interfaz;
-- coordinación entre diferentes DAO;
+- validación;
+- roles;
+- propiedad de recursos;
+- transiciones de estado;
+- inventario;
+- planes;
+- límites;
+- coordinación entre DAO;
 - límites transaccionales.
 
 ### Persistencia
@@ -79,20 +86,15 @@ src/main/java/emprendelink/persistence/jpa/
 
 Responsabilidades:
 
-- persistencia;
+- operaciones CRUD;
 - consultas;
-- relaciones JPA;
-- transformación entre modelo de dominio y entidades JPA.
+- relaciones;
+- persistencia;
+- transformación dominio ↔ entidad.
 
 ---
 
 ## 3. Modelo de dominio
-
-El modelo se encuentra en:
-
-```text
-emprendelink.model
-```
 
 Clases principales:
 
@@ -100,6 +102,7 @@ Clases principales:
 Rol
 Usuario
 Categoria
+Plan
 Emprendimiento
 Publicacion
 Pedido
@@ -114,50 +117,44 @@ TipoPublicacion
 EstadoPedido
 ```
 
-El modelo de dominio no depende de JSF ni JPA.
+El modelo de dominio no depende directamente de JSF ni de las entidades JPA.
 
 ---
 
 ## 4. Entidades JPA
 
-Ubicación:
-
-```text
-emprendelink.persistence.jpa.entity
-```
-
-Entidades implementadas:
+Entidades:
 
 ```text
 RolEntity
 UsuarioEntity
 CategoriaEntity
+PlanEntity
 EmprendimientoEntity
 PublicacionEntity
 PedidoEntity
 DetallePedidoEntity
 ```
 
-Las entidades utilizan anotaciones Jakarta Persistence para mapear:
+Las entidades representan:
 
 - tablas;
 - columnas;
-- claves primarias;
-- claves foráneas;
+- claves;
 - relaciones;
 - restricciones;
 - enumeraciones.
 
 ---
 
-## 5. Relaciones
-
-Relaciones principales:
+## 5. Relaciones principales
 
 ```text
 Rol 1:N Usuario
 
 Usuario 1:N Emprendimiento
+
+Plan 1:N Emprendimiento
 
 Emprendimiento 1:N Publicacion
 
@@ -178,6 +175,7 @@ Representación simplificada:
 Rol
 └── Usuario
     ├── Emprendimiento
+    │   ├── Plan
     │   ├── Publicacion
     │   │   └── DetallePedido
     │   └── Pedido
@@ -196,8 +194,6 @@ Ubicación:
 ```text
 emprendelink.persistence.jpa.mapper
 ```
-
-Mappers implementados para los módulos persistentes.
 
 Responsabilidad:
 
@@ -223,12 +219,13 @@ Implementaciones:
 emprendelink.dao.jpa
 ```
 
-Ejemplos:
+Principales DAO JPA:
 
 ```text
 JpaRolDAO
 JpaUsuarioDAO
 JpaCategoriaDAO
+JpaPlanDAO
 JpaEmprendimientoDAO
 JpaPublicacionDAO
 JpaPedidoDAO
@@ -240,13 +237,13 @@ Los Services dependen de interfaces DAO y no directamente de `EntityManager`.
 
 ## 8. Persistence Unit
 
-Persistence Unit oficial:
+Persistence Unit:
 
 ```text
 emprendelinkPU
 ```
 
-Configuración:
+Archivo:
 
 ```text
 src/main/resources/META-INF/persistence.xml
@@ -258,15 +255,36 @@ Proveedor:
 EclipseLink
 ```
 
-EclipseLink es provisto por GlassFish.
+Transacciones:
 
-Hibernate no se incluye en el WAR.
+```text
+JTA
+```
+
+DataSource:
+
+```text
+jdbc/EmprendeLinkDS
+```
+
+Entidades declaradas:
+
+```text
+RolEntity
+UsuarioEntity
+CategoriaEntity
+PlanEntity
+EmprendimientoEntity
+PublicacionEntity
+PedidoEntity
+DetallePedidoEntity
+```
 
 ---
 
 ## 9. EntityManager
 
-Las implementaciones DAO utilizan:
+Los DAO utilizan:
 
 ```java
 @PersistenceContext(unitName = "emprendelinkPU")
@@ -285,63 +303,37 @@ RESOURCE_LOCAL
 
 ## 10. Transacciones
 
-La aplicación utiliza JTA — Jakarta Transactions.
-
-Los límites transaccionales se gestionan principalmente desde Services mediante:
+Los Services utilizan Jakarta Transactions mediante:
 
 ```java
 @Transactional
 ```
 
-Ejemplo de operación transaccional:
+Ejemplo de creación de pedido:
 
 ```text
-Crear pedido
-    ↓
 validar cliente
     ↓
-validar emprendimiento
+validar negocio
     ↓
 validar publicaciones
     ↓
-crear Pedido + DetallePedido
+validar stock
     ↓
-actualizar stock
+crear pedido
+    ↓
+crear detalles
+    ↓
+descontar stock
     ↓
 commit
 ```
 
-Si ocurre una excepción durante la operación transaccional, JTA puede revertir los cambios realizados dentro de la transacción.
+Ante una excepción dentro de la operación transaccional, JTA puede revertir los cambios.
 
 ---
 
-## 11. DataSource
-
-JNDI oficial:
-
-```text
-jdbc/EmprendeLinkDS
-```
-
-Pool:
-
-```text
-EmprendeLinkPool
-```
-
-GlassFish administra las conexiones hacia MySQL.
-
-Las credenciales de base de datos no forman parte del código fuente.
-
----
-
-## 12. Managed Beans JSF
-
-Ubicación:
-
-```text
-emprendelink.web.jsf
-```
+## 11. Managed Beans
 
 Beans principales:
 
@@ -352,57 +344,64 @@ CategoriaBean
 EmprendimientoBean
 PublicacionBean
 PedidoBean
+PlanBean
+AdminNegocioBean
+AdminComisionBean
 ```
 
 Responsabilidades:
 
-- recibir interacción de XHTML;
-- consultar Services;
-- preparar datos para las vistas;
+- recibir interacción JSF;
+- preparar datos;
 - mostrar mensajes;
-- ejecutar navegación;
-- coordinar actualizaciones AJAX.
+- realizar navegación;
+- coordinar AJAX;
+- invocar Services.
+
+---
+
+## 12. AJAX
+
+Se utiliza:
+
+```xml
+<f:ajax>
+```
+
+en flujos de:
+
+- login;
+- registro;
+- usuarios;
+- categorías;
+- emprendimientos;
+- publicaciones;
+- catálogo;
+- pedidos;
+- planes;
+- comisiones.
 
 ---
 
 ## 13. Validación
 
-La validación se realiza en diferentes niveles.
+La aplicación utiliza varias capas de validación.
 
 ### JSF
 
-Incluye:
-
-- campos requeridos;
-- límites;
-- conversión de valores;
+- campos obligatorios;
 - mensajes;
-- validación mediante AJAX.
+- conversión;
+- AJAX.
 
 ### Validadores personalizados
-
-Ubicación:
-
-```text
-emprendelink.web.jsf.validator
-```
-
-Incluye:
 
 ```text
 CorreoValidator
 ContrasenaValidator
 ```
 
-### Converters
-
-Ubicación:
-
-```text
-emprendelink.web.jsf.converter
-```
-
-Incluye:
+### Converter
 
 ```text
 TipoRolConverter
@@ -410,53 +409,34 @@ TipoRolConverter
 
 ### Services
 
-Los Services validan reglas que no deben depender de la interfaz.
-
-Ejemplos:
+Validan:
 
 - roles;
-- propiedad de recursos;
+- propiedad;
 - estados;
-- disponibilidad;
 - stock;
-- relaciones válidas.
+- categorías;
+- negocios;
+- planes;
+- límites;
+- datos requeridos.
 
 ### Bean Validation
 
-Las entidades JPA utilizan restricciones cuando corresponde.
-
----
-
-## 14. AJAX
-
-Jakarta Faces utiliza:
-
-```xml
-<f:ajax>
-```
-
-Se utiliza en operaciones como:
-
-- validación de formularios;
-- actualización de tablas;
-- cambio de estados;
-- filtros;
-- edición;
-- activación y desactivación.
-
-Las operaciones no requieren recargar completamente la vista cuando no es necesario.
-
----
-
-## 15. Seguridad
-
-La autenticación utiliza sesión HTTP.
-
-Atributo de sesión:
+Las entidades utilizan restricciones como:
 
 ```text
-usuarioAutenticado
+@NotNull
+@NotBlank
+@Size
+@Min
+@DecimalMin
+@Digits
 ```
+
+---
+
+## 14. Seguridad
 
 Roles:
 
@@ -466,47 +446,91 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-Filtros principales:
+Filtros:
 
 ```text
 AutenticacionFilter
 AdminFilter
 EmprendedorFilter
 PedidosFilter
+PublicacionFilter
 ```
 
-La seguridad se aplica tanto por ruta como mediante reglas de negocio dentro de los Services.
+La autorización también se valida dentro de los Services.
 
 ---
 
-## 16. Eliminación lógica
+## 15. Eliminación lógica
 
-Para conservar integridad e historial, varios módulos utilizan eliminación lógica.
-
-Entidades con atributo:
-
-```text
-activo
-```
-
-Incluyen:
+Utilizan estado `activo`:
 
 ```text
 Usuario
 Categoria
+Plan
 Emprendimiento
 Publicacion
 ```
 
-En lugar de eliminar físicamente el registro, se cambia su estado.
+Esto permite preservar:
 
-Esto reduce problemas con información histórica y relaciones existentes.
+- relaciones;
+- integridad;
+- historial;
+- pedidos existentes.
+
+---
+
+## 16. Planes
+
+Cada emprendimiento puede tener un plan.
+
+Planes:
+
+```text
+Básico
+Estándar
+Premium
+Max
+```
+
+Límites de publicaciones activas:
+
+```text
+Básico    → 10
+Estándar  → 30
+Premium   → 60
+Max       → 100
+```
+
+Tasas de comisión:
+
+```text
+Básico    → 7%
+Estándar  → 5%
+Premium   → 3%
+Max       → 1%
+```
+
+El límite se valida:
+
+```text
+al crear una publicación
+al reactivar una publicación
+al asignar un plan
+```
+
+No se permite superar:
+
+```text
+Plan.maxProductosActivos
+```
 
 ---
 
 ## 17. Pedidos
 
-Un `Pedido` representa el agregado principal.
+Un pedido contiene:
 
 ```text
 Pedido
@@ -514,14 +538,16 @@ Pedido
 ├── Emprendimiento
 ├── Estado
 ├── Total
+├── Fecha pedido
+├── Fecha completado
+├── Tasa comisión
+├── Monto comisión
 └── Detalles
     ├── Publicacion
     ├── Cantidad
     ├── Precio unitario
     └── Subtotal
 ```
-
-`DetallePedidoEntity` se persiste junto con `PedidoEntity` mediante la relación correspondiente.
 
 ---
 
@@ -537,7 +563,7 @@ COMPLETADO
 CANCELADO
 ```
 
-Transiciones permitidas:
+Transiciones:
 
 ```text
 PENDIENTE
@@ -560,20 +586,18 @@ COMPLETADO
 CANCELADO
 ```
 
-En la interfaz para cliente:
+Presentación:
 
 ```text
 EN_PROCESO → En camino
 COMPLETADO → Entregado
 ```
 
-El nombre interno permanece independiente de la presentación.
-
 ---
 
-## 19. Stock
+## 19. Inventario
 
-Para publicaciones de tipo:
+Para publicaciones:
 
 ```text
 PRODUCTO
@@ -582,39 +606,111 @@ PRODUCTO
 al crear un pedido:
 
 ```text
-stock = stock - cantidad
+stock -= cantidad
 ```
 
-Al cancelar un pedido antes de llegar a un estado terminal:
+Al cancelar:
 
 ```text
-stock = stock + cantidad
+stock += cantidad
 ```
 
-Las publicaciones de tipo:
+Las publicaciones:
 
 ```text
 SERVICIO
 ```
 
-no utilizan stock como restricción de inventario.
+no utilizan inventario como restricción.
 
 ---
 
-## 20. Arquitectura preparada para Fase 3
+## 20. Comisiones
 
-La futura API REST deberá ubicarse en:
+Cuando un pedido cambia por primera vez a:
 
 ```text
-emprendelink.web.rest
+COMPLETADO
 ```
 
-y reutilizar:
+se obtiene la tasa del plan asociado al emprendimiento.
+
+Se persisten:
+
+```text
+tasaComision
+montoComision
+fechaCompletado
+```
+
+Cálculo:
+
+```text
+montoComision = totalPedido × tasaComision
+```
+
+La tasa queda almacenada en el pedido para conservar el valor histórico aunque posteriormente cambie el plan.
+
+---
+
+## 21. Base de datos
+
+Base:
+
+```text
+emprendelink_dwf
+```
+
+Scripts:
+
+```text
+database/schema.sql
+database/seed.sql
+database/migrations/002_planes_comisiones.sql
+database/migrations/003_fecha_completado.sql
+```
+
+---
+
+## 22. Calidad
+
+Pruebas automatizadas:
+
+```text
+41
+```
+
+Resultado:
+
+```text
+Failures: 0
+Errors: 0
+BUILD SUCCESS
+```
+
+Build:
+
+```text
+target/emprendelink.war
+```
+
+CI:
+
+```text
+GitHub Actions
+mvn -B clean test
+```
+
+---
+
+## 23. Preparación para Fase 3
+
+La API REST reutilizará:
 
 ```text
 REST
  ↓
-Services existentes
+Services
  ↓
 DAO
  ↓
@@ -623,17 +719,17 @@ JPA
 MySQL
 ```
 
-No se debe duplicar la lógica de negocio dentro de los endpoints.
-
-Ruta base prevista:
+Ruta prevista:
 
 ```text
 /api/v1
 ```
 
+Los endpoints no deberán duplicar reglas de negocio.
+
 ---
 
-## 21. Fase 4
+## 24. Preparación para Fase 4
 
 El paquete:
 
@@ -641,6 +737,12 @@ El paquete:
 emprendelink.spring
 ```
 
-está reservado para la futura integración con Spring.
+permanece reservado para la integración posterior con Spring.
 
-Los módulos Spring seleccionados deberán reutilizar el dominio y las reglas existentes siempre que sea posible.
+La arquitectura permite reutilizar:
+
+- dominio;
+- Services;
+- reglas;
+- DAO;
+- persistencia.
