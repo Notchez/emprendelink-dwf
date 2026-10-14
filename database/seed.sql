@@ -65,21 +65,35 @@ INSERT INTO usuarios (
           '7000-0005'
       );
 
--- emprendimientos
+-- planes
+INSERT INTO planes (
+    nombre,
+    max_productos_activos,
+    tasa_comision,
+    activo
+) VALUES
+      ('Básico', 10, 0.0700, TRUE),
+      ('Estándar', 30, 0.0500, TRUE),
+      ('Premium', 60, 0.0300, TRUE),
+      ('Max', 100, 0.0100, TRUE);
+
 INSERT INTO emprendimientos (
     id_propietario,
+    id_plan,
     nombre,
     descripcion,
     contacto
 ) VALUES
       (
           2,
+          1,
           'Panadería Ruiz',
           'Pan artesanal y repostería',
           'IG: @panaderiaruiz'
       ),
       (
           3,
+          2,
           'Estudio Flores',
           'Diseño gráfico y branding',
           'IG: @estudioflores'
