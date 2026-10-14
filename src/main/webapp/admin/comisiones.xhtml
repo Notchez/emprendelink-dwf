@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
+
+    <ui:param name="activeMenu" value="comisiones"/>
+
+    <ui:define name="title">
+        Comisiones - Administración - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="admin-page-header">
+
+            <div>
+
+                <span class="admin-eyebrow">
+                    Finanzas
+                </span>
+
+                <h1>Comisiones</h1>
+
+                <p>
+                    Consulta los ingresos generados por pedidos completados.
+                </p>
+
+            </div>
+
+        </section>
+
+        <h:form id="comisionesForm">
+
+            <section class="admin-panel admin-filter-panel">
+
+                <div class="admin-filter-grid">
+
+                    <div class="admin-field">
+
+                        <h:outputLabel
+                                for="negocio"
+                                value="Negocio"/>
+
+                        <h:selectOneMenu
+                                id="negocio"
+                                value="#{adminComisionBean.idEmprendimiento}">
+
+                            <f:selectItem
+                                    itemValue="#{null}"
+                                    itemLabel="Todos los negocios"/>
+
+                            <f:selectItems
+                                    value="#{adminComisionBean.emprendimientos}"
+                                    var="negocio"
+                                    itemValue="#{negocio.idEmprendimiento}"
+                                    itemLabel="#{negocio.nombre}"/>
+
+                        </h:selectOneMenu>
+
+                    </div>
+
+                    <div class="admin-field">
+
+                        <h:outputLabel
+                                for="mes"
+                                value="Mes"/>
+
+                        <h:selectOneMenu
+                                id="mes"
+                                value="#{adminComisionBean.mes}">
+
+                            <f:selectItem itemValue="1" itemLabel="Enero"/>
+                            <f:selectItem itemValue="2" itemLabel="Febrero"/>
+                            <f:selectItem itemValue="3" itemLabel="Marzo"/>
+                            <f:selectItem itemValue="4" itemLabel="Abril"/>
+                            <f:selectItem itemValue="5" itemLabel="Mayo"/>
+                            <f:selectItem itemValue="6" itemLabel="Junio"/>
+                            <f:selectItem itemValue="7" itemLabel="Julio"/>
+                            <f:selectItem itemValue="8" itemLabel="Agosto"/>
+                            <f:selectItem itemValue="9" itemLabel="Septiembre"/>
+                            <f:selectItem itemValue="10" itemLabel="Octubre"/>
+                            <f:selectItem itemValue="11" itemLabel="Noviembre"/>
+                            <f:selectItem itemValue="12" itemLabel="Diciembre"/>
+
+                        </h:selectOneMenu>
+
+                    </div>
+
+                    <div class="admin-field">
+
+                        <h:outputLabel
+                                for="anio"
+                                value="Año"/>
+
+                        <h:selectOneMenu
+                                id="anio"
+                                value="#{adminComisionBean.anio}">
+
+                            <f:selectItems
+                                    value="#{adminComisionBean.anios}"
+                                    var="anio"
+                                    itemValue="#{anio}"
+                                    itemLabel="#{anio}"/>
+
+                        </h:selectOneMenu>
+
+                    </div>
+
+                    <div class="admin-filter-action">
+
+                        <h:commandButton
+                                value="Aplicar filtros"
+                                action="#{adminComisionBean.filtrar}"
+                                styleClass="admin-button admin-button-primary">
+
+                            <f:ajax
+                                    execute="@form"
+                                    render="@form"/>
+
+                        </h:commandButton>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="admin-summary-grid">
+
+                <article class="admin-summary-card">
+
+                    <span>Pedidos completados</span>
+
+                    <strong>
+                        #{adminComisionBean.totalPedidos}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>Ventas completadas</span>
+
+                    <strong>
+                        $#{adminComisionBean.totalVentas}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>Tasa de comisión</span>
+
+                    <strong>
+                        7%
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card admin-summary-highlight">
+
+                    <span>Comisión generada</span>
+
+                    <strong>
+                        $#{adminComisionBean.totalComisiones}
+                    </strong>
+
+                </article>
+
+            </section>
+
+            <section class="admin-panel admin-section-space">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>Comisiones por negocio</h2>
+
+                        <p>
+                            Resumen del período seleccionado.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-table-scroll">
+
+                    <h:dataTable
+                            value="#{adminComisionBean.resumenes}"
+                            var="resumen"
+                            styleClass="admin-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
+
+                            <strong>
+                                #{resumen.emprendimiento.nombre}
+                            </strong>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Pedidos completados
+                            </f:facet>
+
+                            #{resumen.cantidadPedidos}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Ventas
+                            </f:facet>
+
+                            $#{resumen.ventas}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Comisión
+                            </f:facet>
+
+                            <strong class="admin-money">
+                                $#{resumen.comision}
+                            </strong>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+            <section class="admin-panel admin-section-space">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>Pedidos que generaron comisión</h2>
+
+                        <p>
+                            Solo se incluyen pedidos en estado COMPLETADO.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-table-scroll">
+
+                    <h:dataTable
+                            value="#{adminComisionBean.pedidos}"
+                            var="pedido"
+                            styleClass="admin-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Pedido
+                            </f:facet>
+
+                            ##{pedido.idPedido}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Negocio
+                            </f:facet>
+
+                            #{pedido.emprendimiento.nombre}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Fecha
+                            </f:facet>
+
+                            #{pedido.fechaPedido}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Venta
+                            </f:facet>
+
+                            $#{pedido.total}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Comisión
+                            </f:facet>
+
+                            <strong class="admin-money">
+                                $#{adminComisionBean.getComisionPedido(pedido)}
+                            </strong>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

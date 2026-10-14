@@ -1,170 +1,163 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE html>
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
 
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+    <ui:param name="activeMenu" value="usuarios"/>
 
-<h:head>
+    <ui:define name="title">
+        Usuarios - Administración - EmprendeLink
+    </ui:define>
 
-    <title>
-        Administrar usuarios - EmprendeLink
-    </title>
+    <ui:define name="content">
 
-    <link rel="stylesheet"
-          href="#{request.contextPath}/css/estilos.css"/>
+        <section class="admin-page-header">
 
-</h:head>
+            <div>
 
-<h:body>
+                <span class="admin-eyebrow">
+                    Gestión de cuentas
+                </span>
 
-    <main>
+                <h1>Usuarios</h1>
 
-        <h1>Administrar usuarios</h1>
+                <p>
+                    Consulta las cuentas registradas y administra su acceso.
+                </p>
 
-        <p>
+            </div>
 
-            Sesión iniciada como:
+        </section>
 
-            <strong>
-                #{authBean.usuario.nombre}
-                #{authBean.usuario.apellido}
-            </strong>
-
-        </p>
-
-        <nav>
-
-            <a href="#{request.contextPath}/admin/usuarios.xhtml">
-                Usuarios
-            </a>
-
-            |
-
-            <a href="#{request.contextPath}/admin/categorias.xhtml">
-                Categorías
-            </a>
-
-            |
-
-            <a href="#{request.contextPath}/admin/emprendimientos.xhtml">
-                Emprendimientos
-            </a>
-
-            |
-
-            <a href="#{request.contextPath}/admin/publicaciones.xhtml">
-                Publicaciones
-            </a>
-
-        </nav>
-
-        <br/>
-
-        <h:form id="usuariosForm">
+        <h:form id="usuariosForm"
+                styleClass="admin-data-form">
 
             <h:messages
                     id="mensajes"
-                    globalOnly="true"/>
+                    globalOnly="true"
+                    infoClass="admin-message admin-message-info"
+                    warnClass="admin-message admin-message-warning"
+                    errorClass="admin-message admin-message-error"/>
 
-            <h:dataTable
-                    value="#{usuarioBean.usuarios}"
-                    var="usuario">
+            <section class="admin-panel">
 
-                <h:column>
+                <div class="admin-panel-header">
 
-                    <f:facet name="header">
-                        ID
-                    </f:facet>
+                    <div>
 
-                    #{usuario.idUsuario}
+                        <h2>Usuarios registrados</h2>
 
-                </h:column>
+                        <p>
+                            Activa o desactiva cuentas sin eliminar información.
+                        </p>
 
-                <h:column>
+                    </div>
 
-                    <f:facet name="header">
-                        Nombre
-                    </f:facet>
+                </div>
 
-                    #{usuario.nombre}
-                    #{usuario.apellido}
+                <div class="admin-table-scroll">
 
-                </h:column>
+                    <h:dataTable
+                            value="#{usuarioBean.usuarios}"
+                            var="usuario"
+                            styleClass="admin-table">
 
-                <h:column>
+                        <h:column>
 
-                    <f:facet name="header">
-                        Correo
-                    </f:facet>
+                            <f:facet name="header">
+                                ID
+                            </f:facet>
 
-                    #{usuario.correo}
+                            <span class="admin-table-id">
+                                ##{usuario.idUsuario}
+                            </span>
 
-                </h:column>
+                        </h:column>
 
-                <h:column>
+                        <h:column>
 
-                    <f:facet name="header">
-                        Rol
-                    </f:facet>
+                            <f:facet name="header">
+                                Usuario
+                            </f:facet>
 
-                    #{usuario.rol.nombre}
+                            <div class="admin-person">
 
-                </h:column>
+                                <div>
 
-                <h:column>
+                                    <strong>
+                                        #{usuario.nombre}
+                                        #{usuario.apellido}
+                                    </strong>
 
-                    <f:facet name="header">
-                        Estado
-                    </f:facet>
+                                    <span>
+                                        #{usuario.correo}
+                                    </span>
 
-                    <h:outputText
-                            value="#{usuario.activo
-                        ? 'Activo'
-                        : 'Inactivo'}"/>
+                                </div>
 
-                </h:column>
+                            </div>
 
-                <h:column>
+                        </h:column>
 
-                    <f:facet name="header">
-                        Acción
-                    </f:facet>
+                        <h:column>
 
-                    <h:commandButton
-                            value="#{usuario.activo
-                        ? 'Desactivar'
-                        : 'Activar'}"
-                            disabled="#{usuario.idUsuario
-                        eq authBean.usuario.idUsuario}"
-                            action="#{usuarioBean.alternarEstado(
-                        usuario.idUsuario,
-                        usuario.activo
-                        )}">
+                            <f:facet name="header">
+                                Rol
+                            </f:facet>
 
-                        <f:ajax
-                                execute="@this"
-                                render="@form"/>
+                            <span class="admin-role-badge">
+                                #{usuarioBean.etiquetaRol(usuario.rol.nombre)}
+                            </span>
 
-                    </h:commandButton>
+                        </h:column>
 
-                </h:column>
+                        <h:column>
 
-            </h:dataTable>
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
+
+                            <h:outputText
+                                    value="#{usuario.activo ? 'Activo' : 'Inactivo'}"
+                                    styleClass="admin-status #{usuario.activo ? 'is-active' : 'is-inactive'}"/>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Acción
+                            </f:facet>
+
+                            <h:commandButton
+                                    value="#{usuario.activo ? 'Desactivar' : 'Activar'}"
+                                    disabled="#{usuario.idUsuario eq authBean.usuario.idUsuario}"
+                                    action="#{usuarioBean.alternarEstado(
+                                        usuario.idUsuario,
+                                        usuario.activo
+                                    )}"
+                                    styleClass="admin-action-button #{usuario.activo ? 'is-danger' : 'is-success'}">
+
+                                <f:ajax
+                                        execute="@this"
+                                        render="@form"/>
+
+                            </h:commandButton>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
 
         </h:form>
 
-        <h:form>
+    </ui:define>
 
-            <h:commandButton
-                    value="Cerrar sesión"
-                    action="#{authBean.cerrarSesion}"/>
-
-        </h:form>
-
-    </main>
-
-</h:body>
-
-</html>
+</ui:composition>

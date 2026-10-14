@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        template="/WEB-INF/admin-layout.xhtml">
+
+    <ui:param name="activeMenu" value="negocios"/>
+
+    <ui:define name="title">
+        Negocio - Administración - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <h:panelGroup
+                rendered="#{adminNegocioBean.encontrado}">
+
+            <div class="admin-breadcrumb">
+
+                <h:link
+                        outcome="/admin/emprendimientos.xhtml"
+                        value="Negocios"/>
+
+                <span>/</span>
+
+                <span>
+                    #{adminNegocioBean.emprendimiento.nombre}
+                </span>
+
+            </div>
+
+            <section class="admin-page-header">
+
+                <div>
+
+                    <span class="admin-eyebrow">
+                        Detalle del negocio
+                    </span>
+
+                    <h1>
+                        #{adminNegocioBean.emprendimiento.nombre}
+                    </h1>
+
+                    <p>
+                        #{adminNegocioBean.emprendimiento.descripcion}
+                    </p>
+
+                </div>
+
+            </section>
+
+            <section class="admin-summary-grid">
+
+                <article class="admin-summary-card">
+
+                    <span>Propietario</span>
+
+                    <strong>
+                        #{adminNegocioBean.emprendimiento.propietario.nombre}
+                        #{adminNegocioBean.emprendimiento.propietario.apellido}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>Pedidos registrados</span>
+
+                    <strong>
+                        #{adminNegocioBean.pedidos.size()}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>Valor de pedidos</span>
+
+                    <strong>
+                        $#{adminNegocioBean.totalVentas}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>Estado</span>
+
+                    <strong>
+                        #{adminNegocioBean.emprendimiento.activo
+                                ? 'Activo'
+                                : 'Inactivo'}
+                    </strong>
+
+                </article>
+
+            </section>
+
+            <section class="admin-panel">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>Pedidos</h2>
+
+                        <p>
+                            Historial de pedidos realizados a este negocio.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-table-scroll">
+
+                    <h:dataTable
+                            value="#{adminNegocioBean.pedidos}"
+                            var="pedido"
+                            styleClass="admin-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Pedido
+                            </f:facet>
+
+                            <strong>
+                                ##{pedido.idPedido}
+                            </strong>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Cliente
+                            </f:facet>
+
+                            #{pedido.cliente.nombre}
+                            #{pedido.cliente.apellido}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Fecha
+                            </f:facet>
+
+                            #{pedido.fechaPedido}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Total
+                            </f:facet>
+
+                            $#{pedido.total}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Estado
+                            </f:facet>
+
+                            <span class="admin-order-status admin-order-status-#{pedido.estado}">
+                                #{pedido.estado}
+                            </span>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </section>
+
+        </h:panelGroup>
+
+        <h:panelGroup
+                rendered="#{not adminNegocioBean.encontrado}">
+
+            <section class="admin-panel">
+
+                <div class="admin-empty-state">
+
+                    <h2>Negocio no encontrado</h2>
+
+                    <p>
+                        El emprendimiento solicitado no existe.
+                    </p>
+
+                    <h:link
+                            outcome="/admin/emprendimientos.xhtml"
+                            value="Volver a negocios"
+                            styleClass="admin-button admin-button-primary"/>
+
+                </div>
+
+            </section>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
