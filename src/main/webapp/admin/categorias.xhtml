@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Gestión de Categorías</title>
+</h:head>
+<h:body>
+    <h2>Gestión de Categorías</h2>
+    <h:messages id="mensajesGlobales" globalOnly="true" style="color:red;" />
+
+    <h:form id="formCategoria">
+        <h:panelGrid columns="3">
+            <h:outputLabel value="Nombre:" for="nombre" />
+            <h:inputText id="nombre" value="#{categoriaBean.categoriaActual.nombre}">
+                <f:validator validatorId="nombreCategoriaValidator" />
+            </h:inputText>
+            <h:message for="nombre" style="color:red;" />
+
+            <h:outputLabel value="Descripción:" for="descripcion" />
+            <h:inputTextarea id="descripcion" value="#{categoriaBean.categoriaActual.descripcion}" />
+            <h:message for="descripcion" style="color:red;" />
+        </h:panelGrid>
+
+        <h:commandButton value="Guardar" action="#{categoriaBean.guardarCategoria}">
+            <f:ajax execute="@form" render="@form :tablaCategorias mensajesGlobales" />
+        </h:commandButton>
+    </h:form>
+
+    <hr/>
+
+    <h:dataTable id="tablaCategorias" value="#{categoriaBean.listaCategorias}" var="cat" border="1">
+        <h:column>
+            <f:facet name="header">ID</f:facet>
+            #{cat.idCategoria}
+        </h:column>
+        <h:column>
+            <f:facet name="header">Nombre</f:facet>
+            #{cat.nombre}
+        </h:column>
+        <h:column>
+            <f:facet name="header">Estado</f:facet>
+            <h:outputText value="#{cat.activo ? 'Activo' : 'Inactivo'}" />
+        </h:column>
+        <h:column>
+            <f:facet name="header">Acciones</f:facet>
+            <h:form>
+                <h:commandButton value="Editar" action="#{categoriaBean.prepararEdicion(cat)}">
+                    <f:ajax execute="@this" render=":formCategoria" />
+                </h:commandButton>
+
+                <h:commandButton value="#{cat.activo ? 'Desactivar' : 'Activar'}"
+                                 action="#{categoriaBean.cambiarEstado(cat)}">
+                    <f:ajax execute="@this" render=":tablaCategorias :mensajesGlobales" />
+                </h:commandButton>
+            </h:form>
+        </h:column>
+    </h:dataTable>
+</h:body>
+</html>
