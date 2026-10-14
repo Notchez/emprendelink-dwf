@@ -44,6 +44,14 @@ public final class PedidoMapper {
                 pedido.getTotal()
         );
 
+        entidad.setTasaComision(
+                pedido.getTasaComision()
+        );
+
+        entidad.setMontoComision(
+                pedido.getMontoComision()
+        );
+
         entidad.setObservaciones(
                 pedido.getObservaciones()
         );
@@ -89,6 +97,14 @@ public final class PedidoMapper {
                         entidad.getObservaciones(),
                         entidad.getFechaPedido()
                 );
+
+        pedido.setTasaComision(
+                entidad.getTasaComision()
+        );
+
+        pedido.setMontoComision(
+                entidad.getMontoComision()
+        );
 
         for (DetallePedidoEntity detalleEntity
                 : entidad.getDetalles()) {

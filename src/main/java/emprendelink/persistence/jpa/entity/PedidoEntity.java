@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
@@ -33,13 +34,25 @@ public class PedidoEntity {
     private Integer idPedido;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "id_cliente", nullable = false)
+    @ManyToOne(
+            fetch = FetchType.EAGER,
+            optional = false
+    )
+    @JoinColumn(
+            name = "id_cliente",
+            nullable = false
+    )
     private UsuarioEntity cliente;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "id_emprendimiento", nullable = false)
+    @ManyToOne(
+            fetch = FetchType.EAGER,
+            optional = false
+    )
+    @JoinColumn(
+            name = "id_emprendimiento",
+            nullable = false
+    )
     private EmprendimientoEntity emprendimiento;
 
     @NotNull
@@ -53,7 +66,10 @@ public class PedidoEntity {
 
     @NotNull
     @DecimalMin("0.00")
-    @Digits(integer = 8, fraction = 2)
+    @Digits(
+            integer = 8,
+            fraction = 2
+    )
     @Column(
             name = "total",
             nullable = false,
@@ -61,6 +77,23 @@ public class PedidoEntity {
             scale = 2
     )
     private BigDecimal total;
+
+    @DecimalMin("0.0000")
+    @DecimalMax("1.0000")
+    @Column(
+            name = "tasa_comision",
+            precision = 5,
+            scale = 4
+    )
+    private BigDecimal tasaComision;
+
+    @DecimalMin("0.00")
+    @Column(
+            name = "monto_comision",
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal montoComision;
 
     @Column(
             name = "observaciones",
@@ -89,16 +122,24 @@ public class PedidoEntity {
     public void agregarDetalle(
             DetallePedidoEntity detalle) {
 
-        detalle.setPedido(this);
-        detalles.add(detalle);
+        detalle.setPedido(
+                this
+        );
+
+        detalles.add(
+                detalle
+        );
     }
 
     public Integer getIdPedido() {
         return idPedido;
     }
 
-    public void setIdPedido(Integer idPedido) {
-        this.idPedido = idPedido;
+    public void setIdPedido(
+            Integer idPedido) {
+
+        this.idPedido =
+                idPedido;
     }
 
     public UsuarioEntity getCliente() {
@@ -108,7 +149,8 @@ public class PedidoEntity {
     public void setCliente(
             UsuarioEntity cliente) {
 
-        this.cliente = cliente;
+        this.cliente =
+                cliente;
     }
 
     public EmprendimientoEntity getEmprendimiento() {
@@ -129,7 +171,8 @@ public class PedidoEntity {
     public void setEstado(
             EstadoPedido estado) {
 
-        this.estado = estado;
+        this.estado =
+                estado;
     }
 
     public BigDecimal getTotal() {
@@ -139,7 +182,30 @@ public class PedidoEntity {
     public void setTotal(
             BigDecimal total) {
 
-        this.total = total;
+        this.total =
+                total;
+    }
+
+    public BigDecimal getTasaComision() {
+        return tasaComision;
+    }
+
+    public void setTasaComision(
+            BigDecimal tasaComision) {
+
+        this.tasaComision =
+                tasaComision;
+    }
+
+    public BigDecimal getMontoComision() {
+        return montoComision;
+    }
+
+    public void setMontoComision(
+            BigDecimal montoComision) {
+
+        this.montoComision =
+                montoComision;
     }
 
     public String getObservaciones() {
@@ -171,6 +237,7 @@ public class PedidoEntity {
     public void setDetalles(
             List<DetallePedidoEntity> detalles) {
 
-        this.detalles = detalles;
+        this.detalles =
+                detalles;
     }
 }

@@ -3,6 +3,7 @@ package emprendelink.dao.jpa;
 import emprendelink.dao.EmprendimientoDAO;
 import emprendelink.model.Emprendimiento;
 import emprendelink.persistence.jpa.entity.EmprendimientoEntity;
+import emprendelink.persistence.jpa.entity.PlanEntity;
 import emprendelink.persistence.jpa.entity.UsuarioEntity;
 import emprendelink.persistence.jpa.mapper.EmprendimientoMapper;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +44,12 @@ public class JpaEmprendimientoDAO
                 )
         );
 
+        entidad.setPlan(
+                resolverPlan(
+                        emprendimiento
+                )
+        );
+
         entityManager.persist(
                 entidad
         );
@@ -72,6 +79,7 @@ public class JpaEmprendimientoDAO
                         FROM EmprendimientoEntity e
                         JOIN FETCH e.propietario u
                         JOIN FETCH u.rol
+                        JOIN FETCH e.plan
                         WHERE e.idEmprendimiento = :id
                         """,
                         EmprendimientoEntity.class
@@ -96,6 +104,7 @@ public class JpaEmprendimientoDAO
                         FROM EmprendimientoEntity e
                         JOIN FETCH e.propietario u
                         JOIN FETCH u.rol
+                        JOIN FETCH e.plan
                         ORDER BY e.idEmprendimiento
                         """,
                         EmprendimientoEntity.class
@@ -121,6 +130,7 @@ public class JpaEmprendimientoDAO
                         FROM EmprendimientoEntity e
                         JOIN FETCH e.propietario u
                         JOIN FETCH u.rol
+                        JOIN FETCH e.plan
                         WHERE u.idUsuario = :idUsuario
                         ORDER BY e.idEmprendimiento
                         """,
@@ -172,6 +182,21 @@ public class JpaEmprendimientoDAO
                 )
         );
 
+        if (emprendimiento.getPlan() != null
+                && emprendimiento
+                .getPlan()
+                .getIdPlan() != null) {
+
+            entidad.setPlan(
+                    entityManager.getReference(
+                            PlanEntity.class,
+                            emprendimiento
+                                    .getPlan()
+                                    .getIdPlan()
+                    )
+            );
+        }
+
         entidad.setNombre(
                 emprendimiento.getNombre()
         );
@@ -218,6 +243,41 @@ public class JpaEmprendimientoDAO
         );
 
         return true;
+    }
+
+    private PlanEntity resolverPlan(
+            Emprendimiento emprendimiento) {
+
+        if (emprendimiento.getPlan() != null
+                && emprendimiento
+                .getPlan()
+                .getIdPlan() != null) {
+
+            return entityManager.getReference(
+                    PlanEntity.class,
+                    emprendimiento
+                            .getPlan()
+                            .getIdPlan()
+            );
+        }
+
+        return entityManager.createQuery(
+                        """
+                        SELECT p
+                        FROM PlanEntity p
+                        WHERE p.activo = true
+                        ORDER BY p.idPlan
+                        """,
+                        PlanEntity.class
+                )
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "No existe un plan activo para asignar al emprendimiento."
+                        )
+                );
     }
 
     private void validarPropietario(
