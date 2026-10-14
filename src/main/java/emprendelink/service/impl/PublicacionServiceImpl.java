@@ -6,6 +6,7 @@ import emprendelink.dao.PublicacionDAO;
 import emprendelink.dao.UsuarioDAO;
 import emprendelink.model.Categoria;
 import emprendelink.model.Emprendimiento;
+import emprendelink.model.Plan;
 import emprendelink.model.Publicacion;
 import emprendelink.model.Usuario;
 import emprendelink.model.enums.TipoPublicacion;
@@ -25,6 +26,7 @@ public class PublicacionServiceImpl
         implements PublicacionService {
 
     private static final int MAX_NOMBRE = 150;
+
     private static final BigDecimal PRECIO_MAXIMO =
             new BigDecimal("99999999.99");
 
@@ -40,16 +42,24 @@ public class PublicacionServiceImpl
             CategoriaDAO categoriaDAO,
             UsuarioDAO usuarioDAO) {
 
-        this.publicacionDAO = publicacionDAO;
-        this.emprendimientoDAO = emprendimientoDAO;
-        this.categoriaDAO = categoriaDAO;
-        this.usuarioDAO = usuarioDAO;
+        this.publicacionDAO =
+                publicacionDAO;
+
+        this.emprendimientoDAO =
+                emprendimientoDAO;
+
+        this.categoriaDAO =
+                categoriaDAO;
+
+        this.usuarioDAO =
+                usuarioDAO;
     }
 
     @Override
     public List<Publicacion> listarActivas() {
 
-        return publicacionDAO.listarTodos()
+        return publicacionDAO
+                .listarTodos()
                 .stream()
                 .filter(this::esVisible)
                 .toList();
@@ -57,6 +67,7 @@ public class PublicacionServiceImpl
 
     @Override
     public List<Publicacion> listarTodas() {
+
         return publicacionDAO.listarTodos();
     }
 
@@ -70,12 +81,16 @@ public class PublicacionServiceImpl
             );
         }
 
-        return publicacionDAO.listarTodos()
+        return publicacionDAO
+                .listarTodos()
                 .stream()
-                .filter(p -> perteneceA(
-                        p.getEmprendimiento(),
-                        idPropietario
-                ))
+                .filter(publicacion ->
+                        perteneceA(
+                                publicacion
+                                        .getEmprendimiento(),
+                                idPropietario
+                        )
+                )
                 .toList();
     }
 
@@ -88,9 +103,11 @@ public class PublicacionServiceImpl
         }
 
         Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElse(null);
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElse(null);
 
         return esVisible(publicacion)
                 ? publicacion
@@ -104,18 +121,22 @@ public class PublicacionServiceImpl
 
         if (idPublicacion == null
                 || idPropietario == null) {
+
             return null;
         }
 
         Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElse(null);
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElse(null);
 
         if (publicacion == null
                 || !perteneceA(
                 publicacion.getEmprendimiento(),
-                idPropietario)) {
+                idPropietario
+        )) {
 
             return null;
         }
@@ -134,8 +155,16 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
-        validarEmprendedorActivo(idPropietario);
-        validarDatos(tipo, nombre, precio, stock);
+        validarEmprendedorActivo(
+                idPropietario
+        );
+
+        validarDatos(
+                tipo,
+                nombre,
+                precio,
+                stock
+        );
 
         Emprendimiento emprendimiento =
                 obtenerEmprendimientoPropio(
@@ -149,20 +178,34 @@ public class PublicacionServiceImpl
             );
         }
 
-        Categoria categoria =
-                obtenerCategoriaActiva(idCategoria);
-
-        Publicacion publicacion = new Publicacion(
-                emprendimiento,
-                categoria,
-                tipo,
-                nombre.trim(),
-                normalizarOpcional(descripcion),
-                precio,
-                normalizarStock(tipo, stock)
+        validarLimitePublicacionesActivas(
+                emprendimiento
         );
 
-        publicacionDAO.crear(publicacion);
+        Categoria categoria =
+                obtenerCategoriaActiva(
+                        idCategoria
+                );
+
+        Publicacion publicacion =
+                new Publicacion(
+                        emprendimiento,
+                        categoria,
+                        tipo,
+                        nombre.trim(),
+                        normalizarOpcional(
+                                descripcion
+                        ),
+                        precio,
+                        normalizarStock(
+                                tipo,
+                                stock
+                        )
+                );
+
+        publicacionDAO.crear(
+                publicacion
+        );
     }
 
     @Override
@@ -177,8 +220,16 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
-        validarEmprendedorActivo(idPropietario);
-        validarDatos(tipo, nombre, precio, stock);
+        validarEmprendedorActivo(
+                idPropietario
+        );
+
+        validarDatos(
+                tipo,
+                nombre,
+                precio,
+                stock
+        );
 
         Publicacion publicacion =
                 buscarPropiaPorId(
@@ -199,9 +250,12 @@ public class PublicacionServiceImpl
                 );
 
         if (!Objects.equals(
-                publicacion.getEmprendimiento()
+                publicacion
+                        .getEmprendimiento()
                         .getIdEmprendimiento(),
-                emprendimiento.getIdEmprendimiento())) {
+                emprendimiento
+                        .getIdEmprendimiento()
+        )) {
 
             throw new IllegalArgumentException(
                     "No se permite trasladar la publicación a otro emprendimiento."
@@ -209,20 +263,43 @@ public class PublicacionServiceImpl
         }
 
         Categoria categoria =
-                obtenerCategoriaActiva(idCategoria);
+                obtenerCategoriaActiva(
+                        idCategoria
+                );
 
-        publicacion.setCategoria(categoria);
-        publicacion.setTipo(tipo);
-        publicacion.setNombre(nombre.trim());
+        publicacion.setCategoria(
+                categoria
+        );
+
+        publicacion.setTipo(
+                tipo
+        );
+
+        publicacion.setNombre(
+                nombre.trim()
+        );
+
         publicacion.setDescripcion(
-                normalizarOpcional(descripcion)
-        );
-        publicacion.setPrecio(precio);
-        publicacion.setStock(
-                normalizarStock(tipo, stock)
+                normalizarOpcional(
+                        descripcion
+                )
         );
 
-        if (!publicacionDAO.actualizar(publicacion)) {
+        publicacion.setPrecio(
+                precio
+        );
+
+        publicacion.setStock(
+                normalizarStock(
+                        tipo,
+                        stock
+                )
+        );
+
+        if (!publicacionDAO.actualizar(
+                publicacion
+        )) {
+
             throw new IllegalStateException(
                     "No se pudo actualizar la publicación."
             );
@@ -236,20 +313,27 @@ public class PublicacionServiceImpl
             boolean activo) {
 
         Usuario usuario =
-                obtenerUsuarioActivo(idUsuario);
-
-        Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "La publicación no existe."
-                        )
+                obtenerUsuarioActivo(
+                        idUsuario
                 );
 
-        TipoRol rol = usuario.getRol() != null
-                ? usuario.getRol().getNombre()
-                : null;
+        Publicacion publicacion =
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "La publicación no existe."
+                                )
+                        );
+
+        TipoRol rol =
+                usuario.getRol() != null
+                        ? usuario
+                        .getRol()
+                        .getNombre()
+                        : null;
 
         boolean esAdmin =
                 rol == TipoRol.ROLE_ADMIN;
@@ -257,19 +341,35 @@ public class PublicacionServiceImpl
         boolean esPropietario =
                 rol == TipoRol.ROLE_EMPRENDEDOR
                         && perteneceA(
-                        publicacion.getEmprendimiento(),
+                        publicacion
+                                .getEmprendimiento(),
                         usuario.getIdUsuario()
                 );
 
-        if (!esAdmin && !esPropietario) {
+        if (!esAdmin
+                && !esPropietario) {
+
             throw new IllegalArgumentException(
                     "No tienes permiso para cambiar esta publicación."
             );
         }
 
-        publicacion.setActivo(activo);
+        if (activo
+                && !publicacion.isActivo()) {
 
-        if (!publicacionDAO.actualizar(publicacion)) {
+            validarLimitePublicacionesActivas(
+                    publicacion.getEmprendimiento()
+            );
+        }
+
+        publicacion.setActivo(
+                activo
+        );
+
+        if (!publicacionDAO.actualizar(
+                publicacion
+        )) {
+
             throw new IllegalStateException(
                     "No se pudo cambiar el estado."
             );
@@ -285,13 +385,16 @@ public class PublicacionServiceImpl
             );
         }
 
-        Usuario usuario = usuarioDAO.buscarPorId(
-                idUsuario
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El usuario no existe."
-                )
-        );
+        Usuario usuario =
+                usuarioDAO
+                        .buscarPorId(
+                                idUsuario
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "El usuario no existe."
+                                )
+                        );
 
         if (!usuario.isActivo()) {
             throw new IllegalArgumentException(
@@ -306,10 +409,14 @@ public class PublicacionServiceImpl
             Integer idUsuario) {
 
         Usuario usuario =
-                obtenerUsuarioActivo(idUsuario);
+                obtenerUsuarioActivo(
+                        idUsuario
+                );
 
         if (usuario.getRol() == null
-                || usuario.getRol().getNombre()
+                || usuario
+                .getRol()
+                .getNombre()
                 != TipoRol.ROLE_EMPRENDEDOR) {
 
             throw new IllegalArgumentException(
@@ -324,23 +431,27 @@ public class PublicacionServiceImpl
 
         if (idEmprendimiento == null
                 || idPropietario == null) {
+
             throw new IllegalArgumentException(
                     "Falta identificar el emprendimiento."
             );
         }
 
         Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
-                        idEmprendimiento
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El emprendimiento no existe."
+                emprendimientoDAO
+                        .buscarPorId(
+                                idEmprendimiento
                         )
-                );
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "El emprendimiento no existe."
+                                )
+                        );
 
         if (!perteneceA(
                 emprendimiento,
-                idPropietario)) {
+                idPropietario
+        )) {
 
             throw new IllegalArgumentException(
                     "El emprendimiento no te pertenece."
@@ -359,13 +470,16 @@ public class PublicacionServiceImpl
             );
         }
 
-        Categoria categoria = categoriaDAO.buscarPorId(
-                idCategoria
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "La categoría no existe."
-                )
-        );
+        Categoria categoria =
+                categoriaDAO
+                        .buscarPorId(
+                                idCategoria
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "La categoría no existe."
+                                )
+                        );
 
         if (!categoria.isActivo()) {
             throw new IllegalArgumentException(
@@ -376,14 +490,78 @@ public class PublicacionServiceImpl
         return categoria;
     }
 
+    private void validarLimitePublicacionesActivas(
+            Emprendimiento emprendimiento) {
+
+        if (emprendimiento == null
+                || emprendimiento
+                .getIdEmprendimiento()
+                == null) {
+
+            throw new IllegalStateException(
+                    "No se pudo identificar el emprendimiento."
+            );
+        }
+
+        Plan plan =
+                emprendimiento.getPlan();
+
+        if (plan == null) {
+            throw new IllegalStateException(
+                    "El negocio no tiene un plan asignado."
+            );
+        }
+
+        if (!plan.isActivo()) {
+            throw new IllegalStateException(
+                    "El plan asignado al negocio está inactivo."
+            );
+        }
+
+        Integer maximo =
+                plan.getMaxProductosActivos();
+
+        if (maximo == null
+                || maximo <= 0) {
+
+            throw new IllegalStateException(
+                    "El plan asignado no tiene un límite válido de publicaciones."
+            );
+        }
+
+        long publicacionesActivas =
+                publicacionDAO
+                        .listarPorEmprendimiento(
+                                emprendimiento
+                                        .getIdEmprendimiento()
+                        )
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .filter(Publicacion::isActivo)
+                        .count();
+
+        if (publicacionesActivas >= maximo) {
+            throw new IllegalStateException(
+                    "El plan "
+                            + plan.getNombre()
+                            + " permite un máximo de "
+                            + maximo
+                            + " publicaciones activas."
+            );
+        }
+    }
+
     private boolean perteneceA(
             Emprendimiento emprendimiento,
             Integer idPropietario) {
 
         return emprendimiento != null
-                && emprendimiento.getPropietario() != null
+                && emprendimiento
+                .getPropietario()
+                != null
                 && Objects.equals(
-                emprendimiento.getPropietario()
+                emprendimiento
+                        .getPropietario()
                         .getIdUsuario(),
                 idPropietario
         );
@@ -395,7 +573,9 @@ public class PublicacionServiceImpl
         if (publicacion == null
                 || !publicacion.isActivo()
                 || publicacion.getCategoria() == null
-                || !publicacion.getCategoria().isActivo()) {
+                || !publicacion
+                .getCategoria()
+                .isActivo()) {
 
             return false;
         }
@@ -405,8 +585,12 @@ public class PublicacionServiceImpl
 
         return emprendimiento != null
                 && emprendimiento.isActivo()
-                && emprendimiento.getPropietario() != null
-                && emprendimiento.getPropietario().isActivo();
+                && emprendimiento
+                .getPropietario()
+                != null
+                && emprendimiento
+                .getPropietario()
+                .isActivo();
     }
 
     private void validarDatos(
@@ -423,12 +607,15 @@ public class PublicacionServiceImpl
 
         if (nombre == null
                 || nombre.isBlank()) {
+
             throw new IllegalArgumentException(
                     "El nombre es obligatorio."
             );
         }
 
-        if (nombre.trim().length() > MAX_NOMBRE) {
+        if (nombre.trim().length()
+                > MAX_NOMBRE) {
+
             throw new IllegalArgumentException(
                     "El nombre no puede superar 150 caracteres."
             );
@@ -436,15 +623,21 @@ public class PublicacionServiceImpl
 
         if (precio == null
                 || precio.signum() < 0
-                || precio.compareTo(PRECIO_MAXIMO) > 0
-                || precio.stripTrailingZeros().scale() > 2) {
+                || precio.compareTo(
+                PRECIO_MAXIMO
+        ) > 0
+                || precio
+                .stripTrailingZeros()
+                .scale() > 2) {
 
             throw new IllegalArgumentException(
                     "El precio debe estar entre 0.00 y 99999999.99 con máximo 2 decimales."
             );
         }
 
-        if (stock != null && stock < 0) {
+        if (stock != null
+                && stock < 0) {
+
             throw new IllegalArgumentException(
                     "El stock no puede ser negativo."
             );
@@ -455,17 +648,23 @@ public class PublicacionServiceImpl
             TipoPublicacion tipo,
             Integer stock) {
 
-        if (tipo == TipoPublicacion.SERVICIO) {
+        if (tipo
+                == TipoPublicacion.SERVICIO) {
+
             return 0;
         }
 
-        return stock == null ? 0 : stock;
+        return stock == null
+                ? 0
+                : stock;
     }
 
     private String normalizarOpcional(
             String valor) {
 
-        if (valor == null || valor.isBlank()) {
+        if (valor == null
+                || valor.isBlank()) {
+
             return null;
         }
 

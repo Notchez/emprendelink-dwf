@@ -6,6 +6,7 @@ import emprendelink.dao.PublicacionDAO;
 import emprendelink.dao.UsuarioDAO;
 import emprendelink.model.Categoria;
 import emprendelink.model.Emprendimiento;
+import emprendelink.model.Plan;
 import emprendelink.model.Publicacion;
 import emprendelink.model.Rol;
 import emprendelink.model.Usuario;
@@ -69,7 +70,9 @@ class PublicacionServiceTest {
                         true
                 );
 
-        usuarioDAO.agregar(propietario);
+        usuarioDAO.agregar(
+                propietario
+        );
 
         Emprendimiento emprendimiento =
                 crearEmprendimiento(
@@ -157,7 +160,9 @@ class PublicacionServiceTest {
                         true
                 );
 
-        usuarioDAO.agregar(propietario);
+        usuarioDAO.agregar(
+                propietario
+        );
 
         emprendimientoDAO.agregar(
                 crearEmprendimiento(
@@ -206,7 +211,9 @@ class PublicacionServiceTest {
                         true
                 );
 
-        usuarioDAO.agregar(propietario);
+        usuarioDAO.agregar(
+                propietario
+        );
 
         emprendimientoDAO.agregar(
                 crearEmprendimiento(
@@ -324,7 +331,8 @@ class PublicacionServiceTest {
                 crearPublicacion(
                         30,
                         emprendimiento,
-                        categoria
+                        categoria,
+                        true
                 );
 
         publicacionDAO.agregar(
@@ -384,7 +392,8 @@ class PublicacionServiceTest {
                 crearPublicacion(
                         30,
                         emprendimiento,
-                        categoria
+                        categoria,
+                        true
                 )
         );
 
@@ -395,6 +404,163 @@ class PublicacionServiceTest {
                         30,
                         false
                 )
+        );
+    }
+
+    @Test
+    void rechazaCrearCuandoPlanAlcanzoLimite() {
+
+        Usuario propietario =
+                crearUsuario(
+                        1,
+                        TipoRol.ROLE_EMPRENDEDOR,
+                        true
+                );
+
+        usuarioDAO.agregar(
+                propietario
+        );
+
+        Plan plan =
+                crearPlan(
+                        1,
+                        "Básico",
+                        1
+                );
+
+        Emprendimiento emprendimiento =
+                crearEmprendimiento(
+                        10,
+                        propietario,
+                        plan,
+                        true
+                );
+
+        emprendimientoDAO.agregar(
+                emprendimiento
+        );
+
+        Categoria categoria =
+                crearCategoria(
+                        20,
+                        true
+                );
+
+        categoriaDAO.agregar(
+                categoria
+        );
+
+        publicacionDAO.agregar(
+                crearPublicacion(
+                        30,
+                        emprendimiento,
+                        categoria,
+                        true
+                )
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> publicacionService.crear(
+                        1,
+                        10,
+                        20,
+                        TipoPublicacion.PRODUCTO,
+                        "Segundo producto",
+                        null,
+                        new BigDecimal("15.00"),
+                        10
+                )
+        );
+
+        assertEquals(
+                1,
+                publicacionDAO
+                        .listarPorEmprendimiento(
+                                10
+                        )
+                        .size()
+        );
+    }
+
+    @Test
+    void rechazaReactivarCuandoPlanAlcanzoLimite() {
+
+        Usuario propietario =
+                crearUsuario(
+                        1,
+                        TipoRol.ROLE_EMPRENDEDOR,
+                        true
+                );
+
+        usuarioDAO.agregar(
+                propietario
+        );
+
+        Plan plan =
+                crearPlan(
+                        1,
+                        "Básico",
+                        1
+                );
+
+        Emprendimiento emprendimiento =
+                crearEmprendimiento(
+                        10,
+                        propietario,
+                        plan,
+                        true
+                );
+
+        emprendimientoDAO.agregar(
+                emprendimiento
+        );
+
+        Categoria categoria =
+                crearCategoria(
+                        20,
+                        true
+                );
+
+        categoriaDAO.agregar(
+                categoria
+        );
+
+        Publicacion activa =
+                crearPublicacion(
+                        30,
+                        emprendimiento,
+                        categoria,
+                        true
+                );
+
+        Publicacion inactiva =
+                crearPublicacion(
+                        31,
+                        emprendimiento,
+                        categoria,
+                        false
+                );
+
+        publicacionDAO.agregar(
+                activa
+        );
+
+        publicacionDAO.agregar(
+                inactiva
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> publicacionService.cambiarEstado(
+                        1,
+                        31,
+                        true
+                )
+        );
+
+        assertFalse(
+                inactiva.isActivo()
         );
     }
 
@@ -429,14 +595,47 @@ class PublicacionServiceTest {
         );
     }
 
+    private Plan crearPlan(
+            Integer id,
+            String nombre,
+            Integer maxProductosActivos) {
+
+        return new Plan(
+                id,
+                nombre,
+                maxProductosActivos,
+                new BigDecimal("0.07"),
+                true
+        );
+    }
+
     private Emprendimiento crearEmprendimiento(
             Integer id,
             Usuario propietario,
             boolean activo) {
 
+        return crearEmprendimiento(
+                id,
+                propietario,
+                crearPlan(
+                        1,
+                        "Plan de prueba",
+                        100
+                ),
+                activo
+        );
+    }
+
+    private Emprendimiento crearEmprendimiento(
+            Integer id,
+            Usuario propietario,
+            Plan plan,
+            boolean activo) {
+
         return new Emprendimiento(
                 id,
                 propietario,
+                plan,
                 "Emprendimiento " + id,
                 "Descripción",
                 "7000-0000",
@@ -460,18 +659,19 @@ class PublicacionServiceTest {
     private Publicacion crearPublicacion(
             Integer id,
             Emprendimiento emprendimiento,
-            Categoria categoria) {
+            Categoria categoria,
+            boolean activo) {
 
         return new Publicacion(
                 id,
                 emprendimiento,
                 categoria,
                 TipoPublicacion.PRODUCTO,
-                "Producto",
+                "Producto " + id,
                 "Descripción",
                 new BigDecimal("10.00"),
                 5,
-                true,
+                activo,
                 LocalDateTime.now()
         );
     }
@@ -482,7 +682,8 @@ class PublicacionServiceTest {
         private final List<Publicacion> publicaciones =
                 new ArrayList<>();
 
-        private int siguienteId = 1;
+        private int siguienteId =
+                1;
 
         void agregar(
                 Publicacion publicacion) {
@@ -513,9 +714,12 @@ class PublicacionServiceTest {
 
             return publicaciones
                     .stream()
-                    .filter(p ->
-                            p.getIdPublicacion()
-                                    .equals(idPublicacion)
+                    .filter(publicacion ->
+                            publicacion
+                                    .getIdPublicacion()
+                                    .equals(
+                                            idPublicacion
+                                    )
                     )
                     .findFirst();
         }
@@ -534,11 +738,16 @@ class PublicacionServiceTest {
 
             return publicaciones
                     .stream()
-                    .filter(p ->
-                            p.getEmprendimiento() != null
-                                    && p.getEmprendimiento()
+                    .filter(publicacion ->
+                            publicacion
+                                    .getEmprendimiento()
+                                    != null
+                                    && publicacion
+                                    .getEmprendimiento()
                                     .getIdEmprendimiento()
-                                    .equals(idEmprendimiento)
+                                    .equals(
+                                            idEmprendimiento
+                                    )
                     )
                     .toList();
         }
@@ -549,11 +758,16 @@ class PublicacionServiceTest {
 
             return publicaciones
                     .stream()
-                    .filter(p ->
-                            p.getCategoria() != null
-                                    && p.getCategoria()
+                    .filter(publicacion ->
+                            publicacion
+                                    .getCategoria()
+                                    != null
+                                    && publicacion
+                                    .getCategoria()
                                     .getIdCategoria()
-                                    .equals(idCategoria)
+                                    .equals(
+                                            idCategoria
+                                    )
                     )
                     .toList();
         }
@@ -563,7 +777,8 @@ class PublicacionServiceTest {
                 Publicacion publicacion) {
 
             return buscarPorId(
-                    publicacion.getIdPublicacion()
+                    publicacion
+                            .getIdPublicacion()
             ).isPresent();
         }
 
@@ -571,11 +786,14 @@ class PublicacionServiceTest {
         public boolean eliminar(
                 Integer idPublicacion) {
 
-            return publicaciones.removeIf(
-                    p ->
-                            p.getIdPublicacion()
-                                    .equals(idPublicacion)
-            );
+            return publicaciones
+                    .removeIf(publicacion ->
+                            publicacion
+                                    .getIdPublicacion()
+                                    .equals(
+                                            idPublicacion
+                                    )
+                    );
         }
     }
 
@@ -610,9 +828,12 @@ class PublicacionServiceTest {
 
             return emprendimientos
                     .stream()
-                    .filter(e ->
-                            e.getIdEmprendimiento()
-                                    .equals(idEmprendimiento)
+                    .filter(emprendimiento ->
+                            emprendimiento
+                                    .getIdEmprendimiento()
+                                    .equals(
+                                            idEmprendimiento
+                                    )
                     )
                     .findFirst();
         }
@@ -631,11 +852,16 @@ class PublicacionServiceTest {
 
             return emprendimientos
                     .stream()
-                    .filter(e ->
-                            e.getPropietario() != null
-                                    && e.getPropietario()
+                    .filter(emprendimiento ->
+                            emprendimiento
+                                    .getPropietario()
+                                    != null
+                                    && emprendimiento
+                                    .getPropietario()
                                     .getIdUsuario()
-                                    .equals(idUsuario)
+                                    .equals(
+                                            idUsuario
+                                    )
                     )
                     .toList();
         }
@@ -645,7 +871,8 @@ class PublicacionServiceTest {
                 Emprendimiento emprendimiento) {
 
             return buscarPorId(
-                    emprendimiento.getIdEmprendimiento()
+                    emprendimiento
+                            .getIdEmprendimiento()
             ).isPresent();
         }
 
@@ -653,11 +880,14 @@ class PublicacionServiceTest {
         public boolean eliminar(
                 Integer idEmprendimiento) {
 
-            return emprendimientos.removeIf(
-                    e ->
-                            e.getIdEmprendimiento()
-                                    .equals(idEmprendimiento)
-            );
+            return emprendimientos
+                    .removeIf(emprendimiento ->
+                            emprendimiento
+                                    .getIdEmprendimiento()
+                                    .equals(
+                                            idEmprendimiento
+                                    )
+                    );
         }
     }
 
@@ -692,9 +922,12 @@ class PublicacionServiceTest {
 
             return categorias
                     .stream()
-                    .filter(c ->
-                            c.getIdCategoria()
-                                    .equals(idCategoria)
+                    .filter(categoria ->
+                            categoria
+                                    .getIdCategoria()
+                                    .equals(
+                                            idCategoria
+                                    )
                     )
                     .findFirst();
         }
@@ -712,7 +945,8 @@ class PublicacionServiceTest {
                 Categoria categoria) {
 
             return buscarPorId(
-                    categoria.getIdCategoria()
+                    categoria
+                            .getIdCategoria()
             ).isPresent();
         }
 
@@ -720,11 +954,14 @@ class PublicacionServiceTest {
         public boolean eliminar(
                 Integer idCategoria) {
 
-            return categorias.removeIf(
-                    c ->
-                            c.getIdCategoria()
-                                    .equals(idCategoria)
-            );
+            return categorias
+                    .removeIf(categoria ->
+                            categoria
+                                    .getIdCategoria()
+                                    .equals(
+                                            idCategoria
+                                    )
+                    );
         }
     }
 
@@ -759,9 +996,12 @@ class PublicacionServiceTest {
 
             return usuarios
                     .stream()
-                    .filter(u ->
-                            u.getIdUsuario()
-                                    .equals(idUsuario)
+                    .filter(usuario ->
+                            usuario
+                                    .getIdUsuario()
+                                    .equals(
+                                            idUsuario
+                                    )
                     )
                     .findFirst();
         }
@@ -772,9 +1012,12 @@ class PublicacionServiceTest {
 
             return usuarios
                     .stream()
-                    .filter(u ->
-                            u.getCorreo()
-                                    .equalsIgnoreCase(correo)
+                    .filter(usuario ->
+                            usuario
+                                    .getCorreo()
+                                    .equalsIgnoreCase(
+                                            correo
+                                    )
                     )
                     .findFirst();
         }
@@ -792,7 +1035,8 @@ class PublicacionServiceTest {
                 Usuario usuario) {
 
             return buscarPorId(
-                    usuario.getIdUsuario()
+                    usuario
+                            .getIdUsuario()
             ).isPresent();
         }
 
@@ -800,11 +1044,14 @@ class PublicacionServiceTest {
         public boolean eliminar(
                 Integer idUsuario) {
 
-            return usuarios.removeIf(
-                    u ->
-                            u.getIdUsuario()
-                                    .equals(idUsuario)
-            );
+            return usuarios
+                    .removeIf(usuario ->
+                            usuario
+                                    .getIdUsuario()
+                                    .equals(
+                                            idUsuario
+                                    )
+                    );
         }
     }
 }
