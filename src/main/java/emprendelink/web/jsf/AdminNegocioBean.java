@@ -2,9 +2,12 @@ package emprendelink.web.jsf;
 
 import emprendelink.model.Emprendimiento;
 import emprendelink.model.Pedido;
+import emprendelink.model.Plan;
+import emprendelink.service.AdminConsultaService;
 import emprendelink.service.EmprendimientoService;
-import emprendelink.service.PedidoService;
+import emprendelink.service.PlanService;
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -25,17 +28,27 @@ public class AdminNegocioBean implements Serializable {
     private EmprendimientoService emprendimientoService;
 
     @Inject
-    private PedidoService pedidoService;
+    private AdminConsultaService adminConsultaService;
+
+    @Inject
+    private PlanService planService;
 
     private Integer idEmprendimiento;
+
+    private Integer idPlanSeleccionado;
 
     private Emprendimiento emprendimiento;
 
     private List<Pedido> pedidos =
             Collections.emptyList();
 
+    private List<Plan> planes =
+            Collections.emptyList();
+
     @PostConstruct
     public void inicializar() {
+
+        cargarPlanes();
 
         String parametro =
                 FacesContext
@@ -53,7 +66,9 @@ public class AdminNegocioBean implements Serializable {
         try {
 
             idEmprendimiento =
-                    Integer.valueOf(parametro);
+                    Integer.valueOf(
+                            parametro
+                    );
 
         } catch (NumberFormatException e) {
 
@@ -77,45 +92,87 @@ public class AdminNegocioBean implements Serializable {
                         .findFirst()
                         .orElse(null);
 
-        if (emprendimiento == null
-                || emprendimiento.getPropietario() == null
-                || emprendimiento
-                .getPropietario()
-                .getIdUsuario() == null) {
+        if (emprendimiento == null) {
 
             pedidos =
                     Collections.emptyList();
 
+            idPlanSeleccionado =
+                    null;
+
             return;
         }
 
-        Integer idPropietario =
-                emprendimiento
-                        .getPropietario()
-                        .getIdUsuario();
-
         pedidos =
-                pedidoService
-                        .listarRecibidos(idPropietario)
-                        .stream()
-                        .filter(pedido ->
-                                pedido.getEmprendimiento()
-                                        != null
-                        )
-                        .filter(pedido ->
-                                idEmprendimiento.equals(
-                                        pedido
-                                                .getEmprendimiento()
-                                                .getIdEmprendimiento()
-                                )
-                        )
-                        .toList();
+                adminConsultaService
+                        .listarPedidosPorEmprendimiento(
+                                idEmprendimiento
+                        );
+
+        if (emprendimiento.getPlan()
+                != null) {
+
+            idPlanSeleccionado =
+                    emprendimiento
+                            .getPlan()
+                            .getIdPlan();
+
+        } else {
+
+            idPlanSeleccionado =
+                    null;
+        }
+    }
+
+    private void cargarPlanes() {
+
+        planes =
+                planService.listarActivos();
+    }
+
+    public void guardarPlan() {
+
+        if (emprendimiento == null
+                || idPlanSeleccionado == null) {
+
+            mensajeError(
+                    "Seleccione un plan válido."
+            );
+
+            return;
+        }
+
+        try {
+
+            planService
+                    .asignarAEmprendimiento(
+                            emprendimiento
+                                    .getIdEmprendimiento(),
+                            idPlanSeleccionado
+                    );
+
+            cargar();
+
+            mensajeExito(
+                    "Plan actualizado correctamente."
+            );
+
+        } catch (IllegalArgumentException
+                 | IllegalStateException ex) {
+
+            mensajeError(
+                    ex.getMessage()
+            );
+        }
     }
 
     public BigDecimal getTotalVentas() {
 
-        return pedidos.stream()
-                .map(Pedido::getTotal)
+        return pedidos
+                .stream()
+                .map(
+                        Pedido::getTotal
+                )
                 .filter(total ->
                         total != null
                 )
@@ -123,6 +180,29 @@ public class AdminNegocioBean implements Serializable {
                         BigDecimal.ZERO,
                         BigDecimal::add
                 );
+    }
+
+    public String getPorcentajeComision() {
+
+        if (emprendimiento == null
+                || emprendimiento.getPlan()
+                == null
+                || emprendimiento
+                .getPlan()
+                .getTasaComision()
+                == null) {
+
+            return "—";
+        }
+
+        return emprendimiento
+                .getPlan()
+                .getTasaComision()
+                .multiply(
+                        BigDecimal.valueOf(100)
+                )
+                .stripTrailingZeros()
+                .toPlainString();
     }
 
     public Integer getIdEmprendimiento() {
@@ -137,7 +217,52 @@ public class AdminNegocioBean implements Serializable {
         return pedidos;
     }
 
+    public List<Plan> getPlanes() {
+        return planes;
+    }
+
+    public Integer getIdPlanSeleccionado() {
+        return idPlanSeleccionado;
+    }
+
+    public void setIdPlanSeleccionado(
+            Integer idPlanSeleccionado) {
+
+        this.idPlanSeleccionado =
+                idPlanSeleccionado;
+    }
+
     public boolean isEncontrado() {
         return emprendimiento != null;
+    }
+
+    private void mensajeExito(
+            String mensaje) {
+
+        FacesContext
+                .getCurrentInstance()
+                .addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                mensaje,
+                                null
+                        )
+                );
+    }
+
+    private void mensajeError(
+            String mensaje) {
+
+        FacesContext
+                .getCurrentInstance()
+                .addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                mensaje,
+                                null
+                        )
+                );
     }
 }
