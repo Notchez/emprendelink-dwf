@@ -17,6 +17,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +27,7 @@ public class PublicacionServiceImpl
         implements PublicacionService {
 
     private static final int MAX_NOMBRE = 150;
+    private static final int MAX_IMAGEN_URL = 1000;
 
     private static final BigDecimal PRECIO_MAXIMO =
             new BigDecimal("99999999.99");
@@ -42,24 +44,16 @@ public class PublicacionServiceImpl
             CategoriaDAO categoriaDAO,
             UsuarioDAO usuarioDAO) {
 
-        this.publicacionDAO =
-                publicacionDAO;
-
-        this.emprendimientoDAO =
-                emprendimientoDAO;
-
-        this.categoriaDAO =
-                categoriaDAO;
-
-        this.usuarioDAO =
-                usuarioDAO;
+        this.publicacionDAO = publicacionDAO;
+        this.emprendimientoDAO = emprendimientoDAO;
+        this.categoriaDAO = categoriaDAO;
+        this.usuarioDAO = usuarioDAO;
     }
 
     @Override
     public List<Publicacion> listarActivas() {
 
-        return publicacionDAO
-                .listarTodos()
+        return publicacionDAO.listarTodos()
                 .stream()
                 .filter(this::esVisible)
                 .toList();
@@ -76,18 +70,17 @@ public class PublicacionServiceImpl
             Integer idPropietario) {
 
         if (idPropietario == null) {
+
             throw new IllegalArgumentException(
                     "El propietario es obligatorio."
             );
         }
 
-        return publicacionDAO
-                .listarTodos()
+        return publicacionDAO.listarTodos()
                 .stream()
                 .filter(publicacion ->
                         perteneceA(
-                                publicacion
-                                        .getEmprendimiento(),
+                                publicacion.getEmprendimiento(),
                                 idPropietario
                         )
                 )
@@ -103,11 +96,9 @@ public class PublicacionServiceImpl
         }
 
         Publicacion publicacion =
-                publicacionDAO
-                        .buscarPorId(
-                                idPublicacion
-                        )
-                        .orElse(null);
+                publicacionDAO.buscarPorId(
+                        idPublicacion
+                ).orElse(null);
 
         return esVisible(publicacion)
                 ? publicacion
@@ -126,11 +117,9 @@ public class PublicacionServiceImpl
         }
 
         Publicacion publicacion =
-                publicacionDAO
-                        .buscarPorId(
-                                idPublicacion
-                        )
-                        .orElse(null);
+                publicacionDAO.buscarPorId(
+                        idPublicacion
+                ).orElse(null);
 
         if (publicacion == null
                 || !perteneceA(
@@ -155,6 +144,31 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
+        crear(
+                idPropietario,
+                idEmprendimiento,
+                idCategoria,
+                tipo,
+                nombre,
+                descripcion,
+                precio,
+                stock,
+                null
+        );
+    }
+
+    @Override
+    public void crear(
+            Integer idPropietario,
+            Integer idEmprendimiento,
+            Integer idCategoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            String imagenUrl) {
+
         validarEmprendedorActivo(
                 idPropietario
         );
@@ -166,6 +180,11 @@ public class PublicacionServiceImpl
                 stock
         );
 
+        String imagenNormalizada =
+                normalizarImagenUrl(
+                        imagenUrl
+                );
+
         Emprendimiento emprendimiento =
                 obtenerEmprendimientoPropio(
                         idEmprendimiento,
@@ -173,6 +192,7 @@ public class PublicacionServiceImpl
                 );
 
         if (!emprendimiento.isActivo()) {
+
             throw new IllegalArgumentException(
                     "El emprendimiento está inactivo."
             );
@@ -196,6 +216,7 @@ public class PublicacionServiceImpl
                         normalizarOpcional(
                                 descripcion
                         ),
+                        imagenNormalizada,
                         precio,
                         normalizarStock(
                                 tipo,
@@ -220,6 +241,41 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
+        Publicacion actual =
+                buscarPropiaPorId(
+                        idPublicacion,
+                        idPropietario
+                );
+
+        actualizar(
+                idPropietario,
+                idPublicacion,
+                idEmprendimiento,
+                idCategoria,
+                tipo,
+                nombre,
+                descripcion,
+                precio,
+                stock,
+                actual == null
+                        ? null
+                        : actual.getImagenUrl()
+        );
+    }
+
+    @Override
+    public void actualizar(
+            Integer idPropietario,
+            Integer idPublicacion,
+            Integer idEmprendimiento,
+            Integer idCategoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            String imagenUrl) {
+
         validarEmprendedorActivo(
                 idPropietario
         );
@@ -231,6 +287,11 @@ public class PublicacionServiceImpl
                 stock
         );
 
+        String imagenNormalizada =
+                normalizarImagenUrl(
+                        imagenUrl
+                );
+
         Publicacion publicacion =
                 buscarPropiaPorId(
                         idPublicacion,
@@ -238,6 +299,7 @@ public class PublicacionServiceImpl
                 );
 
         if (publicacion == null) {
+
             throw new IllegalArgumentException(
                     "La publicación no existe o no te pertenece."
             );
@@ -285,6 +347,10 @@ public class PublicacionServiceImpl
                 )
         );
 
+        publicacion.setImagenUrl(
+                imagenNormalizada
+        );
+
         publicacion.setPrecio(
                 precio
         );
@@ -318,15 +384,13 @@ public class PublicacionServiceImpl
                 );
 
         Publicacion publicacion =
-                publicacionDAO
-                        .buscarPorId(
-                                idPublicacion
+                publicacionDAO.buscarPorId(
+                        idPublicacion
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "La publicación no existe."
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "La publicación no existe."
-                                )
-                        );
+                );
 
         TipoRol rol =
                 usuario.getRol() != null
@@ -380,23 +444,23 @@ public class PublicacionServiceImpl
             Integer idUsuario) {
 
         if (idUsuario == null) {
+
             throw new IllegalArgumentException(
                     "El usuario es obligatorio."
             );
         }
 
         Usuario usuario =
-                usuarioDAO
-                        .buscarPorId(
-                                idUsuario
+                usuarioDAO.buscarPorId(
+                        idUsuario
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "El usuario no existe."
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "El usuario no existe."
-                                )
-                        );
+                );
 
         if (!usuario.isActivo()) {
+
             throw new IllegalArgumentException(
                     "El usuario está inactivo."
             );
@@ -438,15 +502,13 @@ public class PublicacionServiceImpl
         }
 
         Emprendimiento emprendimiento =
-                emprendimientoDAO
-                        .buscarPorId(
-                                idEmprendimiento
+                emprendimientoDAO.buscarPorId(
+                        idEmprendimiento
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "El emprendimiento no existe."
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "El emprendimiento no existe."
-                                )
-                        );
+                );
 
         if (!perteneceA(
                 emprendimiento,
@@ -465,23 +527,23 @@ public class PublicacionServiceImpl
             Integer idCategoria) {
 
         if (idCategoria == null) {
+
             throw new IllegalArgumentException(
                     "Seleccione una categoría."
             );
         }
 
         Categoria categoria =
-                categoriaDAO
-                        .buscarPorId(
-                                idCategoria
+                categoriaDAO.buscarPorId(
+                        idCategoria
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "La categoría no existe."
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "La categoría no existe."
-                                )
-                        );
+                );
 
         if (!categoria.isActivo()) {
+
             throw new IllegalArgumentException(
                     "La categoría está inactiva."
             );
@@ -495,11 +557,10 @@ public class PublicacionServiceImpl
 
         if (emprendimiento == null
                 || emprendimiento
-                .getIdEmprendimiento()
-                == null) {
+                .getIdEmprendimiento() == null) {
 
-            throw new IllegalStateException(
-                    "No se pudo identificar el emprendimiento."
+            throw new IllegalArgumentException(
+                    "El emprendimiento es obligatorio."
             );
         }
 
@@ -507,14 +568,16 @@ public class PublicacionServiceImpl
                 emprendimiento.getPlan();
 
         if (plan == null) {
-            throw new IllegalStateException(
-                    "El negocio no tiene un plan asignado."
+
+            throw new IllegalArgumentException(
+                    "El emprendimiento no tiene un plan asignado."
             );
         }
 
         if (!plan.isActivo()) {
-            throw new IllegalStateException(
-                    "El plan asignado al negocio está inactivo."
+
+            throw new IllegalArgumentException(
+                    "El plan del emprendimiento está inactivo."
             );
         }
 
@@ -524,8 +587,8 @@ public class PublicacionServiceImpl
         if (maximo == null
                 || maximo <= 0) {
 
-            throw new IllegalStateException(
-                    "El plan asignado no tiene un límite válido de publicaciones."
+            throw new IllegalArgumentException(
+                    "El plan no tiene un límite válido de publicaciones."
             );
         }
 
@@ -541,6 +604,7 @@ public class PublicacionServiceImpl
                         .count();
 
         if (publicacionesActivas >= maximo) {
+
             throw new IllegalStateException(
                     "El plan "
                             + plan.getNombre()
@@ -557,8 +621,7 @@ public class PublicacionServiceImpl
 
         return emprendimiento != null
                 && emprendimiento
-                .getPropietario()
-                != null
+                .getPropietario() != null
                 && Objects.equals(
                 emprendimiento
                         .getPropietario()
@@ -586,8 +649,7 @@ public class PublicacionServiceImpl
         return emprendimiento != null
                 && emprendimiento.isActivo()
                 && emprendimiento
-                .getPropietario()
-                != null
+                .getPropietario() != null
                 && emprendimiento
                 .getPropietario()
                 .isActivo();
@@ -600,6 +662,7 @@ public class PublicacionServiceImpl
             Integer stock) {
 
         if (tipo == null) {
+
             throw new IllegalArgumentException(
                     "Seleccione el tipo de publicación."
             );
@@ -657,6 +720,67 @@ public class PublicacionServiceImpl
         return stock == null
                 ? 0
                 : stock;
+    }
+
+    private String normalizarImagenUrl(
+            String imagenUrl) {
+
+        String valor =
+                normalizarOpcional(
+                        imagenUrl
+                );
+
+        if (valor == null) {
+            return null;
+        }
+
+        if (valor.length()
+                > MAX_IMAGEN_URL) {
+
+            throw new IllegalArgumentException(
+                    "La URL de la imagen no puede superar 1000 caracteres."
+            );
+        }
+
+        try {
+
+            URI uri =
+                    URI.create(
+                            valor
+                    );
+
+            String esquema =
+                    uri.getScheme();
+
+            if (esquema == null
+                    || (!esquema.equalsIgnoreCase(
+                    "http"
+            )
+                    && !esquema.equalsIgnoreCase(
+                    "https"
+            ))) {
+
+                throw new IllegalArgumentException(
+                        "La imagen debe utilizar una URL http o https."
+                );
+            }
+
+        } catch (IllegalArgumentException e) {
+
+            if (e.getMessage() != null
+                    && e.getMessage().startsWith(
+                    "La imagen debe"
+            )) {
+
+                throw e;
+            }
+
+            throw new IllegalArgumentException(
+                    "La URL de la imagen no es válida."
+            );
+        }
+
+        return valor;
     }
 
     private String normalizarOpcional(

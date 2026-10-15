@@ -1,0 +1,687 @@
+/* =========================================================
+   EMPRENDELINK — PEDIDOS RECIBIDOS
+   ========================================================= */
+
+.received-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 26px;
+}
+
+.received-page-header h1 {
+    margin: 0;
+
+    color: var(--market-text);
+
+    font-size: 36px;
+    font-weight: 820;
+
+    letter-spacing: -0.035em;
+}
+
+.received-page-header p {
+    max-width: 620px;
+
+    margin: 8px 0 0;
+
+    color: var(--market-muted);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.received-header-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    min-width: 110px;
+
+    padding: 13px 17px;
+
+    border: 1px solid var(--market-border);
+    border-radius: 13px;
+
+    background: white;
+}
+
+.received-header-stat span {
+    color: var(--market-muted);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.received-header-stat strong {
+    margin-top: 2px;
+
+    color: var(--market-text);
+
+    font-size: 22px;
+}
+
+/* FORM */
+
+#pedidosForm {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+}
+
+/* =========================================================
+   LIST
+   ========================================================= */
+
+.received-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.received-order-card {
+    overflow: hidden;
+
+    background: white;
+
+    border: 1px solid var(--market-border);
+    border-radius: 20px;
+
+    box-shadow:
+            0 7px 24px
+            rgba(33, 48, 74, 0.045);
+
+    transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            transform 160ms ease;
+}
+
+.received-order-card:hover {
+    border-color: #d5e5f8;
+
+    box-shadow:
+            0 16px 40px
+            rgba(33, 48, 74, 0.075);
+
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.received-order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 17px 21px;
+
+    border-bottom: 1px solid #edf0f4;
+}
+
+.received-order-id {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.received-order-id span {
+    color: var(--market-muted);
+
+    font-size: 10px;
+    font-weight: 750;
+
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.received-order-id strong {
+    color: var(--market-text);
+
+    font-size: 17px;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.received-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 850;
+}
+
+.received-status-dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+.received-status-PENDIENTE {
+    background: #fff7df;
+    color: #967116;
+}
+
+.received-status-CONFIRMADO {
+    background: var(--market-brand-soft);
+    color: var(--market-brand-dark);
+}
+
+.received-status-EN_PROCESO {
+    background: #f3edff;
+    color: #7556b8;
+}
+
+.received-status-COMPLETADO {
+    background: var(--market-success-soft);
+    color: var(--market-success);
+}
+
+.received-status-CANCELADO {
+    background: var(--market-danger-soft);
+    color: var(--market-danger);
+}
+
+/* =========================================================
+   CUSTOMER / BUSINESS / TOTAL
+   ========================================================= */
+
+.received-order-body {
+    display: grid;
+    grid-template-columns:
+        minmax(200px, 1.1fr)
+        minmax(180px, 1fr)
+        minmax(100px, auto);
+
+    gap: 20px;
+
+    align-items: center;
+
+    padding: 21px;
+}
+
+.received-order-customer {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.received-customer-avatar {
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border-radius: 13px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    var(--market-brand-soft),
+                    #dbeaff
+            );
+
+    color: var(--market-brand-dark);
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.received-order-customer > div:last-child,
+.received-order-business,
+.received-order-total {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.received-label {
+    color: #929cac;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.received-order-customer strong,
+.received-order-business strong {
+    color: #465164;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.received-order-total {
+    align-items: flex-end;
+}
+
+.received-order-total > span:last-child {
+    color: var(--market-text);
+
+    font-size: 20px;
+    font-weight: 850;
+}
+
+/* =========================================================
+   PRODUCTS
+   ========================================================= */
+
+.received-products {
+    margin: 0 21px;
+
+    border: 1px solid #edf0f4;
+    border-radius: 13px;
+
+    background: #fafbfd;
+}
+
+.received-product-row {
+    display: grid;
+    grid-template-columns:
+        46px
+        minmax(0, 1fr)
+        auto;
+
+    gap: 11px;
+
+    align-items: center;
+
+    padding: 10px 12px;
+
+    border-bottom: 1px solid #edf0f4;
+}
+
+.received-product-row:last-child {
+    border-bottom: 0;
+}
+
+.received-product-image {
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+
+    width: 46px;
+    height: 46px;
+
+    border-radius: 10px;
+
+    background:
+            linear-gradient(
+                    145deg,
+                    #edf5ff,
+                    #f8fbff
+            );
+
+    color: #8bb9ed;
+
+    font-size: 18px;
+}
+
+.received-product-image img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.received-product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.received-product-info strong {
+    overflow: hidden;
+
+    color: var(--market-text);
+
+    font-size: 11px;
+    font-weight: 750;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.received-product-info span {
+    color: var(--market-muted);
+
+    font-size: 9px;
+}
+
+.received-product-subtotal {
+    color: #4c5769;
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   NOTES
+   ========================================================= */
+
+.received-notes {
+    margin: 14px 21px 0;
+    padding: 12px 14px;
+
+    border-radius: 11px;
+
+    background: #fffaf0;
+
+    border: 1px solid #f5ead2;
+}
+
+.received-notes span {
+    color: #99752b;
+
+    font-size: 8px;
+    font-weight: 850;
+
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.received-notes p {
+    margin: 5px 0 0;
+
+    color: #6e6044;
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.received-progress {
+    display: flex;
+    align-items: flex-start;
+
+    max-width: 650px;
+
+    margin: 22px auto;
+    padding: 0 20px;
+}
+
+.received-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    min-width: 62px;
+
+    color: #a3abb7;
+}
+
+.received-step > span {
+    display: grid;
+    place-items: center;
+
+    width: 27px;
+    height: 27px;
+
+    border: 2px solid #dfe4eb;
+    border-radius: 50%;
+
+    background: white;
+
+    font-size: 9px;
+    font-weight: 850;
+}
+
+.received-step small {
+    margin-top: 5px;
+
+    font-size: 8px;
+    font-weight: 750;
+
+    text-align: center;
+}
+
+.received-step.is-complete {
+    color: var(--market-brand-dark);
+}
+
+.received-step.is-complete > span {
+    border-color: var(--market-brand);
+
+    background: var(--market-brand);
+    color: white;
+}
+
+.received-progress-line {
+    flex: 1;
+
+    height: 2px;
+
+    margin-top: 13px;
+
+    background: #e4e8ee;
+}
+
+.received-progress-line.is-complete {
+    background: var(--market-brand);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.received-order-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 14px 21px;
+
+    border-top: 1px solid #edf0f4;
+
+    background: #fbfcfd;
+}
+
+.received-detail-link {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 34px;
+
+    padding: 7px 11px;
+
+    border-radius: 9px;
+
+    color: #697487;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+.received-detail-link:hover {
+    background: #f0f3f7;
+    color: var(--market-brand-dark);
+
+    text-decoration: none;
+}
+
+.received-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 7px;
+}
+
+.received-action {
+    width: auto !important;
+
+    min-height: 35px;
+
+    padding: 7px 12px !important;
+
+    border: 0 !important;
+    border-radius: 9px !important;
+
+    font-size: 9px !important;
+    font-weight: 850 !important;
+
+    cursor: pointer;
+}
+
+.received-action-primary {
+    background: var(--market-brand-soft) !important;
+    color: var(--market-brand-dark) !important;
+}
+
+.received-action-primary:hover {
+    background: #dfeeff !important;
+}
+
+.received-action-success {
+    background: var(--market-success-soft) !important;
+    color: var(--market-success) !important;
+}
+
+.received-action-success:hover {
+    background: #ddf4e9 !important;
+}
+
+.received-action-danger {
+    background: var(--market-danger-soft) !important;
+    color: var(--market-danger) !important;
+}
+
+.received-action-danger:hover {
+    background: #ffe4e4 !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .received-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .received-page-header h1 {
+        font-size: 31px;
+    }
+
+    .received-header-stat {
+        align-items: flex-start;
+    }
+
+    .received-order-body {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .received-order-total {
+        align-items: flex-start;
+    }
+
+}
+
+@media (max-width: 620px) {
+
+    .received-order-header {
+        padding: 15px 16px;
+    }
+
+    .received-order-body {
+        grid-template-columns: 1fr;
+
+        padding: 17px 16px;
+    }
+
+    .received-products {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .received-notes {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .received-progress {
+        overflow-x: auto;
+
+        justify-content: flex-start;
+
+        margin-left: 0;
+        margin-right: 0;
+
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .received-progress-line {
+        min-width: 28px;
+    }
+
+    .received-step {
+        flex: 0 0 58px;
+    }
+
+    .received-order-footer {
+        align-items: stretch;
+        flex-direction: column;
+
+        padding: 13px 16px;
+    }
+
+    .received-detail-link {
+        justify-content: center;
+
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+    .received-actions {
+        width: 100%;
+    }
+
+    .received-action {
+        flex: 1;
+    }
+
+}

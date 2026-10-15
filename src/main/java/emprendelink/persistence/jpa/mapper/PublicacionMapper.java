@@ -8,37 +8,69 @@ public final class PublicacionMapper {
     private PublicacionMapper() {
     }
 
-    public static PublicacionEntity aEntidad(Publicacion publicacion) {
+    public static PublicacionEntity aEntidad(
+            Publicacion publicacion) {
 
         if (publicacion == null) {
             return null;
         }
 
-        PublicacionEntity entidad = new PublicacionEntity();
+        PublicacionEntity entidad =
+                new PublicacionEntity();
 
-        entidad.setIdPublicacion(publicacion.getIdPublicacion());
+        entidad.setIdPublicacion(
+                publicacion.getIdPublicacion()
+        );
+
         entidad.setEmprendimiento(
                 EmprendimientoMapper.aEntidad(
                         publicacion.getEmprendimiento()
                 )
         );
+
         entidad.setCategoria(
                 CategoriaMapper.aEntidad(
                         publicacion.getCategoria()
                 )
         );
-        entidad.setTipo(publicacion.getTipo());
-        entidad.setNombre(publicacion.getNombre());
-        entidad.setDescripcion(publicacion.getDescripcion());
-        entidad.setPrecio(publicacion.getPrecio());
-        entidad.setStock(publicacion.getStock());
-        entidad.setActivo(publicacion.isActivo());
-        entidad.setFechaPublicacion(publicacion.getFechaPublicacion());
+
+        entidad.setTipo(
+                publicacion.getTipo()
+        );
+
+        entidad.setNombre(
+                publicacion.getNombre()
+        );
+
+        entidad.setDescripcion(
+                publicacion.getDescripcion()
+        );
+
+        entidad.setImagenUrl(
+                publicacion.getImagenUrl()
+        );
+
+        entidad.setPrecio(
+                publicacion.getPrecio()
+        );
+
+        entidad.setStock(
+                publicacion.getStock()
+        );
+
+        entidad.setActivo(
+                publicacion.isActivo()
+        );
+
+        entidad.setFechaPublicacion(
+                publicacion.getFechaPublicacion()
+        );
 
         return entidad;
     }
 
-    public static Publicacion aDominio(PublicacionEntity entidad) {
+    public static Publicacion aDominio(
+            PublicacionEntity entidad) {
 
         if (entidad == null) {
             return null;
@@ -55,6 +87,7 @@ public final class PublicacionMapper {
                 entidad.getTipo(),
                 entidad.getNombre(),
                 entidad.getDescripcion(),
+                entidad.getImagenUrl(),
                 entidad.getPrecio(),
                 entidad.getStock(),
                 entidad.isActivo(),

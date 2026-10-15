@@ -5,65 +5,102 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough">
 
 <ui:composition template="/WEB-INF/base.xhtml">
 
     <ui:define name="title">
-        Mis negocios - EmprendeLink
+        Emprendimientos - EmprendeLink
     </ui:define>
 
     <ui:define name="content">
 
-        <div class="page-header">
+        <link rel="stylesheet"
+              href="#{request.contextPath}/css/emprendimientos.css"/>
+
+        <section class="business-page-header">
 
             <div>
 
-                <div class="eyebrow">
-                    Emprendedor
-                </div>
+                <span class="market-kicker">
+                    Panel de emprendedor
+                </span>
 
-                <h1>Mis negocios</h1>
+                <h1>
+                    Tus emprendimientos
+                </h1>
 
                 <p>
-                    Administra la informaciÃ³n de tus emprendimientos.
+                    Administra tus negocios, su información
+                    y el plan asociado a cada uno.
                 </p>
 
             </div>
 
-        </div>
+            <div class="business-header-stat">
 
-        <div class="split-layout">
+                <span>
+                    Emprendimientos
+                </span>
 
-            <section class="panel">
+                <strong>
+                    #{emprendimientoBean.emprendimientosPropios.size()}
+                </strong>
 
-                <h2 class="section-title">
+            </div>
 
-                    #{emprendimientoBean.editando
-                            ? 'Editar negocio'
-                            : 'Nuevo negocio'}
+        </section>
 
-                </h2>
+        <h:form id="emprendimientosForm">
 
-                <h:form id="emprendimientosForm">
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"
+                    styleClass="market-messages"/>
 
-                    <h:messages
-                            id="mensajes"
-                            styleClass="messages"
-                            globalOnly="true"/>
+            <div class="business-workspace">
 
-                    <div class="form-group">
+                <!-- =====================================================
+                     FORMULARIO
+                     ===================================================== -->
+
+                <aside class="business-editor">
+
+                    <div class="business-editor-header">
+
+                        <span class="market-kicker">
+                            #{emprendimientoBean.editando
+                                    ? 'Edición'
+                                    : 'Nuevo emprendimiento'}
+                        </span>
+
+                        <h2>
+                            #{emprendimientoBean.editando
+                                    ? 'Editar emprendimiento'
+                                    : 'Crear emprendimiento'}
+                        </h2>
+
+                        <p>
+                            Esta información identifica tu negocio
+                            dentro de EmprendeLink.
+                        </p>
+
+                    </div>
+
+                    <div class="business-form-field">
 
                         <h:outputLabel
                                 for="nombre"
-                                value="Nombre"/>
+                                value="Nombre del emprendimiento"/>
 
                         <h:inputText
                                 id="nombre"
                                 value="#{emprendimientoBean.nombre}"
                                 required="true"
                                 requiredMessage="El nombre es obligatorio."
-                                maxlength="120">
+                                maxlength="120"
+                                pt:placeholder="Ej. Panadería Ruiz">
 
                             <f:ajax
                                     event="blur"
@@ -74,29 +111,31 @@
 
                         <h:message
                                 id="nombreMensaje"
-                                styleClass="field-error"
-                                for="nombre"/>
+                                for="nombre"
+                                styleClass="business-field-error"/>
 
                     </div>
 
-                    <br/>
-
-                    <div class="form-group">
+                    <div class="business-form-field">
 
                         <h:outputLabel
                                 for="descripcion"
-                                value="DescripciÃ³n"/>
+                                value="Descripción"/>
 
                         <h:inputTextarea
                                 id="descripcion"
                                 value="#{emprendimientoBean.descripcion}"
-                                rows="4"/>
+                                rows="5"
+                                pt:placeholder="Describe brevemente qué ofrece tu emprendimiento..."/>
+
+                        <small class="business-field-help">
+                            Esta descripción puede utilizarse
+                            para presentar tu negocio a los clientes.
+                        </small>
 
                     </div>
 
-                    <br/>
-
-                    <div class="form-group">
+                    <div class="business-form-field">
 
                         <h:outputLabel
                                 for="contacto"
@@ -105,18 +144,23 @@
                         <h:inputText
                                 id="contacto"
                                 value="#{emprendimientoBean.contacto}"
-                                maxlength="120"/>
+                                maxlength="120"
+                                pt:placeholder="Teléfono, Instagram o correo"/>
+
+                        <small class="business-field-help">
+                            Ej. 7000-0000, @minegocio o correo@ejemplo.com
+                        </small>
 
                     </div>
 
-                    <div class="button-row">
+                    <div class="business-form-actions">
 
                         <h:commandButton
                                 value="#{emprendimientoBean.editando
-                                ? 'Guardar cambios'
-                                : 'Crear negocio'}"
-                                styleClass="btn btn-primary"
-                                action="#{emprendimientoBean.guardar}">
+                                        ? 'Guardar cambios'
+                                        : 'Crear emprendimiento'}"
+                                action="#{emprendimientoBean.guardar}"
+                                styleClass="market-primary-button business-save-button">
 
                             <f:ajax
                                     execute="@form"
@@ -126,10 +170,10 @@
 
                         <h:commandButton
                                 value="Cancelar"
-                                styleClass="btn btn-secondary"
-                                rendered="#{emprendimientoBean.editando}"
                                 action="#{emprendimientoBean.cancelarEdicion}"
-                                immediate="true">
+                                rendered="#{emprendimientoBean.editando}"
+                                immediate="true"
+                                styleClass="market-secondary-button">
 
                             <f:ajax
                                     execute="@this"
@@ -139,81 +183,240 @@
 
                     </div>
 
-                </h:form>
+                </aside>
 
-            </section>
+                <!-- =====================================================
+                     LISTADO
+                     ===================================================== -->
 
-            <section class="table-panel">
+                <section class="business-list">
 
-                <div class="table-wrap">
+                    <div class="business-list-header">
 
-                    <h:dataTable
-                            value="#{emprendimientoBean.emprendimientosPropios}"
-                            var="e"
-                            styleClass="data-table">
+                        <div>
 
-                        <h:column>
+                            <span class="market-kicker">
+                                Tus negocios
+                            </span>
 
-                            <f:facet name="header">
-                                Negocio
-                            </f:facet>
+                            <h2>
+                                Emprendimientos registrados
+                            </h2>
 
-                            <strong>#{e.nombre}</strong>
+                        </div>
 
-                        </h:column>
+                        <a href="#{request.contextPath}/publicaciones/index.xhtml"
+                           class="business-publications-link">
 
-                        <h:column>
+                            Gestionar publicaciones →
 
-                            <f:facet name="header">
-                                Contacto
-                            </f:facet>
+                        </a>
 
-                            #{e.contacto}
+                    </div>
 
-                        </h:column>
+                    <h:panelGroup
+                            rendered="#{not empty emprendimientoBean.emprendimientosPropios}"
+                            layout="block"
+                            styleClass="business-card-list">
 
-                        <h:column>
+                        <ui:repeat
+                                value="#{emprendimientoBean.emprendimientosPropios}"
+                                var="e">
 
-                            <f:facet name="header">
-                                Estado
-                            </f:facet>
+                            <article class="#{e.activo
+                                    ? 'business-card'
+                                    : 'business-card is-disabled'}">
 
-                            #{e.activo ? 'Activo' : 'Inactivo'}
+                                <div class="business-card-main">
 
-                        </h:column>
+                                    <div class="business-card-avatar">
 
-                        <h:column>
+                                        #{e.nombre.substring(0, 1)}
 
-                            <f:facet name="header">
-                                AcciÃ³n
-                            </f:facet>
+                                    </div>
 
-                            <h:form>
+                                    <div class="business-card-info">
 
-                                <h:commandButton
-                                        value="Editar"
-                                        styleClass="btn btn-secondary btn-small"
-                                        action="#{emprendimientoBean.editar(
-                                        e.idEmprendimiento
-                                        )}">
+                                        <div class="business-card-heading">
 
-                                    <f:ajax
-                                            execute="@this"
-                                            render=":emprendimientosForm"/>
+                                            <div>
 
-                                </h:commandButton>
+                                                <span class="business-card-label">
+                                                    Emprendimiento
+                                                </span>
 
-                            </h:form>
+                                                <h3>
+                                                    #{e.nombre}
+                                                </h3>
 
-                        </h:column>
+                                            </div>
 
-                    </h:dataTable>
+                                            <span class="#{e.activo
+                                                    ? 'business-status is-active'
+                                                    : 'business-status is-inactive'}">
 
-                </div>
+                                                <span class="business-status-dot">
+                                                </span>
 
-            </section>
+                                                #{e.activo
+                                                        ? 'Activo'
+                                                        : 'Inactivo'}
 
-        </div>
+                                            </span>
+
+                                        </div>
+
+                                        <h:panelGroup
+                                                rendered="#{not empty e.descripcion}">
+
+                                            <p class="business-card-description">
+                                                #{e.descripcion}
+                                            </p>
+
+                                        </h:panelGroup>
+
+                                        <div class="business-card-meta">
+
+                                            <div class="business-meta-item">
+
+                                                <span>
+                                                    Contacto
+                                                </span>
+
+                                                <strong>
+                                                    #{empty e.contacto
+                                                            ? 'Sin registrar'
+                                                            : e.contacto}
+                                                </strong>
+
+                                            </div>
+
+                                            <h:panelGroup
+                                                    rendered="#{not empty e.plan}"
+                                                    layout="block"
+                                                    styleClass="business-meta-item">
+
+                                                <span>
+                                                    Plan
+                                                </span>
+
+                                                <strong>
+                                                    #{e.plan.nombre}
+                                                </strong>
+
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                    rendered="#{not empty e.plan}"
+                                                    layout="block"
+                                                    styleClass="business-meta-item">
+
+                                                <span>
+                                                    Publicaciones
+                                                </span>
+
+                                                <strong>
+                                                    Hasta
+                                                    #{e.plan.maxProductosActivos}
+                                                    activas
+                                                </strong>
+
+                                            </h:panelGroup>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="business-card-footer">
+
+                                    <div class="business-card-links">
+
+                                        <a href="#{request.contextPath}/publicaciones/index.xhtml"
+                                           class="business-card-link">
+
+                                            Publicaciones
+
+                                        </a>
+
+                                        <a href="#{request.contextPath}/pedidos/recibidos.xhtml"
+                                           class="business-card-link">
+
+                                            Pedidos
+
+                                        </a>
+
+                                    </div>
+
+                                    <div class="business-card-actions">
+
+                                        <h:commandButton
+                                                value="Editar"
+                                                action="#{emprendimientoBean.editar(e.idEmprendimiento)}"
+                                                immediate="true"
+                                                styleClass="business-action-button">
+
+                                            <f:ajax
+                                                    execute="@this"
+                                                    render="@form"/>
+
+                                        </h:commandButton>
+
+                                        <h:commandButton
+                                                value="#{e.activo
+                                                        ? 'Desactivar'
+                                                        : 'Activar'}"
+                                                action="#{emprendimientoBean.alternarEstado(
+                                                        e.idEmprendimiento,
+                                                        e.activo
+                                                )}"
+                                                immediate="true"
+                                                styleClass="#{e.activo
+                                                        ? 'business-action-button business-action-muted'
+                                                        : 'business-action-button business-action-success'}">
+
+                                            <f:ajax
+                                                    execute="@this"
+                                                    render="@form"/>
+
+                                        </h:commandButton>
+
+                                    </div>
+
+                                </div>
+
+                            </article>
+
+                        </ui:repeat>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup
+                            rendered="#{empty emprendimientoBean.emprendimientosPropios}"
+                            layout="block"
+                            styleClass="market-empty-state">
+
+                        <div class="market-empty-icon">
+                            E
+                        </div>
+
+                        <h2>
+                            Crea tu primer emprendimiento
+                        </h2>
+
+                        <p>
+                            Cuando registres tu negocio podrás
+                            comenzar a publicar productos y servicios.
+                        </p>
+
+                    </h:panelGroup>
+
+                </section>
+
+            </div>
+
+        </h:form>
 
     </ui:define>
 

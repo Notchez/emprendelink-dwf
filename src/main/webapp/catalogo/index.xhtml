@@ -15,38 +15,63 @@
 
     <ui:define name="content">
 
-        <section class="hero">
+        <section class="market-hero">
 
-            <div class="eyebrow">
-                Compra local
+            <div class="market-hero-copy">
+
+                <span class="market-kicker">
+                    Compra local
+                </span>
+
+                <h1>
+                    Lo mejor de nuestros emprendedores,
+                    en un solo lugar.
+                </h1>
+
+                <p>
+                    Descubre productos y servicios de negocios
+                    locales y apoya a quienes están construyendo
+                    algo propio.
+                </p>
+
             </div>
 
-            <h1>
-                Encuentra algo que te guste.
-            </h1>
+            <div class="market-hero-decoration">
 
-            <p>
-                Productos y servicios de emprendimientos
-                reunidos en un solo lugar.
-            </p>
+                <div class="market-hero-badge">
+                    <span>✦</span>
+
+                    <strong>
+                        Descubre
+                    </strong>
+
+                    <small>
+                        Compra. Apoya. Conecta.
+                    </small>
+                </div>
+
+            </div>
 
         </section>
 
         <h:form
                 id="catalogoForm"
-                styleClass="catalog-filters">
+                styleClass="market-filter-form">
 
-            <div class="filter-grid">
+            <section class="market-search-panel">
 
-                <div class="form-group">
+                <div class="market-search-main">
 
-                    <h:outputLabel
-                            for="texto"
-                            value="Buscar"/>
+                    <span class="market-search-icon">
+                        ⌕
+                    </span>
 
                     <h:inputText
                             id="texto"
-                            value="#{publicacionBean.filtroTexto}">
+                            value="#{publicacionBean.filtroTexto}"
+                            styleClass="market-search-input"
+                            pt:placeholder="Buscar productos, servicios o negocios..."
+                            xmlns:pt="jakarta.faces.passthrough">
 
                         <f:ajax
                                 event="keyup"
@@ -57,7 +82,7 @@
 
                 </div>
 
-                <div class="form-group">
+                <div class="market-filter-control">
 
                     <h:outputLabel
                             for="tipo"
@@ -68,7 +93,7 @@
                             value="#{publicacionBean.filtroTipo}">
 
                         <f:selectItem
-                                itemLabel="Todos"
+                                itemLabel="Todo"
                                 itemValue="#{null}"/>
 
                         <f:selectItems
@@ -76,8 +101,8 @@
                                 var="tipo"
                                 itemValue="#{tipo}"
                                 itemLabel="#{tipo eq 'PRODUCTO'
-                                ? 'Productos'
-                                : 'Servicios'}"/>
+                                        ? 'Productos'
+                                        : 'Servicios'}"/>
 
                         <f:ajax
                                 execute="@this"
@@ -87,11 +112,11 @@
 
                 </div>
 
-                <div class="form-group">
+                <div class="market-filter-control">
 
                     <h:outputLabel
                             for="categoria"
-                            value="CategorÃ­a"/>
+                            value="Categoría"/>
 
                     <h:selectOneMenu
                             id="categoria"
@@ -103,9 +128,9 @@
 
                         <f:selectItems
                                 value="#{publicacionBean.categoriasActivas}"
-                                var="c"
-                                itemValue="#{c.idCategoria}"
-                                itemLabel="#{c.nombre}"/>
+                                var="categoria"
+                                itemValue="#{categoria.idCategoria}"
+                                itemLabel="#{categoria.nombre}"/>
 
                         <f:ajax
                                 execute="@this"
@@ -115,80 +140,239 @@
 
                 </div>
 
-            </div>
+                <h:commandButton
+                        value="Limpiar"
+                        action="#{publicacionBean.limpiarFiltros}"
+                        immediate="true"
+                        styleClass="market-clear-button">
 
-            <br/>
+                    <f:ajax
+                            execute="@this"
+                            render="@form"/>
+
+                </h:commandButton>
+
+            </section>
 
             <h:panelGroup
                     id="resultados"
-                    layout="block">
+                    layout="block"
+                    styleClass="market-results">
 
-                <div class="catalog-grid">
+                <h:panelGroup
+                        rendered="#{not empty publicacionBean.seccionesCatalogo}"
+                        layout="block">
+
+                    <div class="market-results-heading">
+
+                        <div>
+
+                            <span class="market-kicker">
+                                Explorar
+                            </span>
+
+                            <h2>
+                                Negocios para ti
+                            </h2>
+
+                        </div>
+
+                        <span class="market-result-count">
+                            #{publicacionBean.cantidadResultados}
+                            resultados
+                        </span>
+
+                    </div>
 
                     <ui:repeat
-                            value="#{publicacionBean.catalogoFiltrado}"
-                            var="p">
+                            value="#{publicacionBean.seccionesCatalogo}"
+                            var="seccion">
 
-                        <article class="product-card">
+                        <section class="business-section">
 
-                            <div class="#{p.tipo eq 'SERVICIO'
-                            ? 'product-visual service'
-                            : 'product-visual'}">
+                            <div class="business-section-header">
 
-                                <span class="product-type">
-                                    #{p.tipo eq 'PRODUCTO'
-                                            ? 'Producto'
-                                            : 'Servicio'}
-                                </span>
-
-                            </div>
-
-                            <div class="product-body">
-
-                                <div class="product-business">
-                                    #{p.emprendimiento.nombre}
+                                <div class="business-avatar">
+                                    #{seccion.emprendimiento.nombre.substring(0, 1)}
                                 </div>
 
-                                <h2 class="product-title">
-                                    #{p.nombre}
-                                </h2>
+                                <div class="business-heading-copy">
 
-                                <div class="product-category">
-                                    #{p.categoria.nombre}
-                                </div>
+                                    <span class="business-label">
+                                        Negocio local
+                                    </span>
 
-                                <div class="product-footer">
+                                    <h2>
+                                        #{seccion.emprendimiento.nombre}
+                                    </h2>
 
-                                    <h:outputText
-                                            value="#{p.precio}"
-                                            styleClass="price">
+                                    <h:panelGroup
+                                            rendered="#{not empty seccion.emprendimiento.descripcion}">
 
-                                        <f:convertNumber
-                                                type="currency"
-                                                currencySymbol="$"/>
+                                        <p>
+                                            #{seccion.emprendimiento.descripcion}
+                                        </p>
 
-                                    </h:outputText>
-
-                                    <h:link
-                                            outcome="/catalogo/detalle.xhtml"
-                                            value="Ver"
-                                            styleClass="btn btn-secondary btn-small">
-
-                                        <f:param
-                                                name="id"
-                                                value="#{p.idPublicacion}"/>
-
-                                    </h:link>
+                                    </h:panelGroup>
 
                                 </div>
 
                             </div>
 
-                        </article>
+                            <div class="market-product-grid">
+
+                                <ui:repeat
+                                        value="#{seccion.publicaciones}"
+                                        var="p">
+
+                                    <article class="market-product-card">
+
+                                        <h:link
+                                                outcome="/catalogo/detalle.xhtml"
+                                                styleClass="market-product-image-link">
+
+                                            <f:param
+                                                    name="id"
+                                                    value="#{p.idPublicacion}"/>
+
+                                            <div class="market-product-image">
+
+                                                <ui:fragment
+                                                        rendered="#{not empty p.imagenUrl}">
+
+                                                    <img src="#{p.imagenUrl}"
+                                                         alt="#{p.nombre}"
+                                                         loading="lazy"/>
+
+                                                </ui:fragment>
+
+                                                <ui:fragment
+                                                        rendered="#{empty p.imagenUrl}">
+
+                                                    <div class="market-image-placeholder">
+
+                                                        <span>
+                                                            #{p.tipo eq 'PRODUCTO'
+                                                                    ? '◫'
+                                                                    : '✦'}
+                                                        </span>
+
+                                                        <small>
+                                                            #{p.tipo eq 'PRODUCTO'
+                                                                    ? 'Producto'
+                                                                    : 'Servicio'}
+                                                        </small>
+
+                                                    </div>
+
+                                                </ui:fragment>
+
+                                                <span class="market-product-type">
+                                                    #{p.tipo eq 'PRODUCTO'
+                                                            ? 'Producto'
+                                                            : 'Servicio'}
+                                                </span>
+
+                                            </div>
+
+                                        </h:link>
+
+                                        <div class="market-product-content">
+
+                                            <span class="market-product-category">
+                                                #{p.categoria.nombre}
+                                            </span>
+
+                                            <h3>
+                                                #{p.nombre}
+                                            </h3>
+
+                                            <h:panelGroup
+                                                    rendered="#{not empty p.descripcion}">
+
+                                                <p class="market-product-description">
+                                                    #{p.descripcion}
+                                                </p>
+
+                                            </h:panelGroup>
+
+                                            <div class="market-product-bottom">
+
+                                                <div class="market-price-stack">
+
+                                                    <span class="market-price-label">
+                                                        Desde
+                                                    </span>
+
+                                                    <h:outputText
+                                                            value="#{p.precio}"
+                                                            styleClass="market-price">
+
+                                                        <f:convertNumber
+                                                                type="currency"
+                                                                currencySymbol="$"/>
+
+                                                    </h:outputText>
+
+                                                </div>
+
+                                                <h:link
+                                                        outcome="/catalogo/detalle.xhtml"
+                                                        value="Ver detalle"
+                                                        styleClass="market-card-action">
+
+                                                    <f:param
+                                                            name="id"
+                                                            value="#{p.idPublicacion}"/>
+
+                                                </h:link>
+
+                                            </div>
+
+                                        </div>
+
+                                    </article>
+
+                                </ui:repeat>
+
+                            </div>
+
+                        </section>
 
                     </ui:repeat>
 
-                </div>
+                </h:panelGroup>
+
+                <h:panelGroup
+                        rendered="#{empty publicacionBean.seccionesCatalogo}"
+                        layout="block"
+                        styleClass="market-empty-state">
+
+                    <div class="market-empty-icon">
+                        ⌕
+                    </div>
+
+                    <h2>
+                        No encontramos resultados
+                    </h2>
+
+                    <p>
+                        Prueba con otro término, tipo o categoría.
+                    </p>
+
+                    <h:commandButton
+                            value="Limpiar filtros"
+                            action="#{publicacionBean.limpiarFiltros}"
+                            immediate="true"
+                            styleClass="market-primary-button">
+
+                        <f:ajax
+                                execute="@this"
+                                render="@form"/>
+
+                    </h:commandButton>
+
+                </h:panelGroup>
 
             </h:panelGroup>
 

@@ -30,93 +30,186 @@
         <h:panelGroup
                 rendered="#{not empty publicacionBean.detalle}"
                 layout="block"
-                styleClass="detail-layout">
+                styleClass="market-detail-page">
 
-            <div class="detail-visual">
+            <div class="market-detail-back">
 
-                <span class="product-type">
-                    #{publicacionBean.detalle.tipo eq 'PRODUCTO'
-                            ? 'Producto'
-                            : 'Servicio'}
-                </span>
+                <a href="#{request.contextPath}/catalogo/index.xhtml">
+                    ← Volver a explorar
+                </a>
 
             </div>
 
-            <section class="detail-card">
+            <div class="market-detail-layout">
 
-                <div class="eyebrow">
-                    #{publicacionBean.detalle.emprendimiento.nombre}
-                </div>
+                <section class="market-detail-media">
 
-                <h1>
-                    #{publicacionBean.detalle.nombre}
-                </h1>
+                    <ui:fragment
+                            rendered="#{not empty publicacionBean.detalle.imagenUrl}">
 
-                <p class="muted">
-                    #{publicacionBean.detalle.categoria.nombre}
-                </p>
+                        <img src="#{publicacionBean.detalle.imagenUrl}"
+                             alt="#{publicacionBean.detalle.nombre}"/>
 
-                <p>
-                    #{publicacionBean.detalle.descripcion}
-                </p>
+                    </ui:fragment>
 
-                <h:outputText
-                        value="#{publicacionBean.detalle.precio}"
-                        styleClass="detail-price">
+                    <ui:fragment
+                            rendered="#{empty publicacionBean.detalle.imagenUrl}">
 
-                    <f:convertNumber
-                            type="currency"
-                            currencySymbol="$"/>
+                        <div class="market-detail-placeholder">
 
-                </h:outputText>
+                            <span>
+                                #{publicacionBean.detalle.tipo eq 'PRODUCTO'
+                                        ? '◫'
+                                        : '✦'}
+                            </span>
 
-                <h:panelGroup
-                        rendered="#{publicacionBean.detalle.tipo eq 'PRODUCTO'}">
+                            <strong>
+                                #{publicacionBean.detalle.tipo eq 'PRODUCTO'
+                                        ? 'Producto'
+                                        : 'Servicio'}
+                            </strong>
 
-                    <p class="muted">
-                        #{publicacionBean.detalle.stock}
-                        disponibles
-                    </p>
+                        </div>
 
-                </h:panelGroup>
+                    </ui:fragment>
 
-                <div class="button-row">
+                </section>
 
-                    <h:panelGroup
-                            rendered="#{authBean.autenticado
-                            and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+                <section class="market-detail-info">
 
-                        <h:link
-                                outcome="/pedidos/nuevo.xhtml"
-                                value="Realizar pedido"
-                                styleClass="btn btn-primary">
+                    <div class="market-detail-tags">
 
-                            <f:param
-                                    name="id"
-                                    value="#{publicacionBean.detalle.idPublicacion}"/>
+                        <span class="market-pill">
+                            #{publicacionBean.detalle.categoria.nombre}
+                        </span>
 
-                        </h:link>
+                        <span class="market-pill market-pill-soft">
+                            #{publicacionBean.detalle.tipo eq 'PRODUCTO'
+                                    ? 'Producto'
+                                    : 'Servicio'}
+                        </span>
 
-                    </h:panelGroup>
+                    </div>
 
-                    <h:panelGroup
-                            rendered="#{not authBean.autenticado}">
-
-                        <a class="btn btn-primary"
-                           href="#{request.contextPath}/login.xhtml">
-                            Ingresar para pedir
-                        </a>
-
-                    </h:panelGroup>
-
-                    <a class="btn btn-secondary"
+                    <a class="market-detail-business"
                        href="#{request.contextPath}/catalogo/index.xhtml">
-                        Volver
+
+                        <span class="business-avatar business-avatar-small">
+                            #{publicacionBean.detalle.emprendimiento.nombre.substring(0, 1)}
+                        </span>
+
+                        <span>
+
+                            <small>
+                                Vendido por
+                            </small>
+
+                            <strong>
+                                #{publicacionBean.detalle.emprendimiento.nombre}
+                            </strong>
+
+                        </span>
+
                     </a>
 
-                </div>
+                    <h1>
+                        #{publicacionBean.detalle.nombre}
+                    </h1>
 
-            </section>
+                    <h:outputText
+                            value="#{publicacionBean.detalle.precio}"
+                            styleClass="market-detail-price">
+
+                        <f:convertNumber
+                                type="currency"
+                                currencySymbol="$"/>
+
+                    </h:outputText>
+
+                    <h:panelGroup
+                            rendered="#{publicacionBean.detalle.tipo eq 'PRODUCTO'}">
+
+                        <div class="market-stock">
+
+                            <span class="#{publicacionBean.detalle.stock gt 0
+                                    ? 'market-stock-dot'
+                                    : 'market-stock-dot is-empty'}">
+                            </span>
+
+                            <span>
+                                <h:outputText
+                                        value="#{publicacionBean.detalle.stock}"
+                                        rendered="#{publicacionBean.detalle.stock gt 0}"/>
+
+                                <h:outputText
+                                        value=" disponibles"
+                                        rendered="#{publicacionBean.detalle.stock gt 0}"/>
+
+                                <h:outputText
+                                        value="Sin existencias"
+                                        rendered="#{publicacionBean.detalle.stock le 0}"/>
+                            </span>
+
+                        </div>
+
+                    </h:panelGroup>
+
+                    <div class="market-detail-divider">
+                    </div>
+
+                    <div class="market-detail-description">
+
+                        <h2>
+                            Acerca de esta publicación
+                        </h2>
+
+                        <p>
+                            #{empty publicacionBean.detalle.descripcion
+                                    ? 'El emprendedor no agregó una descripción adicional.'
+                                    : publicacionBean.detalle.descripcion}
+                        </p>
+
+                    </div>
+
+                    <div class="market-detail-actions">
+
+                        <h:panelGroup
+                                rendered="#{authBean.autenticado
+                                and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+
+                            <h:link
+                                    outcome="/pedidos/nuevo.xhtml"
+                                    value="Realizar pedido"
+                                    styleClass="market-primary-link">
+
+                                <f:param
+                                        name="id"
+                                        value="#{publicacionBean.detalle.idPublicacion}"/>
+
+                            </h:link>
+
+                        </h:panelGroup>
+
+                        <h:panelGroup
+                                rendered="#{not authBean.autenticado}">
+
+                            <a class="market-primary-link"
+                               href="#{request.contextPath}/login.xhtml">
+                                Ingresar para pedir
+                            </a>
+
+                        </h:panelGroup>
+
+                        <a class="market-secondary-link"
+                           href="#{request.contextPath}/catalogo/index.xhtml">
+                            Seguir explorando
+                        </a>
+
+                    </div>
+
+                </section>
+
+            </div>
 
         </h:panelGroup>
 

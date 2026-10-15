@@ -32,44 +32,91 @@ public class PublicacionEntity {
     private Integer idPublicacion;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "id_emprendimiento", nullable = false)
+    @ManyToOne(
+            fetch = FetchType.EAGER,
+            optional = false
+    )
+    @JoinColumn(
+            name = "id_emprendimiento",
+            nullable = false
+    )
     private EmprendimientoEntity emprendimiento;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "id_categoria", nullable = false)
+    @ManyToOne(
+            fetch = FetchType.EAGER,
+            optional = false
+    )
+    @JoinColumn(
+            name = "id_categoria",
+            nullable = false
+    )
     private CategoriaEntity categoria;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Column(
+            name = "tipo",
+            nullable = false,
+            length = 20
+    )
     private TipoPublicacion tipo;
 
     @NotBlank
     @Size(max = 150)
-    @Column(name = "nombre", nullable = false, length = 150)
+    @Column(
+            name = "nombre",
+            nullable = false,
+            length = 150
+    )
     private String nombre;
 
-    @Column(name = "descripcion", columnDefinition = "TEXT")
+    @Column(
+            name = "descripcion",
+            columnDefinition = "TEXT"
+    )
     private String descripcion;
 
+    @Size(max = 1000)
+    @Column(
+            name = "imagen_url",
+            length = 1000
+    )
+    private String imagenUrl;
+
     @NotNull
-    @DecimalMin(value = "0.00")
-    @Digits(integer = 8, fraction = 2)
-    @Column(name = "precio", nullable = false, precision = 10, scale = 2)
+    @DecimalMin("0.00")
+    @Digits(
+            integer = 8,
+            fraction = 2
+    )
+    @Column(
+            name = "precio",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
     private BigDecimal precio;
 
     @NotNull
     @Min(0)
-    @Column(name = "stock", nullable = false)
+    @Column(
+            name = "stock",
+            nullable = false
+    )
     private Integer stock;
 
-    @Column(name = "activo", nullable = false)
+    @Column(
+            name = "activo",
+            nullable = false
+    )
     private boolean activo;
 
     @NotNull
-    @Column(name = "fecha_publicacion", nullable = false)
+    @Column(
+            name = "fecha_publicacion",
+            nullable = false
+    )
     private LocalDateTime fechaPublicacion;
 
     public PublicacionEntity() {
@@ -79,7 +126,9 @@ public class PublicacionEntity {
         return idPublicacion;
     }
 
-    public void setIdPublicacion(Integer idPublicacion) {
+    public void setIdPublicacion(
+            Integer idPublicacion) {
+
         this.idPublicacion = idPublicacion;
     }
 
@@ -87,7 +136,9 @@ public class PublicacionEntity {
         return emprendimiento;
     }
 
-    public void setEmprendimiento(EmprendimientoEntity emprendimiento) {
+    public void setEmprendimiento(
+            EmprendimientoEntity emprendimiento) {
+
         this.emprendimiento = emprendimiento;
     }
 
@@ -95,7 +146,9 @@ public class PublicacionEntity {
         return categoria;
     }
 
-    public void setCategoria(CategoriaEntity categoria) {
+    public void setCategoria(
+            CategoriaEntity categoria) {
+
         this.categoria = categoria;
     }
 
@@ -103,7 +156,9 @@ public class PublicacionEntity {
         return tipo;
     }
 
-    public void setTipo(TipoPublicacion tipo) {
+    public void setTipo(
+            TipoPublicacion tipo) {
+
         this.tipo = tipo;
     }
 
@@ -111,7 +166,9 @@ public class PublicacionEntity {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
+    public void setNombre(
+            String nombre) {
+
         this.nombre = nombre;
     }
 
@@ -119,15 +176,29 @@ public class PublicacionEntity {
         return descripcion;
     }
 
-    public void setDescripcion(String descripcion) {
+    public void setDescripcion(
+            String descripcion) {
+
         this.descripcion = descripcion;
+    }
+
+    public String getImagenUrl() {
+        return imagenUrl;
+    }
+
+    public void setImagenUrl(
+            String imagenUrl) {
+
+        this.imagenUrl = imagenUrl;
     }
 
     public BigDecimal getPrecio() {
         return precio;
     }
 
-    public void setPrecio(BigDecimal precio) {
+    public void setPrecio(
+            BigDecimal precio) {
+
         this.precio = precio;
     }
 
@@ -135,7 +206,9 @@ public class PublicacionEntity {
         return stock;
     }
 
-    public void setStock(Integer stock) {
+    public void setStock(
+            Integer stock) {
+
         this.stock = stock;
     }
 
@@ -143,7 +216,9 @@ public class PublicacionEntity {
         return activo;
     }
 
-    public void setActivo(boolean activo) {
+    public void setActivo(
+            boolean activo) {
+
         this.activo = activo;
     }
 
@@ -151,7 +226,9 @@ public class PublicacionEntity {
         return fechaPublicacion;
     }
 
-    public void setFechaPublicacion(LocalDateTime fechaPublicacion) {
+    public void setFechaPublicacion(
+            LocalDateTime fechaPublicacion) {
+
         this.fechaPublicacion = fechaPublicacion;
     }
 }

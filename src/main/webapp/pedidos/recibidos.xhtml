@@ -15,109 +15,331 @@
 
     <ui:define name="content">
 
-        <div class="page-header">
+        <link rel="stylesheet"
+              href="#{request.contextPath}/css/pedidos-emprendedor.css"/>
+
+        <section class="received-page-header">
 
             <div>
 
-                <div class="eyebrow">
-                    OperaciÃ³n
-                </div>
+                <span class="market-kicker">
+                    Panel de emprendedor
+                </span>
 
-                <h1>Pedidos recibidos</h1>
+                <h1>
+                    Pedidos recibidos
+                </h1>
 
                 <p>
-                    Procesa los pedidos de tus negocios.
+                    Revisa y procesa los pedidos realizados
+                    a tus emprendimientos.
                 </p>
 
             </div>
 
-        </div>
+            <div class="received-header-stat">
+
+                <span>
+                    Pedidos
+                </span>
+
+                <strong>
+                    #{pedidoBean.pedidosRecibidos.size()}
+                </strong>
+
+            </div>
+
+        </section>
 
         <h:form id="pedidosForm">
 
             <h:messages
                     id="mensajes"
-                    styleClass="messages"/>
+                    globalOnly="true"
+                    styleClass="market-messages"/>
 
-            <div class="table-panel">
+            <h:panelGroup
+                    id="listaPedidos"
+                    layout="block">
 
-                <div class="table-wrap">
+                <h:panelGroup
+                        rendered="#{not empty pedidoBean.pedidosRecibidos}"
+                        layout="block"
+                        styleClass="received-order-list">
 
-                    <h:dataTable
-                            id="tabla"
+                    <ui:repeat
                             value="#{pedidoBean.pedidosRecibidos}"
-                            var="p"
-                            styleClass="data-table">
+                            var="p">
 
-                        <h:column>
+                        <article class="received-order-card">
 
-                            <f:facet name="header">
-                                Pedido
-                            </f:facet>
+                            <!-- CABECERA -->
 
-                            ##{p.idPedido}
+                            <div class="received-order-header">
 
-                        </h:column>
+                                <div class="received-order-id">
 
-                        <h:column>
+                                    <span>
+                                        Pedido
+                                    </span>
 
-                            <f:facet name="header">
-                                Cliente
-                            </f:facet>
+                                    <strong>
+                                        ##{p.idPedido}
+                                    </strong>
 
-                            #{p.cliente.nombre}
-                            #{p.cliente.apellido}
+                                </div>
 
-                        </h:column>
+                                <span class="received-status received-status-#{p.estado}">
 
-                        <h:column>
+                                    <span class="received-status-dot">
+                                    </span>
 
-                            <f:facet name="header">
-                                Negocio
-                            </f:facet>
+                                    #{pedidoBean.etiquetaEstado(p.estado)}
 
-                            #{p.emprendimiento.nombre}
+                                </span>
 
-                        </h:column>
+                            </div>
 
-                        <h:column>
+                            <!-- CUERPO -->
 
-                            <f:facet name="header">
-                                Total
-                            </f:facet>
+                            <div class="received-order-body">
 
-                            <h:outputText value="#{p.total}">
+                                <div class="received-order-customer">
 
-                                <f:convertNumber
-                                        type="currency"
-                                        currencySymbol="$"/>
+                                    <div class="received-customer-avatar">
+                                        #{p.cliente.nombre.substring(0, 1)}
+                                    </div>
 
-                            </h:outputText>
+                                    <div>
 
-                        </h:column>
+                                        <span class="received-label">
+                                            Cliente
+                                        </span>
 
-                        <h:column>
+                                        <strong>
+                                            #{p.cliente.nombre}
+                                            #{p.cliente.apellido}
+                                        </strong>
 
-                            <f:facet name="header">
-                                Estado
-                            </f:facet>
+                                    </div>
 
-                            #{pedidoBean.etiquetaEstado(p.estado)}
+                                </div>
 
-                        </h:column>
+                                <div class="received-order-business">
 
-                        <h:column>
+                                    <span class="received-label">
+                                        Emprendimiento
+                                    </span>
 
-                            <f:facet name="header">
-                                Acciones
-                            </f:facet>
+                                    <strong>
+                                        #{p.emprendimiento.nombre}
+                                    </strong>
 
-                            <div class="table-actions">
+                                </div>
+
+                                <div class="received-order-total">
+
+                                    <span class="received-label">
+                                        Total
+                                    </span>
+
+                                    <h:outputText
+                                            value="#{p.total}">
+
+                                        <f:convertNumber
+                                                type="currency"
+                                                currencySymbol="$"/>
+
+                                    </h:outputText>
+
+                                </div>
+
+                            </div>
+
+                            <!-- PRODUCTOS -->
+
+                            <div class="received-products">
+
+                                <ui:repeat
+                                        value="#{p.detalles}"
+                                        var="d">
+
+                                    <div class="received-product-row">
+
+                                        <div class="received-product-image">
+
+                                            <ui:fragment
+                                                    rendered="#{not empty d.publicacion.imagenUrl}">
+
+                                                <img src="#{d.publicacion.imagenUrl}"
+                                                     alt="#{d.publicacion.nombre}"
+                                                     loading="lazy"/>
+
+                                            </ui:fragment>
+
+                                            <ui:fragment
+                                                    rendered="#{empty d.publicacion.imagenUrl}">
+
+                                                <span>
+                                                    ◫
+                                                </span>
+
+                                            </ui:fragment>
+
+                                        </div>
+
+                                        <div class="received-product-info">
+
+                                            <strong>
+                                                #{d.publicacion.nombre}
+                                            </strong>
+
+                                            <span>
+                                                #{d.cantidad}
+                                                unidad#{d.cantidad gt 1 ? 'es' : ''}
+                                                ·
+                                                <h:outputText
+                                                        value="#{d.precioUnitario}">
+
+                                                    <f:convertNumber
+                                                            type="currency"
+                                                            currencySymbol="$"/>
+
+                                                </h:outputText>
+                                            </span>
+
+                                        </div>
+
+                                        <h:outputText
+                                                value="#{d.subtotal}"
+                                                styleClass="received-product-subtotal">
+
+                                            <f:convertNumber
+                                                    type="currency"
+                                                    currencySymbol="$"/>
+
+                                        </h:outputText>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </div>
+
+                            <!-- OBSERVACIONES -->
+
+                            <h:panelGroup
+                                    rendered="#{not empty p.observaciones}"
+                                    layout="block"
+                                    styleClass="received-notes">
+
+                                <span>
+                                    Indicaciones del cliente
+                                </span>
+
+                                <p>
+                                    #{p.observaciones}
+                                </p>
+
+                            </h:panelGroup>
+
+                            <!-- PROGRESO -->
+
+                            <div class="received-progress">
+
+                                <div class="#{p.estado eq 'CANCELADO'
+                                        ? 'received-step'
+                                        : 'received-step is-complete'}">
+
+                                    <span>
+                                        1
+                                    </span>
+
+                                    <small>
+                                        Recibido
+                                    </small>
+
+                                </div>
+
+                                <div class="received-progress-line
+                                    #{p.estado eq 'CONFIRMADO'
+                                    or p.estado eq 'EN_PROCESO'
+                                    or p.estado eq 'COMPLETADO'
+                                    ? 'is-complete'
+                                    : ''}">
+                                </div>
+
+                                <div class="received-step
+                                    #{p.estado eq 'CONFIRMADO'
+                                    or p.estado eq 'EN_PROCESO'
+                                    or p.estado eq 'COMPLETADO'
+                                    ? 'is-complete'
+                                    : ''}">
+
+                                    <span>
+                                        2
+                                    </span>
+
+                                    <small>
+                                        Confirmado
+                                    </small>
+
+                                </div>
+
+                                <div class="received-progress-line
+                                    #{p.estado eq 'EN_PROCESO'
+                                    or p.estado eq 'COMPLETADO'
+                                    ? 'is-complete'
+                                    : ''}">
+                                </div>
+
+                                <div class="received-step
+                                    #{p.estado eq 'EN_PROCESO'
+                                    or p.estado eq 'COMPLETADO'
+                                    ? 'is-complete'
+                                    : ''}">
+
+                                    <span>
+                                        3
+                                    </span>
+
+                                    <small>
+                                        En camino
+                                    </small>
+
+                                </div>
+
+                                <div class="received-progress-line
+                                    #{p.estado eq 'COMPLETADO'
+                                    ? 'is-complete'
+                                    : ''}">
+                                </div>
+
+                                <div class="received-step
+                                    #{p.estado eq 'COMPLETADO'
+                                    ? 'is-complete'
+                                    : ''}">
+
+                                    <span>
+                                        4
+                                    </span>
+
+                                    <small>
+                                        Entregado
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                            <!-- FOOTER / ACCIONES -->
+
+                            <div class="received-order-footer">
 
                                 <h:link
                                         outcome="/pedidos/detalle.xhtml"
-                                        value="Ver"
-                                        styleClass="btn btn-secondary btn-small">
+                                        value="Ver detalle"
+                                        styleClass="received-detail-link">
 
                                     <f:param
                                             name="id"
@@ -125,63 +347,94 @@
 
                                 </h:link>
 
-                                <h:commandButton
-                                        value="Confirmar"
-                                        styleClass="btn btn-secondary btn-small"
-                                        rendered="#{pedidoBean.puedeConfirmar(p)}"
-                                        action="#{pedidoBean.confirmar(p.idPedido)}">
+                                <div class="received-actions">
 
-                                    <f:ajax
-                                            execute="@this"
-                                            render="@form"/>
+                                    <h:commandButton
+                                            value="Confirmar pedido"
+                                            rendered="#{pedidoBean.puedeConfirmar(p)}"
+                                            action="#{pedidoBean.confirmar(p.idPedido)}"
+                                            styleClass="received-action received-action-primary">
 
-                                </h:commandButton>
+                                        <f:ajax
+                                                execute="@this"
+                                                render="@form"/>
 
-                                <h:commandButton
-                                        value="En camino"
-                                        styleClass="btn btn-primary btn-small"
-                                        rendered="#{pedidoBean.puedeIniciarProceso(p)}"
-                                        action="#{pedidoBean.iniciarProceso(p.idPedido)}">
+                                    </h:commandButton>
 
-                                    <f:ajax
-                                            execute="@this"
-                                            render="@form"/>
+                                    <h:commandButton
+                                            value="Marcar en camino"
+                                            rendered="#{pedidoBean.puedeIniciarProceso(p)}"
+                                            action="#{pedidoBean.iniciarProceso(p.idPedido)}"
+                                            styleClass="received-action received-action-primary">
 
-                                </h:commandButton>
+                                        <f:ajax
+                                                execute="@this"
+                                                render="@form"/>
 
-                                <h:commandButton
-                                        value="Entregado"
-                                        styleClass="btn btn-primary btn-small"
-                                        rendered="#{pedidoBean.puedeCompletar(p)}"
-                                        action="#{pedidoBean.completar(p.idPedido)}">
+                                    </h:commandButton>
 
-                                    <f:ajax
-                                            execute="@this"
-                                            render="@form"/>
+                                    <h:commandButton
+                                            value="Marcar entregado"
+                                            rendered="#{pedidoBean.puedeCompletar(p)}"
+                                            action="#{pedidoBean.completar(p.idPedido)}"
+                                            styleClass="received-action received-action-success">
 
-                                </h:commandButton>
+                                        <f:ajax
+                                                execute="@this"
+                                                render="@form"/>
 
-                                <h:commandButton
-                                        value="Cancelar"
-                                        styleClass="btn btn-danger btn-small"
-                                        rendered="#{pedidoBean.puedeCancelar(p)}"
-                                        action="#{pedidoBean.cancelar(p.idPedido)}">
+                                    </h:commandButton>
 
-                                    <f:ajax
-                                            execute="@this"
-                                            render="@form"/>
+                                    <h:commandButton
+                                            value="Cancelar"
+                                            rendered="#{pedidoBean.puedeCancelar(p)}"
+                                            action="#{pedidoBean.cancelar(p.idPedido)}"
+                                            styleClass="received-action received-action-danger">
 
-                                </h:commandButton>
+                                        <f:ajax
+                                                execute="@this"
+                                                render="@form"/>
+
+                                    </h:commandButton>
+
+                                </div>
 
                             </div>
 
-                        </h:column>
+                        </article>
 
-                    </h:dataTable>
+                    </ui:repeat>
 
-                </div>
+                </h:panelGroup>
 
-            </div>
+                <h:panelGroup
+                        rendered="#{empty pedidoBean.pedidosRecibidos}"
+                        layout="block"
+                        styleClass="market-empty-state">
+
+                    <div class="market-empty-icon">
+                        ✓
+                    </div>
+
+                    <h2>
+                        Todo tranquilo por aquí
+                    </h2>
+
+                    <p>
+                        Todavía no has recibido pedidos.
+                        Cuando un cliente compre algo aparecerá aquí.
+                    </p>
+
+                    <a href="#{request.contextPath}/publicaciones/index.xhtml"
+                       class="market-primary-link">
+
+                        Ver mis publicaciones
+
+                    </a>
+
+                </h:panelGroup>
+
+            </h:panelGroup>
 
         </h:form>
 
