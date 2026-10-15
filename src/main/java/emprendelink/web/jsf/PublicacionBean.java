@@ -52,7 +52,12 @@ public class PublicacionBean
     private String nombre;
     private String descripcion;
     private String imagenUrl;
+
     private BigDecimal precio;
+
+    private String precioTexto =
+            "0.00";
+
     private Integer stock = 0;
 
     private String filtroTexto;
@@ -63,9 +68,6 @@ public class PublicacionBean
     private Publicacion detalle;
 
     public void guardar() {
-
-        FacesContext contexto =
-                FacesContext.getCurrentInstance();
 
         Usuario usuario =
                 obtenerUsuarioSesion();
@@ -82,6 +84,29 @@ public class PublicacionBean
 
         try {
 
+            Emprendimiento negocio =
+                    obtenerNegocioActualObligatorio(
+                            usuario
+                    );
+
+            idEmprendimiento =
+                    negocio.getIdEmprendimiento();
+
+            idCategoria =
+                    negocio.getCategoria()
+                            .getIdCategoria();
+
+            tipo =
+                    negocio.getCategoria()
+                            .isManejaStock()
+                            ? TipoPublicacion.PRODUCTO
+                            : TipoPublicacion.SERVICIO;
+
+            precio =
+                    convertirPrecio(
+                            precioTexto
+                    );
+
             if (idPublicacion == null) {
 
                 publicacionService.crear(
@@ -96,13 +121,9 @@ public class PublicacionBean
                         imagenUrl
                 );
 
-                contexto.addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Publicación creada",
-                                "La publicación fue registrada correctamente."
-                        )
+                mensajeInfo(
+                        "Elemento agregado",
+                        "El catálogo fue actualizado."
                 );
 
             } else {
@@ -120,13 +141,9 @@ public class PublicacionBean
                         imagenUrl
                 );
 
-                contexto.addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Publicación actualizada",
-                                "Los cambios fueron guardados."
-                        )
+                mensajeInfo(
+                        "Elemento actualizado",
+                        "Los cambios fueron guardados."
                 );
             }
 
@@ -149,12 +166,6 @@ public class PublicacionBean
                 obtenerUsuarioSesion();
 
         if (usuario == null) {
-
-            mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
-            );
-
             return;
         }
 
@@ -203,11 +214,19 @@ public class PublicacionBean
         precio =
                 publicacion.getPrecio();
 
+        precioTexto =
+                precio == null
+                        ? "0.00"
+                        : precio
+                        .setScale(2)
+                        .toPlainString();
+
         stock =
                 publicacion.getStock();
     }
 
     public void cancelarEdicion() {
+
         limpiarFormulario();
     }
 
@@ -219,12 +238,6 @@ public class PublicacionBean
                 obtenerUsuarioSesion();
 
         if (usuario == null) {
-
-            mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
-            );
-
             return;
         }
 
@@ -236,16 +249,10 @@ public class PublicacionBean
                     !estadoActual
             );
 
-            FacesContext
-                    .getCurrentInstance()
-                    .addMessage(
-                            null,
-                            new FacesMessage(
-                                    FacesMessage.SEVERITY_INFO,
-                                    "Estado actualizado",
-                                    "El estado de la publicación fue actualizado."
-                            )
-                    );
+            mensajeInfo(
+                    "Estado actualizado",
+                    "El catálogo fue actualizado."
+            );
 
         } catch (IllegalArgumentException
                  | IllegalStateException e) {
@@ -302,29 +309,31 @@ public class PublicacionBean
         return publicacionService
                 .listarActivas()
                 .stream()
-                .filter(publicacion ->
-                        coincideTexto(
-                                publicacion,
-                                texto
-                        )
+                .filter(
+                        publicacion ->
+                                coincideTexto(
+                                        publicacion,
+                                        texto
+                                )
                 )
-                .filter(publicacion ->
-                        filtroTipo == null
-                                || publicacion.getTipo()
-                                == filtroTipo
+                .filter(
+                        publicacion ->
+                                filtroTipo == null
+                                        || publicacion.getTipo()
+                                        == filtroTipo
                 )
-                .filter(publicacion ->
-                        filtroCategoriaId == null
-                                || (
-                                publicacion.getCategoria()
-                                        != null
-                                        && filtroCategoriaId
-                                        .equals(
+                .filter(
+                        publicacion ->
+                                filtroCategoriaId == null
+                                        || (
+                                        publicacion.getCategoria()
+                                                != null
+                                                && filtroCategoriaId.equals(
                                                 publicacion
                                                         .getCategoria()
                                                         .getIdCategoria()
                                         )
-                        )
+                                )
                 )
                 .toList();
     }
@@ -375,17 +384,18 @@ public class PublicacionBean
     }
 
     public int getCantidadResultados() {
-        return getCatalogoFiltrado().size();
+
+        return getCatalogoFiltrado()
+                .size();
     }
 
-    public List<Emprendimiento>
-    getEmprendimientosPropios() {
+    public Emprendimiento getNegocioActual() {
 
         Usuario usuario =
                 obtenerUsuarioSesion();
 
         if (usuario == null) {
-            return List.of();
+            return null;
         }
 
         return emprendimientoService
@@ -393,10 +403,49 @@ public class PublicacionBean
                         usuario.getIdUsuario()
                 )
                 .stream()
-                .filter(
-                        Emprendimiento::isActivo
-                )
-                .toList();
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean isManejaStock() {
+
+        Emprendimiento negocio =
+                getNegocioActual();
+
+        return negocio != null
+                && negocio.getCategoria() != null
+                && negocio
+                .getCategoria()
+                .isManejaStock();
+    }
+
+    public String getCategoriaNegocioNombre() {
+
+        Emprendimiento negocio =
+                getNegocioActual();
+
+        if (negocio == null
+                || negocio.getCategoria() == null) {
+
+            return "";
+        }
+
+        return negocio
+                .getCategoria()
+                .getNombre();
+    }
+
+    public List<Emprendimiento>
+    getEmprendimientosPropios() {
+
+        Emprendimiento negocio =
+                getNegocioActual();
+
+        return negocio == null
+                ? List.of()
+                : List.of(
+                negocio
+        );
     }
 
     public List<Categoria>
@@ -406,8 +455,7 @@ public class PublicacionBean
                 .listarActivas();
     }
 
-    public TipoPublicacion[]
-    getTipos() {
+    public TipoPublicacion[] getTipos() {
 
         return TipoPublicacion.values();
     }
@@ -442,6 +490,63 @@ public class PublicacionBean
         }
     }
 
+    private Emprendimiento
+    obtenerNegocioActualObligatorio(
+            Usuario usuario) {
+
+        Emprendimiento negocio =
+                emprendimientoService
+                        .listarPorPropietario(
+                                usuario.getIdUsuario()
+                        )
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Tu cuenta no tiene un negocio asociado."
+                                        )
+                        );
+
+        if (negocio.getCategoria() == null) {
+
+            throw new IllegalStateException(
+                    "Tu negocio no tiene una categoría asignada."
+            );
+        }
+
+        return negocio;
+    }
+
+    private BigDecimal convertirPrecio(
+            String valor) {
+
+        if (valor == null
+                || valor.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "El precio es obligatorio."
+            );
+        }
+
+        try {
+
+            return new BigDecimal(
+                    valor.trim()
+                            .replace(
+                                    ",",
+                                    ""
+                            )
+            );
+
+        } catch (NumberFormatException e) {
+
+            throw new IllegalArgumentException(
+                    "El precio no es válido."
+            );
+        }
+    }
+
     private boolean coincideTexto(
             Publicacion publicacion,
             String texto) {
@@ -450,38 +555,33 @@ public class PublicacionBean
             return true;
         }
 
-        if (contiene(
+        return contiene(
                 publicacion.getNombre(),
                 texto
-        )) {
-            return true;
-        }
-
-        if (contiene(
+        )
+                || contiene(
                 publicacion.getDescripcion(),
                 texto
-        )) {
-            return true;
-        }
-
-        if (publicacion.getEmprendimiento()
-                != null
-                && contiene(
-                publicacion
-                        .getEmprendimiento()
-                        .getNombre(),
-                texto
-        )) {
-            return true;
-        }
-
-        return publicacion.getCategoria()
-                != null
-                && contiene(
-                publicacion
-                        .getCategoria()
-                        .getNombre(),
-                texto
+        )
+                || (
+                publicacion.getEmprendimiento()
+                        != null
+                        && contiene(
+                        publicacion
+                                .getEmprendimiento()
+                                .getNombre(),
+                        texto
+                )
+        )
+                || (
+                publicacion.getCategoria()
+                        != null
+                        && contiene(
+                        publicacion
+                                .getCategoria()
+                                .getNombre(),
+                        texto
+                )
         );
     }
 
@@ -490,11 +590,13 @@ public class PublicacionBean
             String texto) {
 
         return valor != null
-                && valor.toLowerCase(
-                Locale.ROOT
-        ).contains(
-                texto
-        );
+                && valor
+                .toLowerCase(
+                        Locale.ROOT
+                )
+                .contains(
+                        texto
+                );
     }
 
     private void enviar404() {
@@ -541,6 +643,22 @@ public class PublicacionBean
                 : null;
     }
 
+    private void mensajeInfo(
+            String resumen,
+            String detalleMensaje) {
+
+        FacesContext
+                .getCurrentInstance()
+                .addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                resumen,
+                                detalleMensaje
+                        )
+                );
+    }
+
     private void mensajeError(
             String resumen,
             String detalleMensaje) {
@@ -569,7 +687,10 @@ public class PublicacionBean
         nombre = null;
         descripcion = null;
         imagenUrl = null;
+
         precio = null;
+        precioTexto = "0.00";
+
         stock = 0;
     }
 
@@ -613,7 +734,8 @@ public class PublicacionBean
     public void setTipo(
             TipoPublicacion tipo) {
 
-        this.tipo = tipo;
+        this.tipo =
+                tipo;
     }
 
     public String getNombre() {
@@ -623,7 +745,8 @@ public class PublicacionBean
     public void setNombre(
             String nombre) {
 
-        this.nombre = nombre;
+        this.nombre =
+                nombre;
     }
 
     public String getDescripcion() {
@@ -633,7 +756,8 @@ public class PublicacionBean
     public void setDescripcion(
             String descripcion) {
 
-        this.descripcion = descripcion;
+        this.descripcion =
+                descripcion;
     }
 
     public String getImagenUrl() {
@@ -643,7 +767,8 @@ public class PublicacionBean
     public void setImagenUrl(
             String imagenUrl) {
 
-        this.imagenUrl = imagenUrl;
+        this.imagenUrl =
+                imagenUrl;
     }
 
     public BigDecimal getPrecio() {
@@ -653,7 +778,26 @@ public class PublicacionBean
     public void setPrecio(
             BigDecimal precio) {
 
-        this.precio = precio;
+        this.precio =
+                precio;
+
+        this.precioTexto =
+                precio == null
+                        ? "0.00"
+                        : precio
+                        .setScale(2)
+                        .toPlainString();
+    }
+
+    public String getPrecioTexto() {
+        return precioTexto;
+    }
+
+    public void setPrecioTexto(
+            String precioTexto) {
+
+        this.precioTexto =
+                precioTexto;
     }
 
     public Integer getStock() {
@@ -663,7 +807,8 @@ public class PublicacionBean
     public void setStock(
             Integer stock) {
 
-        this.stock = stock;
+        this.stock =
+                stock;
     }
 
     public String getFiltroTexto() {

@@ -39,8 +39,11 @@ public class UsuarioServiceImpl
             UsuarioDAO usuarioDAO,
             RolDAO rolDAO) {
 
-        this.usuarioDAO = usuarioDAO;
-        this.rolDAO = rolDAO;
+        this.usuarioDAO =
+                usuarioDAO;
+
+        this.rolDAO =
+                rolDAO;
     }
 
     @Override
@@ -82,13 +85,20 @@ public class UsuarioServiceImpl
 
         String correoNormalizado =
                 correo.trim()
-                        .toLowerCase(Locale.ROOT);
+                        .toLowerCase(
+                                Locale.ROOT
+                        );
 
         String telefonoNormalizado =
-                normalizarOpcional(telefono);
+                normalizarOpcional(
+                        telefono
+                );
 
-        if (usuarioDAO.buscarPorCorreo(
-                correoNormalizado).isPresent()) {
+        if (usuarioDAO
+                .buscarPorCorreo(
+                        correoNormalizado
+                )
+                .isPresent()) {
 
             throw new IllegalArgumentException(
                     "El correo ya está registrado."
@@ -99,14 +109,15 @@ public class UsuarioServiceImpl
                 rolDAO.listarTodos()
                         .stream()
                         .filter(
-                                r ->
-                                        r.getNombre() == rol
+                                item ->
+                                        item.getNombre()
+                                                == TipoRol.ROLE_CLIENTE
                         )
                         .findFirst()
                         .orElseThrow(
                                 () ->
                                         new IllegalStateException(
-                                                "El rol no existe en la base de datos."
+                                                "El rol de cliente no existe en la base de datos."
                                         )
                         );
 
@@ -122,7 +133,9 @@ public class UsuarioServiceImpl
                         telefonoNormalizado
                 );
 
-        usuarioDAO.crear(usuario);
+        usuarioDAO.crear(
+                usuario
+        );
     }
 
     @Override
@@ -148,9 +161,13 @@ public class UsuarioServiceImpl
                                         )
                         );
 
-        usuario.setActivo(activo);
+        usuario.setActivo(
+                activo
+        );
 
-        if (!usuarioDAO.actualizar(usuario)) {
+        if (!usuarioDAO.actualizar(
+                usuario
+        )) {
 
             throw new IllegalStateException(
                     "No se pudo actualizar el usuario."
@@ -165,6 +182,13 @@ public class UsuarioServiceImpl
             String contrasena,
             String telefono,
             TipoRol rol) {
+
+        if (rol != TipoRol.ROLE_CLIENTE) {
+
+            throw new IllegalArgumentException(
+                    "El registro público solo permite crear cuentas de cliente."
+            );
+        }
 
         validarTextoObligatorio(
                 nombre,
@@ -187,9 +211,11 @@ public class UsuarioServiceImpl
                 MAX_CORREO
         );
 
-        if (!PATRON_CORREO.matcher(
-                correo.trim()
-        ).matches()) {
+        if (!PATRON_CORREO
+                .matcher(
+                        correo.trim()
+                )
+                .matches()) {
 
             throw new IllegalArgumentException(
                     "Ingrese un correo electrónico válido."
@@ -218,14 +244,6 @@ public class UsuarioServiceImpl
 
             throw new IllegalArgumentException(
                     "El teléfono no puede superar 20 caracteres."
-            );
-        }
-
-        if (rol != TipoRol.ROLE_CLIENTE
-                && rol != TipoRol.ROLE_EMPRENDEDOR) {
-
-            throw new IllegalArgumentException(
-                    "El rol solicitado no está permitido."
             );
         }
     }

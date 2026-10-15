@@ -1,15 +1,22 @@
 package emprendelink.web.jsf;
 
 import emprendelink.model.Emprendimiento;
+import emprendelink.model.Plan;
+import emprendelink.model.Publicacion;
 import emprendelink.model.Usuario;
+import emprendelink.model.enums.TipoRol;
 import emprendelink.service.EmprendimientoService;
+import emprendelink.service.PublicacionService;
+import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Named("emprendimientoBean")
@@ -17,26 +24,52 @@ import java.util.List;
 public class EmprendimientoBean
         implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Inject
     private EmprendimientoService emprendimientoService;
 
-    private Integer idEmprendimiento;
-    private String nombre;
+    @Inject
+    private PublicacionService publicacionService;
+
+    private Emprendimiento negocioActual;
+
     private String descripcion;
     private String contacto;
+    private String logoUrl;
 
-    public void guardar() {
+    @PostConstruct
+    public void inicializar() {
 
         Usuario usuario =
                 obtenerUsuarioSesion();
 
-        if (usuario == null) {
+        if (usuario == null
+                || usuario.getRol() == null
+                || usuario
+                .getRol()
+                .getNombre()
+                != TipoRol.ROLE_EMPRENDEDOR) {
+
+            return;
+        }
+
+        cargarNegocioActual(
+                usuario.getIdUsuario()
+        );
+    }
+
+    public void guardarCambios() {
+
+        Usuario usuario =
+                obtenerUsuarioSesion();
+
+        if (usuario == null
+                || negocioActual == null) {
 
             mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
+                    "No se pudo identificar tu negocio."
             );
 
             return;
@@ -44,137 +77,38 @@ public class EmprendimientoBean
 
         try {
 
-            if (idEmprendimiento == null) {
+            emprendimientoService
+                    .actualizarDatosEmprendedor(
+                            usuario.getIdUsuario(),
+                            negocioActual
+                                    .getIdEmprendimiento(),
+                            descripcion,
+                            contacto,
+                            logoUrl
+                    );
 
-                emprendimientoService.crear(
-                        usuario.getIdUsuario(),
-                        nombre,
-                        descripcion,
-                        contacto
-                );
-
-                mensajeInfo(
-                        "Emprendimiento creado",
-                        "El emprendimiento fue registrado correctamente."
-                );
-
-            } else {
-
-                emprendimientoService.actualizar(
-                        usuario.getIdUsuario(),
-                        idEmprendimiento,
-                        nombre,
-                        descripcion,
-                        contacto
-                );
-
-                mensajeInfo(
-                        "Emprendimiento actualizado",
-                        "Los cambios fueron guardados correctamente."
-                );
-            }
-
-            limpiarFormulario();
-
-        } catch (IllegalArgumentException
-                 | IllegalStateException e) {
-
-            mensajeError(
-                    "No se pudo guardar",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public void editar(
-            Integer idEmprendimiento) {
-
-        Usuario usuario =
-                obtenerUsuarioSesion();
-
-        if (usuario == null) {
-
-            mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
-            );
-
-            return;
-        }
-
-        Emprendimiento emprendimiento =
-                emprendimientoService
-                        .buscarPropioPorId(
-                                idEmprendimiento,
-                                usuario.getIdUsuario()
-                        );
-
-        if (emprendimiento == null) {
-
-            mensajeError(
-                    "No disponible",
-                    "El emprendimiento no existe o no te pertenece."
-            );
-
-            return;
-        }
-
-        this.idEmprendimiento =
-                emprendimiento
-                        .getIdEmprendimiento();
-
-        nombre =
-                emprendimiento.getNombre();
-
-        descripcion =
-                emprendimiento.getDescripcion();
-
-        contacto =
-                emprendimiento.getContacto();
-    }
-
-    public void cancelarEdicion() {
-        limpiarFormulario();
-    }
-
-    public void alternarEstado(
-            Integer idEmprendimiento,
-            boolean estadoActual) {
-
-        Usuario usuario =
-                obtenerUsuarioSesion();
-
-        if (usuario == null) {
-
-            mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
-            );
-
-            return;
-        }
-
-        try {
-
-            emprendimientoService.cambiarEstado(
-                    usuario.getIdUsuario(),
-                    idEmprendimiento,
-                    !estadoActual
+            cargarNegocioActual(
+                    usuario.getIdUsuario()
             );
 
             mensajeInfo(
-                    "Estado actualizado",
-                    "El estado del emprendimiento fue actualizado."
+                    "Los datos del negocio fueron actualizados."
             );
 
         } catch (IllegalArgumentException
                  | IllegalStateException e) {
 
             mensajeError(
-                    "No se pudo actualizar",
                     e.getMessage()
             );
         }
+    }
+
+    public List<Emprendimiento>
+    getEmprendimientosAdmin() {
+
+        return emprendimientoService
+                .listarTodos();
     }
 
     public List<Emprendimiento>
@@ -187,28 +121,115 @@ public class EmprendimientoBean
             return List.of();
         }
 
-        try {
-
-            return emprendimientoService
-                    .listarPorPropietario(
-                            usuario.getIdUsuario()
-                    );
-
-        } catch (IllegalArgumentException e) {
-
-            return List.of();
-        }
-    }
-
-    public List<Emprendimiento>
-    getEmprendimientosAdmin() {
-
         return emprendimientoService
-                .listarTodos();
+                .listarPorPropietario(
+                        usuario.getIdUsuario()
+                );
     }
 
-    public boolean isEditando() {
-        return idEmprendimiento != null;
+    public int getPublicacionesActivas() {
+
+        Usuario usuario =
+                obtenerUsuarioSesion();
+
+        if (usuario == null
+                || negocioActual == null) {
+
+            return 0;
+        }
+
+        return (int) publicacionService
+                .listarPorPropietario(
+                        usuario.getIdUsuario()
+                )
+                .stream()
+                .filter(
+                        Publicacion::isActivo
+                )
+                .count();
+    }
+
+    public int getMaxPublicaciones() {
+
+        Plan plan =
+                getPlanActual();
+
+        if (plan == null
+                || plan.getMaxProductosActivos()
+                == null) {
+
+            return 0;
+        }
+
+        return plan.getMaxProductosActivos();
+    }
+
+    public int getEspaciosDisponibles() {
+
+        return Math.max(
+                0,
+                getMaxPublicaciones()
+                        - getPublicacionesActivas()
+        );
+    }
+
+    public BigDecimal getPorcentajeComision() {
+
+        Plan plan =
+                getPlanActual();
+
+        if (plan == null
+                || plan.getTasaComision()
+                == null) {
+
+            return BigDecimal.ZERO;
+        }
+
+        return plan.getTasaComision()
+                .multiply(
+                        BigDecimal.valueOf(
+                                100
+                        )
+                )
+                .stripTrailingZeros();
+    }
+
+    public Plan getPlanActual() {
+
+        return negocioActual == null
+                ? null
+                : negocioActual.getPlan();
+    }
+
+    private void cargarNegocioActual(
+            Integer idUsuario) {
+
+        negocioActual =
+                emprendimientoService
+                        .listarPorPropietario(
+                                idUsuario
+                        )
+                        .stream()
+                        .findFirst()
+                        .orElse(null);
+
+        if (negocioActual == null) {
+
+            descripcion = null;
+            contacto = null;
+            logoUrl = null;
+
+            return;
+        }
+
+        descripcion =
+                negocioActual.getDescripcion();
+
+        contacto =
+                negocioActual.getContacto();
+
+        logoUrl =
+                negocioActual.getLogoUrl();
     }
 
     private Usuario obtenerUsuarioSesion() {
@@ -218,70 +239,47 @@ public class EmprendimientoBean
                         .getCurrentInstance()
                         .getExternalContext()
                         .getSessionMap()
-                        .get("usuarioAutenticado");
+                        .get(
+                                "usuarioAutenticado"
+                        );
 
         return valor instanceof Usuario
                 ? (Usuario) valor
                 : null;
     }
 
-    private void limpiarFormulario() {
-
-        idEmprendimiento = null;
-        nombre = null;
-        descripcion = null;
-        contacto = null;
-    }
-
     private void mensajeInfo(
-            String resumen,
-            String detalle) {
+            String mensaje) {
 
-        FacesContext.getCurrentInstance()
+        FacesContext
+                .getCurrentInstance()
                 .addMessage(
                         null,
                         new FacesMessage(
                                 FacesMessage.SEVERITY_INFO,
-                                resumen,
-                                detalle
+                                "Actualizado",
+                                mensaje
                         )
                 );
     }
 
     private void mensajeError(
-            String resumen,
-            String detalle) {
+            String mensaje) {
 
-        FacesContext.getCurrentInstance()
+        FacesContext
+                .getCurrentInstance()
                 .addMessage(
                         null,
                         new FacesMessage(
                                 FacesMessage.SEVERITY_ERROR,
-                                resumen,
-                                detalle
+                                "No se pudo completar la operación",
+                                mensaje
                         )
                 );
     }
 
-    public Integer getIdEmprendimiento() {
-        return idEmprendimiento;
-    }
-
-    public void setIdEmprendimiento(
-            Integer idEmprendimiento) {
-
-        this.idEmprendimiento =
-                idEmprendimiento;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(
-            String nombre) {
-
-        this.nombre = nombre;
+    public Emprendimiento getNegocioActual() {
+        return negocioActual;
     }
 
     public String getDescripcion() {
@@ -291,7 +289,8 @@ public class EmprendimientoBean
     public void setDescripcion(
             String descripcion) {
 
-        this.descripcion = descripcion;
+        this.descripcion =
+                descripcion;
     }
 
     public String getContacto() {
@@ -301,6 +300,18 @@ public class EmprendimientoBean
     public void setContacto(
             String contacto) {
 
-        this.contacto = contacto;
+        this.contacto =
+                contacto;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(
+            String logoUrl) {
+
+        this.logoUrl =
+                logoUrl;
     }
 }

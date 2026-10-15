@@ -37,6 +37,13 @@ public final class EmprendimientoMapper {
                 )
         );
 
+        entidad.setCategoria(
+                CategoriaMapper.aEntidad(
+                        emprendimiento
+                                .getCategoria()
+                )
+        );
+
         entidad.setNombre(
                 emprendimiento.getNombre()
         );
@@ -47,6 +54,10 @@ public final class EmprendimientoMapper {
 
         entidad.setContacto(
                 emprendimiento.getContacto()
+        );
+
+        entidad.setLogoUrl(
+                emprendimiento.getLogoUrl()
         );
 
         entidad.setActivo(
@@ -75,9 +86,13 @@ public final class EmprendimientoMapper {
                 PlanMapper.aDominio(
                         entidad.getPlan()
                 ),
+                CategoriaMapper.aDominio(
+                        entidad.getCategoria()
+                ),
                 entidad.getNombre(),
                 entidad.getDescripcion(),
                 entidad.getContacto(),
+                entidad.getLogoUrl(),
                 entidad.isActivo(),
                 entidad.getFechaRegistro()
         );

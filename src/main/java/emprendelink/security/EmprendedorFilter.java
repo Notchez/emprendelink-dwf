@@ -17,7 +17,8 @@ import java.io.IOException;
 @WebFilter(
         urlPatterns = {
                 "/emprendimientos/*",
-                "/publicaciones/*"
+                "/ventas/*",
+                "/comisiones/*"
         }
 )
 public class EmprendedorFilter
@@ -64,7 +65,8 @@ public class EmprendedorFilter
             return;
         }
 
-        if (usuario.getRol() == null
+        if (!usuario.isActivo()
+                || usuario.getRol() == null
                 || usuario.getRol()
                 .getNombre()
                 != TipoRol.ROLE_EMPRENDEDOR) {

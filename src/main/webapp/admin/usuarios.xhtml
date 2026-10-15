@@ -7,7 +7,9 @@
         xmlns:ui="jakarta.faces.facelets"
         template="/WEB-INF/admin-layout.xhtml">
 
-    <ui:param name="activeMenu" value="usuarios"/>
+    <ui:param
+            name="activeMenu"
+            value="usuarios"/>
 
     <ui:define name="title">
         Usuarios - Administración - EmprendeLink
@@ -23,18 +25,20 @@
                     Gestión de cuentas
                 </span>
 
-                <h1>Usuarios</h1>
+                <h1>
+                    Usuarios
+                </h1>
 
                 <p>
-                    Consulta las cuentas registradas y administra su acceso.
+                    Registra emprendedores con su negocio
+                    y administra las cuentas existentes.
                 </p>
 
             </div>
 
         </section>
 
-        <h:form id="usuariosForm"
-                styleClass="admin-data-form">
+        <h:form id="crearEmprendedorForm">
 
             <h:messages
                     id="mensajes"
@@ -49,11 +53,231 @@
 
                     <div>
 
-                        <h2>Usuarios registrados</h2>
+                        <h2>
+                            Crear emprendedor
+                        </h2>
 
                         <p>
-                            Activa o desactiva cuentas sin eliminar información.
+                            La cuenta y su único negocio
+                            se crean en una misma operación.
                         </p>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-form">
+
+                    <div class="admin-filter-grid">
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="nombre"
+                                    value="Nombre"/>
+
+                            <h:inputText
+                                    id="nombre"
+                                    value="#{adminEmprendedorBean.nombre}"
+                                    required="true"
+                                    maxlength="80"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="apellido"
+                                    value="Apellido"/>
+
+                            <h:inputText
+                                    id="apellido"
+                                    value="#{adminEmprendedorBean.apellido}"
+                                    required="true"
+                                    maxlength="80"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="correo"
+                                    value="Correo"/>
+
+                            <h:inputText
+                                    id="correo"
+                                    value="#{adminEmprendedorBean.correo}"
+                                    required="true"
+                                    validator="correoValidator"
+                                    maxlength="120"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="telefono"
+                                    value="Teléfono"/>
+
+                            <h:inputText
+                                    id="telefono"
+                                    value="#{adminEmprendedorBean.telefono}"
+                                    maxlength="20"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="contrasena"
+                                    value="Contraseña inicial"/>
+
+                            <h:inputSecret
+                                    id="contrasena"
+                                    value="#{adminEmprendedorBean.contrasena}"
+                                    required="true"
+                                    validator="contrasenaValidator"
+                                    maxlength="128"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="plan"
+                                    value="Plan inicial"/>
+
+                            <h:selectOneMenu
+                                    id="plan"
+                                    value="#{adminEmprendedorBean.idPlan}"
+                                    required="true">
+
+                                <f:selectItems
+                                        value="#{adminEmprendedorBean.planes}"
+                                        var="plan"
+                                        itemValue="#{plan.idPlan}"
+                                        itemLabel="#{plan.nombre}"/>
+
+                            </h:selectOneMenu>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="categoria"
+                                    value="Categoría del negocio"/>
+
+                            <h:selectOneMenu
+                                    id="categoria"
+                                    value="#{adminEmprendedorBean.idCategoria}"
+                                    required="true">
+
+                                <f:selectItems
+                                        value="#{adminEmprendedorBean.categorias}"
+                                        var="categoria"
+                                        itemValue="#{categoria.idCategoria}"
+                                        itemLabel="#{categoria.nombre}"/>
+
+                            </h:selectOneMenu>
+
+                        </div>
+
+                    </div>
+
+                    <hr/>
+
+                    <div class="admin-filter-grid">
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="nombreNegocio"
+                                    value="Nombre del negocio"/>
+
+                            <h:inputText
+                                    id="nombreNegocio"
+                                    value="#{adminEmprendedorBean.nombreNegocio}"
+                                    required="true"
+                                    maxlength="120"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="contactoNegocio"
+                                    value="Contacto"/>
+
+                            <h:inputText
+                                    id="contactoNegocio"
+                                    value="#{adminEmprendedorBean.contactoNegocio}"
+                                    maxlength="120"/>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="logo"
+                                    value="Logo / imagen URL"/>
+
+                            <h:inputText
+                                    id="logo"
+                                    value="#{adminEmprendedorBean.logoUrl}"
+                                    maxlength="1000"/>
+
+                        </div>
+
+                    </div>
+
+                    <div class="admin-field">
+
+                        <h:outputLabel
+                                for="descripcionNegocio"
+                                value="Descripción del negocio"/>
+
+                        <h:inputTextarea
+                                id="descripcionNegocio"
+                                value="#{adminEmprendedorBean.descripcionNegocio}"
+                                rows="4"/>
+
+                    </div>
+
+                    <div class="admin-form-actions">
+
+                        <h:commandButton
+                                value="Crear emprendedor y negocio"
+                                action="#{adminEmprendedorBean.crear}"
+                                styleClass="admin-button admin-button-primary">
+
+                            <f:ajax
+                                    execute="@form"
+                                    render="@form :usuariosForm"/>
+
+                        </h:commandButton>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </h:form>
+
+        <h:form
+                id="usuariosForm"
+                styleClass="admin-data-form">
+
+            <section class="admin-panel admin-section-space">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>
+                            Usuarios registrados
+                        </h2>
 
                     </div>
 
@@ -72,9 +296,7 @@
                                 ID
                             </f:facet>
 
-                            <span class="admin-table-id">
-                                ##{usuario.idUsuario}
-                            </span>
+                            ##{usuario.idUsuario}
 
                         </h:column>
 
@@ -84,22 +306,14 @@
                                 Usuario
                             </f:facet>
 
-                            <div class="admin-person">
+                            <strong>
+                                #{usuario.nombre}
+                                #{usuario.apellido}
+                            </strong>
 
-                                <div>
+                            <br/>
 
-                                    <strong>
-                                        #{usuario.nombre}
-                                        #{usuario.apellido}
-                                    </strong>
-
-                                    <span>
-                                        #{usuario.correo}
-                                    </span>
-
-                                </div>
-
-                            </div>
+                            #{usuario.correo}
 
                         </h:column>
 
@@ -109,9 +323,9 @@
                                 Rol
                             </f:facet>
 
-                            <span class="admin-role-badge">
-                                #{usuarioBean.etiquetaRol(usuario.rol.nombre)}
-                            </span>
+                            #{usuarioBean.etiquetaRol(
+                                    usuario.rol.nombre
+                                    )}
 
                         </h:column>
 
@@ -121,9 +335,9 @@
                                 Estado
                             </f:facet>
 
-                            <h:outputText
-                                    value="#{usuario.activo ? 'Activo' : 'Inactivo'}"
-                                    styleClass="admin-status #{usuario.activo ? 'is-active' : 'is-inactive'}"/>
+                            #{usuario.activo
+                                    ? 'Activo'
+                                    : 'Inactivo'}
 
                         </h:column>
 
@@ -134,13 +348,18 @@
                             </f:facet>
 
                             <h:commandButton
-                                    value="#{usuario.activo ? 'Desactivar' : 'Activar'}"
-                                    disabled="#{usuario.idUsuario eq authBean.usuario.idUsuario}"
+                                    value="#{usuario.activo
+                                            ? 'Desactivar'
+                                            : 'Activar'}"
+                                    disabled="#{usuario.idUsuario
+                                            eq authBean.usuario.idUsuario}"
                                     action="#{usuarioBean.alternarEstado(
-                                        usuario.idUsuario,
-                                        usuario.activo
+                                            usuario.idUsuario,
+                                            usuario.activo
                                     )}"
-                                    styleClass="admin-action-button #{usuario.activo ? 'is-danger' : 'is-success'}">
+                                    styleClass="admin-action-button #{usuario.activo
+                                            ? 'is-danger'
+                                            : 'is-success'}">
 
                                 <f:ajax
                                         execute="@this"

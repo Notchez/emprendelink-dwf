@@ -20,7 +20,9 @@ import java.time.LocalDateTime;
 public class EmprendimientoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.IDENTITY
+    )
     @Column(name = "id_emprendimiento")
     private Integer idEmprendimiento;
 
@@ -46,6 +48,17 @@ public class EmprendimientoEntity {
     )
     private PlanEntity plan;
 
+    @NotNull
+    @ManyToOne(
+            fetch = FetchType.EAGER,
+            optional = false
+    )
+    @JoinColumn(
+            name = "id_categoria",
+            nullable = false
+    )
+    private CategoriaEntity categoria;
+
     @NotBlank
     @Size(max = 120)
     @Column(
@@ -67,6 +80,13 @@ public class EmprendimientoEntity {
             length = 120
     )
     private String contacto;
+
+    @Size(max = 1000)
+    @Column(
+            name = "logo_url",
+            length = 1000
+    )
+    private String logoUrl;
 
     @Column(
             name = "activo",
@@ -117,6 +137,17 @@ public class EmprendimientoEntity {
                 plan;
     }
 
+    public CategoriaEntity getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(
+            CategoriaEntity categoria) {
+
+        this.categoria =
+                categoria;
+    }
+
     public String getNombre() {
         return nombre;
     }
@@ -148,6 +179,17 @@ public class EmprendimientoEntity {
 
         this.contacto =
                 contacto;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(
+            String logoUrl) {
+
+        this.logoUrl =
+                logoUrl;
     }
 
     public boolean isActivo() {

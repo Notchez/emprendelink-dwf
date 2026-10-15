@@ -20,104 +20,98 @@
         <h:panelGroup
                 rendered="#{adminNegocioBean.encontrado}">
 
-            <h:form id="negocioForm">
+            <div class="admin-breadcrumb">
 
-                <div class="admin-breadcrumb">
+                <h:link
+                        outcome="/admin/emprendimientos.xhtml"
+                        value="Negocios"/>
 
-                    <h:link
-                            outcome="/admin/emprendimientos.xhtml"
-                            value="Negocios"/>
+                <span>/</span>
 
-                    <span>/</span>
+                <span>
+                    #{adminNegocioBean.emprendimiento.nombre}
+                </span>
 
-                    <span>
-                        #{adminNegocioBean.emprendimiento.nombre}
+            </div>
+
+            <section class="admin-page-header">
+
+                <div>
+
+                    <span class="admin-eyebrow">
+                        Detalle del negocio
                     </span>
+
+                    <h1>
+                        #{adminNegocioBean.emprendimiento.nombre}
+                    </h1>
+
+                    <p>
+                        #{adminNegocioBean.emprendimiento.descripcion}
+                    </p>
 
                 </div>
 
-                <section class="admin-page-header">
+            </section>
 
-                    <div>
+            <section class="admin-summary-grid">
 
-                        <span class="admin-eyebrow">
-                            Detalle del negocio
-                        </span>
+                <article class="admin-summary-card">
 
-                        <h1>
-                            #{adminNegocioBean.emprendimiento.nombre}
-                        </h1>
+                    <span>
+                        Propietario
+                    </span>
 
-                        <p>
-                            #{adminNegocioBean.emprendimiento.descripcion}
-                        </p>
+                    <strong>
+                        #{adminNegocioBean.emprendimiento.propietario.nombre}
+                        #{adminNegocioBean.emprendimiento.propietario.apellido}
+                    </strong>
 
-                    </div>
+                </article>
 
-                </section>
+                <article class="admin-summary-card">
+
+                    <span>
+                        Categoría
+                    </span>
+
+                    <strong>
+                        #{adminNegocioBean.emprendimiento.categoria.nombre}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Plan
+                    </span>
+
+                    <strong>
+                        #{adminNegocioBean.emprendimiento.plan.nombre}
+                    </strong>
+
+                </article>
+
+                <article class="admin-summary-card">
+
+                    <span>
+                        Ventas completadas
+                    </span>
+
+                    <strong>
+                        $#{adminNegocioBean.totalVentas}
+                    </strong>
+
+                </article>
+
+            </section>
+
+            <h:form id="datosForm">
 
                 <h:messages
-                        id="mensajes"
                         globalOnly="true"
-                        layout="list"
                         styleClass="admin-messages"/>
-
-                <section class="admin-summary-grid">
-
-                    <article class="admin-summary-card">
-
-                        <span>Propietario</span>
-
-                        <strong>
-                            #{adminNegocioBean.emprendimiento.propietario.nombre}
-                            #{adminNegocioBean.emprendimiento.propietario.apellido}
-                        </strong>
-
-                    </article>
-
-                    <article class="admin-summary-card">
-
-                        <span>Plan actual</span>
-
-                        <strong>
-                            #{adminNegocioBean.emprendimiento.plan.nombre}
-                        </strong>
-
-                    </article>
-
-                    <article class="admin-summary-card">
-
-                        <span>Pedidos registrados</span>
-
-                        <strong>
-                            #{adminNegocioBean.pedidos.size()}
-                        </strong>
-
-                    </article>
-
-                    <article class="admin-summary-card">
-
-                        <span>Ventas completadas</span>
-
-                        <strong>
-                            $#{adminNegocioBean.totalVentas}
-                        </strong>
-
-                    </article>
-
-                    <article class="admin-summary-card">
-
-                        <span>Estado</span>
-
-                        <strong>
-                            #{adminNegocioBean.emprendimiento.activo
-                                    ? 'Activo'
-                                    : 'Inactivo'}
-                        </strong>
-
-                    </article>
-
-                </section>
 
                 <section class="admin-panel">
 
@@ -125,12 +119,99 @@
 
                         <div>
 
-                            <h2>Plan del negocio</h2>
+                            <h2>
+                                Datos administrativos
+                            </h2>
 
                             <p>
-                                Consulta las condiciones actuales
-                                o asigna otro plan.
+                                El nombre y la categoría
+                                solamente pueden cambiarse aquí.
                             </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="admin-form">
+
+                        <div class="admin-filter-grid">
+
+                            <div class="admin-field">
+
+                                <h:outputLabel
+                                        for="nombre"
+                                        value="Nombre del negocio"/>
+
+                                <h:inputText
+                                        id="nombre"
+                                        value="#{adminNegocioBean.nombre}"
+                                        required="true"
+                                        maxlength="120"/>
+
+                            </div>
+
+                            <div class="admin-field">
+
+                                <h:outputLabel
+                                        for="categoria"
+                                        value="Categoría"/>
+
+                                <h:selectOneMenu
+                                        id="categoria"
+                                        value="#{adminNegocioBean.idCategoriaSeleccionada}"
+                                        required="true">
+
+                                    <f:selectItems
+                                            value="#{adminNegocioBean.categorias}"
+                                            var="categoria"
+                                            itemValue="#{categoria.idCategoria}"
+                                            itemLabel="#{categoria.nombre}"/>
+
+                                </h:selectOneMenu>
+
+                            </div>
+
+                        </div>
+
+                        <div class="admin-field">
+
+                            <h:outputLabel
+                                    for="logo"
+                                    value="Logo / imagen URL"/>
+
+                            <h:inputText
+                                    id="logo"
+                                    value="#{adminNegocioBean.logoUrl}"
+                                    maxlength="1000"/>
+
+                        </div>
+
+                        <div class="admin-form-actions">
+
+                            <h:commandButton
+                                    value="Guardar datos"
+                                    action="#{adminNegocioBean.guardarDatos}"
+                                    styleClass="admin-button admin-button-primary"/>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </h:form>
+
+            <h:form id="planForm">
+
+                <section class="admin-panel admin-section-space">
+
+                    <div class="admin-panel-header">
+
+                        <div>
+
+                            <h2>
+                                Plan del negocio
+                            </h2>
 
                         </div>
 
@@ -153,7 +234,7 @@
                         <article class="admin-summary-card">
 
                             <span>
-                                Comisión por venta completada
+                                Comisión
                             </span>
 
                             <strong>
@@ -175,8 +256,7 @@
                             <h:selectOneMenu
                                     id="planSelector"
                                     value="#{adminNegocioBean.idPlanSeleccionado}"
-                                    required="true"
-                                    requiredMessage="Seleccione un plan.">
+                                    required="true">
 
                                 <f:selectItems
                                         value="#{adminNegocioBean.planes}"
@@ -186,9 +266,6 @@
 
                             </h:selectOneMenu>
 
-                            <h:message
-                                    for="planSelector"/>
-
                         </div>
 
                         <div class="admin-form-actions">
@@ -196,124 +273,88 @@
                             <h:commandButton
                                     value="Guardar plan"
                                     action="#{adminNegocioBean.guardarPlan}"
-                                    styleClass="admin-button admin-button-primary">
-
-                                <f:ajax
-                                        execute="@form"
-                                        render="@form"/>
-
-                            </h:commandButton>
+                                    styleClass="admin-button admin-button-primary"/>
 
                         </div>
 
                     </div>
-
-                </section>
-
-                <section class="admin-panel admin-section-space">
-
-                    <div class="admin-panel-header">
-
-                        <div>
-
-                            <h2>Pedidos</h2>
-
-                            <p>
-                                Historial de pedidos realizados
-                                a este negocio.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <h:panelGroup
-                            rendered="#{not empty adminNegocioBean.pedidos}">
-
-                        <div class="admin-table-scroll">
-
-                            <h:dataTable
-                                    value="#{adminNegocioBean.pedidos}"
-                                    var="pedido"
-                                    styleClass="admin-table">
-
-                                <h:column>
-
-                                    <f:facet name="header">
-                                        Pedido
-                                    </f:facet>
-
-                                    <strong>
-                                        ##{pedido.idPedido}
-                                    </strong>
-
-                                </h:column>
-
-                                <h:column>
-
-                                    <f:facet name="header">
-                                        Cliente
-                                    </f:facet>
-
-                                    #{pedido.cliente.nombre}
-                                    #{pedido.cliente.apellido}
-
-                                </h:column>
-
-                                <h:column>
-
-                                    <f:facet name="header">
-                                        Fecha
-                                    </f:facet>
-
-                                    #{pedido.fechaPedido}
-
-                                </h:column>
-
-                                <h:column>
-
-                                    <f:facet name="header">
-                                        Total
-                                    </f:facet>
-
-                                    $#{pedido.total}
-
-                                </h:column>
-
-                                <h:column>
-
-                                    <f:facet name="header">
-                                        Estado
-                                    </f:facet>
-
-                                    <span class="admin-order-status admin-order-status-#{pedido.estado}">
-                                        #{pedido.estado}
-                                    </span>
-
-                                </h:column>
-
-                            </h:dataTable>
-
-                        </div>
-
-                    </h:panelGroup>
-
-                    <h:panelGroup
-                            rendered="#{empty adminNegocioBean.pedidos}">
-
-                        <div class="admin-empty-state">
-
-                            <strong>
-                                Este negocio todavía no tiene pedidos.
-                            </strong>
-
-                        </div>
-
-                    </h:panelGroup>
 
                 </section>
 
             </h:form>
+
+            <section class="admin-panel admin-section-space">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <h2>
+                            Pedidos
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <h:panelGroup
+                        rendered="#{not empty adminNegocioBean.pedidos}">
+
+                    <div class="admin-table-scroll">
+
+                        <h:dataTable
+                                value="#{adminNegocioBean.pedidos}"
+                                var="pedido"
+                                styleClass="admin-table">
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Pedido
+                                </f:facet>
+
+                                ##{pedido.idPedido}
+
+                            </h:column>
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Cliente
+                                </f:facet>
+
+                                #{pedido.cliente.nombre}
+                                #{pedido.cliente.apellido}
+
+                            </h:column>
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Total
+                                </f:facet>
+
+                                $#{pedido.total}
+
+                            </h:column>
+
+                            <h:column>
+
+                                <f:facet name="header">
+                                    Estado
+                                </f:facet>
+
+                                #{pedido.estado}
+
+                            </h:column>
+
+                        </h:dataTable>
+
+                    </div>
+
+                </h:panelGroup>
+
+            </section>
 
         </h:panelGroup>
 
@@ -324,11 +365,9 @@
 
                 <div class="admin-empty-state">
 
-                    <h2>Negocio no encontrado</h2>
-
-                    <p>
-                        El emprendimiento solicitado no existe.
-                    </p>
+                    <h2>
+                        Negocio no encontrado
+                    </h2>
 
                     <h:link
                             outcome="/admin/emprendimientos.xhtml"

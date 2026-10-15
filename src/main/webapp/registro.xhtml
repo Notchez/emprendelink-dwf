@@ -19,12 +19,23 @@
 
             <div class="auth-brand">
 
-                <span class="brand-mark">E</span>
+                <span class="brand-mark">
+                    E
+                </span>
 
-                <h1>Crear cuenta</h1>
+                <h1>
+                    Crear cuenta
+                </h1>
 
                 <p>
-                    Empieza a comprar o vender en EmprendeLink.
+                    Regístrate como cliente para descubrir
+                    productos y servicios locales.
+                </p>
+
+                <p class="muted small">
+                    ¿Quieres vender en EmprendeLink?
+                    Las cuentas de emprendedor son habilitadas
+                    directamente por la administración.
                 </p>
 
             </div>
@@ -110,13 +121,13 @@
 
                             <h:outputLabel
                                     for="contrasena"
-                                    value="ContraseÃ±a"/>
+                                    value="Contraseña"/>
 
                             <h:inputSecret
                                     id="contrasena"
                                     value="#{usuarioBean.contrasena}"
                                     required="true"
-                                    requiredMessage="La contraseÃ±a es obligatoria."
+                                    requiredMessage="La contraseña es obligatoria."
                                     validator="contrasenaValidator"
                                     maxlength="128"/>
 
@@ -126,11 +137,11 @@
 
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group full">
 
                             <h:outputLabel
                                     for="telefono"
-                                    value="TelÃ©fono"/>
+                                    value="Teléfono"/>
 
                             <h:inputText
                                     id="telefono"
@@ -139,49 +150,12 @@
 
                         </div>
 
-                        <div class="form-group">
-
-                            <h:outputLabel
-                                    for="rol"
-                                    value="Tipo de cuenta"/>
-
-                            <h:selectOneMenu
-                                    id="rol"
-                                    value="#{usuarioBean.rol}"
-                                    converter="tipoRolConverter"
-                                    required="true">
-
-                                <f:selectItems
-                                        value="#{usuarioBean.rolesRegistro}"
-                                        var="rol"
-                                        itemValue="#{rol}"
-                                        itemLabel="#{usuarioBean.etiquetaRol(rol)}"/>
-
-                                <f:ajax
-                                        event="change"
-                                        execute="@this"
-                                        render="rolInfo"/>
-
-                            </h:selectOneMenu>
-
-                        </div>
-
                     </div>
-
-                    <h:panelGroup
-                            id="rolInfo"
-                            layout="block">
-
-                        <p class="muted small">
-                            #{usuarioBean.descripcionRol}
-                        </p>
-
-                    </h:panelGroup>
 
                     <div class="button-row">
 
                         <h:commandButton
-                                value="Crear cuenta"
+                                value="Crear cuenta de cliente"
                                 styleClass="btn btn-primary"
                                 action="#{usuarioBean.registrar}"/>
 
@@ -191,10 +165,12 @@
 
                 <div class="auth-footer">
 
-                    Â¿Ya tienes cuenta?
+                    ¿Ya tienes cuenta?
 
                     <a href="#{request.contextPath}/login.xhtml">
-                        <strong>Ingresar</strong>
+                        <strong>
+                            Ingresar
+                        </strong>
                     </a>
 
                 </div>

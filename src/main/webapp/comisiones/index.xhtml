@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Comisiones - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="entrepreneur-page-header">
+
+            <div>
+
+                <span class="market-kicker">
+                    Finanzas
+                </span>
+
+                <h1>
+                    Comisiones
+                </h1>
+
+                <p>
+                    Resumen de la comisión acumulada
+                    durante #{pedidoBean.periodoActual}.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="entrepreneur-finance-hero">
+
+            <div>
+
+                <span>
+                    Comisión acumulada del mes
+                </span>
+
+                <h:outputText
+                        value="#{pedidoBean.comisionMesActual}"
+                        styleClass="entrepreneur-finance-total">
+
+                    <f:convertNumber
+                            type="currency"
+                            currencySymbol="$"/>
+
+                </h:outputText>
+
+                <p>
+                    Corresponde únicamente a pedidos
+                    completados durante el período.
+                </p>
+
+            </div>
+
+            <div class="entrepreneur-finance-breakdown">
+
+                <div>
+
+                    <span>
+                        Ventas completadas
+                    </span>
+
+                    <h:outputText
+                            value="#{pedidoBean.totalVentasMesActual}">
+
+                        <f:convertNumber
+                                type="currency"
+                                currencySymbol="$"/>
+
+                    </h:outputText>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Pedidos
+                    </span>
+
+                    <strong>
+                        #{pedidoBean.cantidadVentasMesActual}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Neto estimado
+                    </span>
+
+                    <h:outputText
+                            value="#{pedidoBean.netoMesActual}">
+
+                        <f:convertNumber
+                                type="currency"
+                                currencySymbol="$"/>
+
+                    </h:outputText>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="entrepreneur-panel entrepreneur-section-space">
+
+            <div class="entrepreneur-panel-header">
+
+                <div>
+
+                    <span class="market-kicker">
+                        Desglose
+                    </span>
+
+                    <h2>
+                        Comisión por venta
+                    </h2>
+
+                    <p>
+                        Cada pedido conserva el plan
+                        y porcentaje que tenía tu negocio
+                        cuando el cliente realizó la compra.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <h:panelGroup
+                    rendered="#{not empty pedidoBean.ventasMesActual}">
+
+                <div class="entrepreneur-table-wrap">
+
+                    <h:dataTable
+                            value="#{pedidoBean.ventasMesActual}"
+                            var="p"
+                            styleClass="entrepreneur-table">
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Pedido
+                            </f:facet>
+
+                            <strong>
+                                ##{p.idPedido}
+                            </strong>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Fecha
+                            </f:facet>
+
+                            #{pedidoBean.formatearFecha(
+                                    p.fechaCompletado
+                                    )}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Plan
+                            </f:facet>
+
+                            #{p.nombrePlanAplicado}
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Tasa
+                            </f:facet>
+
+                            #{pedidoBean.porcentajeComision(p)}%
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Venta
+                            </f:facet>
+
+                            <h:outputText
+                                    value="#{p.total}">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </h:column>
+
+                        <h:column>
+
+                            <f:facet name="header">
+                                Comisión
+                            </f:facet>
+
+                            <h:outputText
+                                    value="#{p.montoComision}"
+                                    styleClass="entrepreneur-money-negative">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </h:column>
+
+                    </h:dataTable>
+
+                </div>
+
+            </h:panelGroup>
+
+            <h:panelGroup
+                    rendered="#{empty pedidoBean.ventasMesActual}"
+                    layout="block"
+                    styleClass="market-empty-state">
+
+                <div class="market-empty-icon">
+                    $
+                </div>
+
+                <h2>
+                    Sin comisión acumulada
+                </h2>
+
+                <p>
+                    No tienes pedidos completados
+                    durante #{pedidoBean.periodoActual}.
+                </p>
+
+            </h:panelGroup>
+
+        </section>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

@@ -29,7 +29,10 @@ public class JpaCategoriaDAO
                         categoria
                 );
 
-        entityManager.persist(entidad);
+        entityManager.persist(
+                entidad
+        );
+
         entityManager.flush();
 
         return CategoriaMapper.aDominio(
@@ -104,6 +107,10 @@ public class JpaCategoriaDAO
                 categoria.getDescripcion()
         );
 
+        entidad.setManejaStock(
+                categoria.isManejaStock()
+        );
+
         entidad.setActivo(
                 categoria.isActivo()
         );
@@ -129,7 +136,9 @@ public class JpaCategoriaDAO
             return false;
         }
 
-        entityManager.remove(entidad);
+        entityManager.remove(
+                entidad
+        );
 
         return true;
     }

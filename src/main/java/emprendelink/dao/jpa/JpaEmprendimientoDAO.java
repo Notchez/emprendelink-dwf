@@ -2,6 +2,7 @@ package emprendelink.dao.jpa;
 
 import emprendelink.dao.EmprendimientoDAO;
 import emprendelink.model.Emprendimiento;
+import emprendelink.persistence.jpa.entity.CategoriaEntity;
 import emprendelink.persistence.jpa.entity.EmprendimientoEntity;
 import emprendelink.persistence.jpa.entity.PlanEntity;
 import emprendelink.persistence.jpa.entity.UsuarioEntity;
@@ -50,6 +51,12 @@ public class JpaEmprendimientoDAO
                 )
         );
 
+        entidad.setCategoria(
+                resolverCategoria(
+                        emprendimiento
+                )
+        );
+
         entityManager.persist(
                 entidad
         );
@@ -58,10 +65,11 @@ public class JpaEmprendimientoDAO
 
         return buscarPorId(
                 entidad.getIdEmprendimiento()
-        ).orElseThrow(() ->
-                new IllegalStateException(
-                        "No se pudo recuperar el emprendimiento creado."
-                )
+        ).orElseThrow(
+                () ->
+                        new IllegalStateException(
+                                "No se pudo recuperar el negocio creado."
+                        )
         );
     }
 
@@ -80,6 +88,7 @@ public class JpaEmprendimientoDAO
                         JOIN FETCH e.propietario u
                         JOIN FETCH u.rol
                         JOIN FETCH e.plan
+                        JOIN FETCH e.categoria
                         WHERE e.idEmprendimiento = :id
                         """,
                         EmprendimientoEntity.class
@@ -105,6 +114,7 @@ public class JpaEmprendimientoDAO
                         JOIN FETCH e.propietario u
                         JOIN FETCH u.rol
                         JOIN FETCH e.plan
+                        JOIN FETCH e.categoria
                         ORDER BY e.idEmprendimiento
                         """,
                         EmprendimientoEntity.class
@@ -131,6 +141,7 @@ public class JpaEmprendimientoDAO
                         JOIN FETCH e.propietario u
                         JOIN FETCH u.rol
                         JOIN FETCH e.plan
+                        JOIN FETCH e.categoria
                         WHERE u.idUsuario = :idUsuario
                         ORDER BY e.idEmprendimiento
                         """,
@@ -197,6 +208,21 @@ public class JpaEmprendimientoDAO
             );
         }
 
+        if (emprendimiento.getCategoria() != null
+                && emprendimiento
+                .getCategoria()
+                .getIdCategoria() != null) {
+
+            entidad.setCategoria(
+                    entityManager.getReference(
+                            CategoriaEntity.class,
+                            emprendimiento
+                                    .getCategoria()
+                                    .getIdCategoria()
+                    )
+            );
+        }
+
         entidad.setNombre(
                 emprendimiento.getNombre()
         );
@@ -207,6 +233,10 @@ public class JpaEmprendimientoDAO
 
         entidad.setContacto(
                 emprendimiento.getContacto()
+        );
+
+        entidad.setLogoUrl(
+                emprendimiento.getLogoUrl()
         );
 
         entidad.setActivo(
@@ -273,25 +303,46 @@ public class JpaEmprendimientoDAO
                 .setMaxResults(1)
                 .getResultStream()
                 .findFirst()
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "No existe un plan activo para asignar al emprendimiento."
-                        )
+                .orElseThrow(
+                        () ->
+                                new IllegalStateException(
+                                        "No existe un plan activo."
+                                )
                 );
+    }
+
+    private CategoriaEntity resolverCategoria(
+            Emprendimiento emprendimiento) {
+
+        if (emprendimiento.getCategoria() == null
+                || emprendimiento
+                .getCategoria()
+                .getIdCategoria() == null) {
+
+            throw new IllegalArgumentException(
+                    "El negocio requiere una categoría."
+            );
+        }
+
+        return entityManager.getReference(
+                CategoriaEntity.class,
+                emprendimiento
+                        .getCategoria()
+                        .getIdCategoria()
+        );
     }
 
     private void validarPropietario(
             Emprendimiento emprendimiento) {
 
         if (emprendimiento == null
-                || emprendimiento
-                .getPropietario() == null
+                || emprendimiento.getPropietario() == null
                 || emprendimiento
                 .getPropietario()
                 .getIdUsuario() == null) {
 
             throw new IllegalArgumentException(
-                    "El emprendimiento requiere un propietario válido."
+                    "El negocio requiere un propietario válido."
             );
         }
     }

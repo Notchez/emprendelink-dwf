@@ -11,40 +11,50 @@
 <ui:composition template="/WEB-INF/base.xhtml">
 
     <ui:define name="title">
-        Publicaciones - EmprendeLink
+        Catálogo - EmprendeLink
     </ui:define>
 
     <ui:define name="content">
+
+        <script src="#{request.contextPath}/js/currency-input.js"
+                defer="defer">
+        </script>
 
         <section class="seller-page-header">
 
             <div>
 
                 <span class="market-kicker">
-                    Emprendedor
+                    #{publicacionBean.categoriaNegocioNombre}
                 </span>
 
                 <h1>
-                    Tus publicaciones
+                    Catálogo
                 </h1>
 
                 <p>
-                    Administra lo que tus clientes ven en el catálogo.
+                    Administra lo que tus clientes
+                    pueden encontrar en tu negocio.
                 </p>
 
             </div>
 
-            <div class="seller-header-stat">
+            <h:panelGroup
+                    id="contadorCatalogo"
+                    layout="block"
+                    styleClass="seller-header-stat">
 
-                <span>
-                    Publicaciones
-                </span>
+    <span>
+        Uso del plan
+    </span>
 
                 <strong>
-                    #{publicacionBean.publicacionesPropias.size()}
+                    #{emprendimientoBean.publicacionesActivas}
+                    /
+                    #{emprendimientoBean.maxPublicaciones}
                 </strong>
 
-            </div>
+            </h:panelGroup>
 
         </section>
 
@@ -55,7 +65,13 @@
                     globalOnly="true"
                     styleClass="market-messages"/>
 
+            <!--
+                Mantiene el ID del objeto que se está editando.
+                Si tiene valor -> UPDATE.
+                Si está vacío -> CREATE.
+            -->
             <h:inputHidden
+                    id="idPublicacion"
                     value="#{publicacionBean.idPublicacion}"/>
 
             <div class="seller-workspace">
@@ -65,112 +81,33 @@
                     <div class="seller-editor-header">
 
                         <span class="market-kicker">
+
                             #{publicacionBean.editando
                                     ? 'Edición'
-                                    : 'Nueva publicación'}
+                                    : 'Nuevo elemento'}
+
                         </span>
 
                         <h2>
+
                             #{publicacionBean.editando
-                                    ? 'Editar publicación'
+                                    ? 'Editar elemento'
                                     : 'Agregar al catálogo'}
+
                         </h2>
 
-                        <p>
-                            Completa la información que verá el cliente.
-                        </p>
-
                     </div>
 
-                    <div class="seller-form-field">
+                    <div class="entrepreneur-limit-note">
 
-                        <h:outputLabel
-                                for="emprendimiento"
-                                value="Negocio"/>
+                        <strong>
+                            #{emprendimientoBean.espaciosDisponibles}
+                            espacios disponibles
+                        </strong>
 
-                        <h:selectOneMenu
-                                id="emprendimiento"
-                                value="#{publicacionBean.idEmprendimiento}"
-                                required="true"
-                                requiredMessage="Selecciona un negocio.">
-
-                            <f:selectItem
-                                    itemLabel="Selecciona un negocio"
-                                    itemValue="#{null}"
-                                    noSelectionOption="true"/>
-
-                            <f:selectItems
-                                    value="#{publicacionBean.emprendimientosPropios}"
-                                    var="negocio"
-                                    itemValue="#{negocio.idEmprendimiento}"
-                                    itemLabel="#{negocio.nombre}"/>
-
-                        </h:selectOneMenu>
-
-                        <h:message
-                                for="emprendimiento"
-                                styleClass="seller-field-error"/>
-
-                    </div>
-
-                    <div class="seller-form-row">
-
-                        <div class="seller-form-field">
-
-                            <h:outputLabel
-                                    for="categoria"
-                                    value="Categoría"/>
-
-                            <h:selectOneMenu
-                                    id="categoria"
-                                    value="#{publicacionBean.idCategoria}"
-                                    required="true"
-                                    requiredMessage="Selecciona una categoría.">
-
-                                <f:selectItem
-                                        itemLabel="Selecciona"
-                                        itemValue="#{null}"
-                                        noSelectionOption="true"/>
-
-                                <f:selectItems
-                                        value="#{publicacionBean.categoriasActivas}"
-                                        var="categoria"
-                                        itemValue="#{categoria.idCategoria}"
-                                        itemLabel="#{categoria.nombre}"/>
-
-                            </h:selectOneMenu>
-
-                            <h:message
-                                    for="categoria"
-                                    styleClass="seller-field-error"/>
-
-                        </div>
-
-                        <div class="seller-form-field">
-
-                            <h:outputLabel
-                                    for="tipo"
-                                    value="Tipo"/>
-
-                            <h:selectOneMenu
-                                    id="tipo"
-                                    value="#{publicacionBean.tipo}">
-
-                                <f:selectItems
-                                        value="#{publicacionBean.tipos}"
-                                        var="tipo"
-                                        itemValue="#{tipo}"
-                                        itemLabel="#{tipo eq 'PRODUCTO'
-                                                ? 'Producto'
-                                                : 'Servicio'}"/>
-
-                                <f:ajax
-                                        execute="@this"
-                                        render="stockPanel"/>
-
-                            </h:selectOneMenu>
-
-                        </div>
+                        <span>
+                            #{emprendimientoBean.planActual.nombre}
+                        </span>
 
                     </div>
 
@@ -204,7 +141,7 @@
                                 id="descripcion"
                                 value="#{publicacionBean.descripcion}"
                                 rows="4"
-                                pt:placeholder="Cuéntale al cliente qué hace especial esta publicación..."/>
+                                pt:placeholder="Describe el producto o servicio..."/>
 
                     </div>
 
@@ -212,7 +149,7 @@
 
                         <h:outputLabel
                                 for="imagenUrl"
-                                value="Imagen"/>
+                                value="Imagen URL"/>
 
                         <h:inputText
                                 id="imagenUrl"
@@ -226,10 +163,6 @@
                                     render="imagenPreview"/>
 
                         </h:inputText>
-
-                        <small class="seller-field-help">
-                            Pega una URL pública de imagen.
-                        </small>
 
                     </div>
 
@@ -255,10 +188,6 @@
                                     ◫
                                 </span>
 
-                                <small>
-                                    Vista previa
-                                </small>
-
                             </div>
 
                         </ui:fragment>
@@ -281,16 +210,12 @@
 
                                 <h:inputText
                                         id="precio"
-                                        value="#{publicacionBean.precio}"
+                                        value="#{publicacionBean.precioTexto}"
                                         required="true"
                                         requiredMessage="El precio es obligatorio."
-                                        pt:placeholder="0.00">
-
-                                    <f:convertNumber
-                                            type="number"
-                                            maxFractionDigits="2"/>
-
-                                </h:inputText>
+                                        styleClass="currency-cents-input"
+                                        pt:inputmode="numeric"
+                                        pt:autocomplete="off"/>
 
                             </div>
 
@@ -301,31 +226,18 @@
                         </div>
 
                         <h:panelGroup
-                                id="stockPanel"
+                                rendered="#{publicacionBean.manejaStock}"
                                 layout="block"
                                 styleClass="seller-form-field">
 
                             <h:outputLabel
                                     for="stock"
-                                    value="Stock"/>
+                                    value="Existencias"/>
 
                             <h:inputText
                                     id="stock"
                                     value="#{publicacionBean.stock}"
-                                    disabled="#{publicacionBean.servicio}"
-                                    pt:placeholder="0"/>
-
-                            <small class="seller-field-help">
-
-                                <h:outputText
-                                        value="Los servicios no requieren stock."
-                                        rendered="#{publicacionBean.servicio}"/>
-
-                                <h:outputText
-                                        value="Unidades disponibles."
-                                        rendered="#{not publicacionBean.servicio}"/>
-
-                            </small>
+                                    pt:inputmode="numeric"/>
 
                         </h:panelGroup>
 
@@ -336,21 +248,14 @@
                         <h:commandButton
                                 value="#{publicacionBean.editando
                                         ? 'Guardar cambios'
-                                        : 'Crear publicación'}"
+                                        : 'Agregar al catálogo'}"
                                 action="#{publicacionBean.guardar}"
-                                styleClass="market-primary-button seller-save-button">
-
-                            <f:ajax
-                                    execute="@form"
-                                    render="@form"/>
-
-                        </h:commandButton>
+                                styleClass="market-primary-button seller-save-button"/>
 
                         <h:commandButton
-                                value="Cancelar"
+                                value="Cancelar edición"
                                 action="#{publicacionBean.cancelarEdicion}"
                                 rendered="#{publicacionBean.editando}"
-                                immediate="true"
                                 styleClass="market-secondary-button">
 
                             <f:ajax
@@ -370,11 +275,11 @@
                         <div>
 
                             <span class="market-kicker">
-                                Catálogo
+                                #{publicacionBean.negocioActual.nombre}
                             </span>
 
                             <h2>
-                                Publicaciones registradas
+                                Elementos publicados
                             </h2>
 
                         </div>
@@ -423,14 +328,6 @@
                                             <div class="seller-card-meta">
 
                                                 <span>
-                                                    #{p.emprendimiento.nombre}
-                                                </span>
-
-                                                <span>
-                                                    ·
-                                                </span>
-
-                                                <span>
                                                     #{p.categoria.nombre}
                                                 </span>
 
@@ -447,21 +344,16 @@
                                                 : 'seller-status is-inactive'}">
 
                                             #{p.activo
-                                                    ? 'Activa'
-                                                    : 'Inactiva'}
+                                                    ? 'Activo'
+                                                    : 'Inactivo'}
 
                                         </span>
 
                                     </div>
 
-                                    <h:panelGroup
-                                            rendered="#{not empty p.descripcion}">
-
-                                        <p class="seller-card-description">
-                                            #{p.descripcion}
-                                        </p>
-
-                                    </h:panelGroup>
+                                    <p class="seller-card-description">
+                                        #{p.descripcion}
+                                    </p>
 
                                     <div class="seller-card-footer">
 
@@ -477,15 +369,15 @@
 
                                             </h:outputText>
 
-                                            <span>
-                                                #{p.tipo eq 'PRODUCTO'
-                                                        ? p.stock
-                                                        : 'Servicio'}
-                                            </span>
+                                            <h:panelGroup
+                                                    rendered="#{publicacionBean.manejaStock}">
 
-                                            <h:outputText
-                                                    value=" unidades"
-                                                    rendered="#{p.tipo eq 'PRODUCTO'}"/>
+                                                <span>
+                                                    #{p.stock}
+                                                    disponibles
+                                                </span>
+
+                                            </h:panelGroup>
 
                                         </div>
 
@@ -493,8 +385,9 @@
 
                                             <h:commandButton
                                                     value="Editar"
-                                                    action="#{publicacionBean.editar(p.idPublicacion)}"
-                                                    immediate="true"
+                                                    action="#{publicacionBean.editar(
+                                                            p.idPublicacion
+                                                    )}"
                                                     styleClass="seller-action-button">
 
                                                 <f:ajax
@@ -507,15 +400,17 @@
                                                     value="#{p.activo
                                                             ? 'Desactivar'
                                                             : 'Activar'}"
-                                                    action="#{publicacionBean.alternarEstado(p.idPublicacion, p.activo)}"
-                                                    immediate="true"
+                                                    action="#{publicacionBean.alternarEstado(
+                                                            p.idPublicacion,
+                                                            p.activo
+                                                    )}"
                                                     styleClass="#{p.activo
                                                             ? 'seller-action-button seller-action-muted'
                                                             : 'seller-action-button seller-action-success'}">
 
                                                 <f:ajax
                                                         execute="@this"
-                                                        render="@form"/>
+                                                        render="@form :contadorCatalogo"/>
 
                                             </h:commandButton>
 
@@ -541,13 +436,8 @@
                         </div>
 
                         <h2>
-                            Todavía no tienes publicaciones
+                            Tu catálogo está vacío
                         </h2>
-
-                        <p>
-                            Utiliza el formulario para agregar
-                            tu primer producto o servicio.
-                        </p>
 
                     </h:panelGroup>
 

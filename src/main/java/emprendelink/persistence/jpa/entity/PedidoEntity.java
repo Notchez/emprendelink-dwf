@@ -17,7 +17,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,7 +31,9 @@ import java.util.List;
 public class PedidoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.IDENTITY
+    )
     @Column(name = "id_pedido")
     private Integer idPedido;
 
@@ -56,6 +60,22 @@ public class PedidoEntity {
     private EmprendimientoEntity emprendimiento;
 
     @NotNull
+    @Column(
+            name = "id_plan_aplicado",
+            nullable = false
+    )
+    private Integer idPlanAplicado;
+
+    @NotBlank
+    @Size(max = 80)
+    @Column(
+            name = "nombre_plan_aplicado",
+            nullable = false,
+            length = 80
+    )
+    private String nombrePlanAplicado;
+
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(
             name = "estado",
@@ -78,18 +98,22 @@ public class PedidoEntity {
     )
     private BigDecimal total;
 
+    @NotNull
     @DecimalMin("0.0000")
     @DecimalMax("1.0000")
     @Column(
             name = "tasa_comision",
+            nullable = false,
             precision = 5,
             scale = 4
     )
     private BigDecimal tasaComision;
 
+    @NotNull
     @DecimalMin("0.00")
     @Column(
             name = "monto_comision",
+            nullable = false,
             precision = 10,
             scale = 2
     )
@@ -107,7 +131,10 @@ public class PedidoEntity {
             nullable = false
     )
     private LocalDateTime fechaPedido;
-    @Column(name = "fecha_completado")
+
+    @Column(
+            name = "fecha_completado"
+    )
     private LocalDateTime fechaCompletado;
 
     @OneToMany(
@@ -164,6 +191,28 @@ public class PedidoEntity {
 
         this.emprendimiento =
                 emprendimiento;
+    }
+
+    public Integer getIdPlanAplicado() {
+        return idPlanAplicado;
+    }
+
+    public void setIdPlanAplicado(
+            Integer idPlanAplicado) {
+
+        this.idPlanAplicado =
+                idPlanAplicado;
+    }
+
+    public String getNombrePlanAplicado() {
+        return nombrePlanAplicado;
+    }
+
+    public void setNombrePlanAplicado(
+            String nombrePlanAplicado) {
+
+        this.nombrePlanAplicado =
+                nombrePlanAplicado;
     }
 
     public EstadoPedido getEstado() {

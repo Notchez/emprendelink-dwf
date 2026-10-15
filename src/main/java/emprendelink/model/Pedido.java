@@ -12,11 +12,18 @@ public class Pedido {
     private Integer idPedido;
     private Usuario cliente;
     private Emprendimiento emprendimiento;
+
+    private Integer idPlanAplicado;
+    private String nombrePlanAplicado;
+
     private EstadoPedido estado;
+
     private BigDecimal total;
     private BigDecimal tasaComision;
     private BigDecimal montoComision;
+
     private String observaciones;
+
     private LocalDateTime fechaPedido;
     private LocalDateTime fechaCompletado;
 
@@ -24,16 +31,16 @@ public class Pedido {
 
     public Pedido() {
 
-        this.estado =
+        estado =
                 EstadoPedido.PENDIENTE;
 
-        this.total =
+        total =
                 BigDecimal.ZERO;
 
-        this.fechaPedido =
+        fechaPedido =
                 LocalDateTime.now();
 
-        this.detalles =
+        detalles =
                 new ArrayList<>();
     }
 
@@ -96,7 +103,7 @@ public class Pedido {
         if (detalle == null) {
 
             throw new IllegalArgumentException(
-                    "El detalle es obligatorio"
+                    "El detalle es obligatorio."
             );
         }
 
@@ -104,7 +111,7 @@ public class Pedido {
                 this
         );
 
-        this.detalles.add(
+        detalles.add(
                 detalle
         );
 
@@ -125,7 +132,7 @@ public class Pedido {
                     );
         }
 
-        this.total =
+        total =
                 nuevoTotal;
     }
 
@@ -162,6 +169,28 @@ public class Pedido {
                 emprendimiento;
     }
 
+    public Integer getIdPlanAplicado() {
+        return idPlanAplicado;
+    }
+
+    public void setIdPlanAplicado(
+            Integer idPlanAplicado) {
+
+        this.idPlanAplicado =
+                idPlanAplicado;
+    }
+
+    public String getNombrePlanAplicado() {
+        return nombrePlanAplicado;
+    }
+
+    public void setNombrePlanAplicado(
+            String nombrePlanAplicado) {
+
+        this.nombrePlanAplicado =
+                nombrePlanAplicado;
+    }
+
     public EstadoPedido getEstado() {
         return estado;
     }
@@ -172,7 +201,7 @@ public class Pedido {
         if (estado == null) {
 
             throw new IllegalArgumentException(
-                    "El estado del pedido es obligatorio"
+                    "El estado del pedido es obligatorio."
             );
         }
 
@@ -191,7 +220,7 @@ public class Pedido {
                 && total.signum() < 0) {
 
             throw new IllegalArgumentException(
-                    "El total no puede ser negativo"
+                    "El total no puede ser negativo."
             );
         }
 
@@ -209,10 +238,12 @@ public class Pedido {
             BigDecimal tasaComision) {
 
         if (tasaComision != null
-                && (tasaComision.signum() < 0
-                || tasaComision.compareTo(
-                BigDecimal.ONE
-        ) > 0)) {
+                && (
+                tasaComision.signum() < 0
+                        || tasaComision.compareTo(
+                        BigDecimal.ONE
+                ) > 0
+        )) {
 
             throw new IllegalArgumentException(
                     "La tasa de comisión debe estar entre 0 y 1."

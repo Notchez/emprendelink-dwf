@@ -10,7 +10,7 @@
 <ui:composition template="/WEB-INF/base.xhtml">
 
     <ui:define name="title">
-        Pedidos recibidos - EmprendeLink
+        Pedidos activos - EmprendeLink
     </ui:define>
 
     <ui:define name="content">
@@ -23,16 +23,16 @@
             <div>
 
                 <span class="market-kicker">
-                    Panel de emprendedor
+                    Operación diaria
                 </span>
 
                 <h1>
-                    Pedidos recibidos
+                    Pedidos activos
                 </h1>
 
                 <p>
-                    Revisa y procesa los pedidos realizados
-                    a tus emprendimientos.
+                    Aquí aparecen únicamente los pedidos
+                    que todavía requieren atención.
                 </p>
 
             </div>
@@ -40,11 +40,11 @@
             <div class="received-header-stat">
 
                 <span>
-                    Pedidos
+                    Activos
                 </span>
 
                 <strong>
-                    #{pedidoBean.pedidosRecibidos.size()}
+                    #{pedidoBean.pedidosActivosRecibidos.size()}
                 </strong>
 
             </div>
@@ -63,17 +63,15 @@
                     layout="block">
 
                 <h:panelGroup
-                        rendered="#{not empty pedidoBean.pedidosRecibidos}"
+                        rendered="#{not empty pedidoBean.pedidosActivosRecibidos}"
                         layout="block"
                         styleClass="received-order-list">
 
                     <ui:repeat
-                            value="#{pedidoBean.pedidosRecibidos}"
+                            value="#{pedidoBean.pedidosActivosRecibidos}"
                             var="p">
 
                         <article class="received-order-card">
-
-                            <!-- CABECERA -->
 
                             <div class="received-order-header">
 
@@ -94,13 +92,13 @@
                                     <span class="received-status-dot">
                                     </span>
 
-                                    #{pedidoBean.etiquetaEstado(p.estado)}
+                                    #{pedidoBean.etiquetaEstado(
+                                            p.estado
+                                            )}
 
                                 </span>
 
                             </div>
-
-                            <!-- CUERPO -->
 
                             <div class="received-order-body">
 
@@ -128,7 +126,7 @@
                                 <div class="received-order-business">
 
                                     <span class="received-label">
-                                        Emprendimiento
+                                        Negocio
                                     </span>
 
                                     <strong>
@@ -155,8 +153,6 @@
                                 </div>
 
                             </div>
-
-                            <!-- PRODUCTOS -->
 
                             <div class="received-products">
 
@@ -198,6 +194,7 @@
                                                 #{d.cantidad}
                                                 unidad#{d.cantidad gt 1 ? 'es' : ''}
                                                 ·
+
                                                 <h:outputText
                                                         value="#{d.precioUnitario}">
 
@@ -206,6 +203,7 @@
                                                             currencySymbol="$"/>
 
                                                 </h:outputText>
+
                                             </span>
 
                                         </div>
@@ -226,8 +224,6 @@
 
                             </div>
 
-                            <!-- OBSERVACIONES -->
-
                             <h:panelGroup
                                     rendered="#{not empty p.observaciones}"
                                     layout="block"
@@ -243,13 +239,9 @@
 
                             </h:panelGroup>
 
-                            <!-- PROGRESO -->
-
                             <div class="received-progress">
 
-                                <div class="#{p.estado eq 'CANCELADO'
-                                        ? 'received-step'
-                                        : 'received-step is-complete'}">
+                                <div class="received-step is-complete">
 
                                     <span>
                                         1
@@ -264,7 +256,6 @@
                                 <div class="received-progress-line
                                     #{p.estado eq 'CONFIRMADO'
                                     or p.estado eq 'EN_PROCESO'
-                                    or p.estado eq 'COMPLETADO'
                                     ? 'is-complete'
                                     : ''}">
                                 </div>
@@ -272,7 +263,6 @@
                                 <div class="received-step
                                     #{p.estado eq 'CONFIRMADO'
                                     or p.estado eq 'EN_PROCESO'
-                                    or p.estado eq 'COMPLETADO'
                                     ? 'is-complete'
                                     : ''}">
 
@@ -288,14 +278,12 @@
 
                                 <div class="received-progress-line
                                     #{p.estado eq 'EN_PROCESO'
-                                    or p.estado eq 'COMPLETADO'
                                     ? 'is-complete'
                                     : ''}">
                                 </div>
 
                                 <div class="received-step
                                     #{p.estado eq 'EN_PROCESO'
-                                    or p.estado eq 'COMPLETADO'
                                     ? 'is-complete'
                                     : ''}">
 
@@ -309,16 +297,10 @@
 
                                 </div>
 
-                                <div class="received-progress-line
-                                    #{p.estado eq 'COMPLETADO'
-                                    ? 'is-complete'
-                                    : ''}">
+                                <div class="received-progress-line">
                                 </div>
 
-                                <div class="received-step
-                                    #{p.estado eq 'COMPLETADO'
-                                    ? 'is-complete'
-                                    : ''}">
+                                <div class="received-step">
 
                                     <span>
                                         4
@@ -331,8 +313,6 @@
                                 </div>
 
                             </div>
-
-                            <!-- FOOTER / ACCIONES -->
 
                             <div class="received-order-footer">
 
@@ -408,7 +388,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup
-                        rendered="#{empty pedidoBean.pedidosRecibidos}"
+                        rendered="#{empty pedidoBean.pedidosActivosRecibidos}"
                         layout="block"
                         styleClass="market-empty-state">
 
@@ -417,18 +397,18 @@
                     </div>
 
                     <h2>
-                        Todo tranquilo por aquí
+                        Todo al día
                     </h2>
 
                     <p>
-                        Todavía no has recibido pedidos.
-                        Cuando un cliente compre algo aparecerá aquí.
+                        No tienes pedidos pendientes,
+                        confirmados ni en proceso.
                     </p>
 
-                    <a href="#{request.contextPath}/publicaciones/index.xhtml"
+                    <a href="#{request.contextPath}/ventas/index.xhtml"
                        class="market-primary-link">
 
-                        Ver mis publicaciones
+                        Ver ventas completadas
 
                     </a>
 

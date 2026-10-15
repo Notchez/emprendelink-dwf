@@ -147,8 +147,68 @@ public class AuthBean {
     }
 
     public boolean isAutenticado() {
-
         return getUsuario() != null;
+    }
+
+    public boolean isCliente() {
+        return getRolActual()
+                == TipoRol.ROLE_CLIENTE;
+    }
+
+    public boolean isEmprendedor() {
+        return getRolActual()
+                == TipoRol.ROLE_EMPRENDEDOR;
+    }
+
+    public boolean isAdmin() {
+        return getRolActual()
+                == TipoRol.ROLE_ADMIN;
+    }
+
+    public String getRutaInicio() {
+
+        TipoRol rol =
+                getRolActual();
+
+        if (rol == null) {
+            return "/catalogo/index.xhtml";
+        }
+
+        return destinoPorRol(
+                rol
+        );
+    }
+
+    public String getSubtituloMarca() {
+
+        TipoRol rol =
+                getRolActual();
+
+        if (rol == TipoRol.ROLE_EMPRENDEDOR) {
+            return "Panel de negocio";
+        }
+
+        if (rol == TipoRol.ROLE_ADMIN) {
+            return "Administración";
+        }
+
+        return "Compra local";
+    }
+
+    private TipoRol getRolActual() {
+
+        Usuario usuario =
+                getUsuario();
+
+        if (usuario == null
+                || usuario.getRol() == null) {
+
+            return null;
+        }
+
+        return usuario
+                .getRol()
+                .getNombre();
     }
 
     private void redirigirSegunRol(
@@ -162,34 +222,31 @@ public class AuthBean {
                         .getNombre()
                         : null;
 
-        String destino;
+        redirigirA(
+                destinoPorRol(
+                        rol
+                )
+        );
+    }
 
-        if (rol == TipoRol.ROLE_ADMIN) {
+    private String destinoPorRol(
+            TipoRol rol) {
 
-            destino =
-                    "/admin/inicio.xhtml";
-
-        } else if (rol
-                == TipoRol.ROLE_EMPRENDEDOR) {
-
-            destino =
-                    "/emprendimientos/index.xhtml";
-
-        } else if (rol
-                == TipoRol.ROLE_CLIENTE) {
-
-            destino =
-                    "/catalogo/index.xhtml";
-
-        } else {
-
-            destino =
-                    "/login.xhtml";
+        if (rol == null) {
+            return "/login.xhtml";
         }
 
-        redirigirA(
-                destino
-        );
+        return switch (rol) {
+
+            case ROLE_ADMIN ->
+                    "/admin/inicio.xhtml";
+
+            case ROLE_EMPRENDEDOR ->
+                    "/pedidos/recibidos.xhtml";
+
+            case ROLE_CLIENTE ->
+                    "/catalogo/index.xhtml";
+        };
     }
 
     private void redirigirA(

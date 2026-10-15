@@ -23,6 +23,9 @@
     <link rel="stylesheet"
           href="#{request.contextPath}/css/marketplace.css"/>
 
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/emprendedor-panel.css"/>
+
 </h:head>
 
 <h:body>
@@ -32,35 +35,40 @@
         <div class="container marketplace-topbar-content">
 
             <a class="marketplace-brand"
-               href="#{request.contextPath}/catalogo/index.xhtml">
+               href="#{request.contextPath}#{authBean.rutaInicio}">
 
-                <span class="marketplace-brand-mark">
-                    E
-                </span>
+            <span class="marketplace-brand-mark">
+                E
+            </span>
 
                 <span class="marketplace-brand-copy">
 
-                    <strong>
-                        EmprendeLink
-                    </strong>
+                <strong>
+                    EmprendeLink
+                </strong>
 
-                    <small>
-                        Compra local
-                    </small>
+                <small>
+                    #{authBean.subtituloMarca}
+                </small>
 
-                </span>
+            </span>
 
             </a>
 
             <nav class="marketplace-nav">
 
-                <a href="#{request.contextPath}/catalogo/index.xhtml">
-                    Explorar
-                </a>
+                <ui:fragment
+                        rendered="#{not authBean.autenticado
+                    or authBean.cliente}">
+
+                    <a href="#{request.contextPath}/catalogo/index.xhtml">
+                        Explorar
+                    </a>
+
+                </ui:fragment>
 
                 <ui:fragment
-                        rendered="#{authBean.autenticado
-                        and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+                        rendered="#{authBean.cliente}">
 
                     <a href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
                         Mis pedidos
@@ -69,26 +77,32 @@
                 </ui:fragment>
 
                 <ui:fragment
-                        rendered="#{authBean.autenticado
-                        and authBean.usuario.rol.nombre eq 'ROLE_EMPRENDEDOR'}">
-
-                    <a href="#{request.contextPath}/emprendimientos/index.xhtml">
-                        Mis negocios
-                    </a>
-
-                    <a href="#{request.contextPath}/publicaciones/index.xhtml">
-                        Publicaciones
-                    </a>
+                        rendered="#{authBean.emprendedor}">
 
                     <a href="#{request.contextPath}/pedidos/recibidos.xhtml">
                         Pedidos
                     </a>
 
+                    <a href="#{request.contextPath}/emprendimientos/index.xhtml">
+                        Mi negocio
+                    </a>
+
+                    <a href="#{request.contextPath}/publicaciones/index.xhtml">
+                        Catálogo
+                    </a>
+
+                    <a href="#{request.contextPath}/ventas/index.xhtml">
+                        Ventas
+                    </a>
+
+                    <a href="#{request.contextPath}/comisiones/index.xhtml">
+                        Comisiones
+                    </a>
+
                 </ui:fragment>
 
                 <ui:fragment
-                        rendered="#{authBean.autenticado
-                        and authBean.usuario.rol.nombre eq 'ROLE_ADMIN'}">
+                        rendered="#{authBean.admin}">
 
                     <a href="#{request.contextPath}/admin/inicio.xhtml">
                         Administración
@@ -103,19 +117,26 @@
                 <ui:fragment
                         rendered="#{authBean.autenticado}">
 
-                    <span class="marketplace-user">
+                <span class="marketplace-user">
 
-                        <span class="marketplace-avatar">
-                            #{authBean.usuario.nombre.substring(0, 1)}
-                        </span>
-
-                        <span class="marketplace-user-name">
-                            #{authBean.usuario.nombre}
-                        </span>
-
+                    <span class="marketplace-avatar">
+                        #{authBean.usuario.nombre.substring(0, 1)}
                     </span>
 
-                    <h:form styleClass="inline-form">
+                    <span class="marketplace-user-name">
+                        #{authBean.usuario.nombre}
+                    </span>
+
+                </span>
+
+                    <!--
+                        El emprendedor cierra sesión desde Mi negocio
+                        para liberar espacio en navegación móvil.
+                    -->
+
+                    <h:form
+                            rendered="#{not authBean.emprendedor}"
+                            styleClass="inline-form">
 
                         <h:commandButton
                                 value="Salir"
@@ -162,8 +183,8 @@
             </strong>
 
             <span>
-                Productos y servicios de emprendedores salvadoreños.
-            </span>
+            Productos y servicios de emprendedores salvadoreños.
+        </span>
 
         </div>
 

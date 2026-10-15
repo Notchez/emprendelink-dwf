@@ -30,6 +30,10 @@ public final class CategoriaMapper {
                 categoria.getDescripcion()
         );
 
+        entidad.setManejaStock(
+                categoria.isManejaStock()
+        );
+
         entidad.setActivo(
                 categoria.isActivo()
         );
@@ -48,6 +52,7 @@ public final class CategoriaMapper {
                 entidad.getIdCategoria(),
                 entidad.getNombre(),
                 entidad.getDescripcion(),
+                entidad.isManejaStock(),
                 entidad.isActivo()
         );
     }
