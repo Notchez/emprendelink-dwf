@@ -22,9 +22,6 @@ public class UsuarioBean {
     private String contrasena;
     private String telefono;
 
-    private TipoRol rol =
-            TipoRol.ROLE_CLIENTE;
-
     private List<Usuario> usuarios;
 
     public String registrar() {
@@ -40,7 +37,7 @@ public class UsuarioBean {
                     correo,
                     contrasena,
                     telefono,
-                    rol
+                    TipoRol.ROLE_CLIENTE
             );
 
             return "/login.xhtml"
@@ -76,7 +73,9 @@ public class UsuarioBean {
         if (actual != null
                 && actual.getIdUsuario() != null
                 && actual.getIdUsuario()
-                .equals(idUsuario)
+                .equals(
+                        idUsuario
+                )
                 && estadoActual) {
 
             contexto.addMessage(
@@ -134,14 +133,6 @@ public class UsuarioBean {
         return usuarios;
     }
 
-    public TipoRol[] getRolesRegistro() {
-
-        return new TipoRol[]{
-                TipoRol.ROLE_CLIENTE,
-                TipoRol.ROLE_EMPRENDEDOR
-        };
-    }
-
     public String etiquetaRol(
             TipoRol rol) {
 
@@ -156,16 +147,6 @@ public class UsuarioBean {
         return "Administrador";
     }
 
-    public String getDescripcionRol() {
-
-        if (rol == TipoRol.ROLE_EMPRENDEDOR) {
-
-            return "Podrás registrar y administrar un emprendimiento.";
-        }
-
-        return "Podrás explorar el catálogo y realizar pedidos.";
-    }
-
     private Usuario obtenerUsuarioSesion() {
 
         Object valor =
@@ -173,7 +154,9 @@ public class UsuarioBean {
                         .getCurrentInstance()
                         .getExternalContext()
                         .getSessionMap()
-                        .get("usuarioAutenticado");
+                        .get(
+                                "usuarioAutenticado"
+                        );
 
         return valor instanceof Usuario
                 ? (Usuario) valor
@@ -187,7 +170,8 @@ public class UsuarioBean {
     public void setNombre(
             String nombre) {
 
-        this.nombre = nombre;
+        this.nombre =
+                nombre;
     }
 
     public String getApellido() {
@@ -197,7 +181,8 @@ public class UsuarioBean {
     public void setApellido(
             String apellido) {
 
-        this.apellido = apellido;
+        this.apellido =
+                apellido;
     }
 
     public String getCorreo() {
@@ -207,7 +192,8 @@ public class UsuarioBean {
     public void setCorreo(
             String correo) {
 
-        this.correo = correo;
+        this.correo =
+                correo;
     }
 
     public String getContrasena() {
@@ -217,7 +203,8 @@ public class UsuarioBean {
     public void setContrasena(
             String contrasena) {
 
-        this.contrasena = contrasena;
+        this.contrasena =
+                contrasena;
     }
 
     public String getTelefono() {
@@ -227,16 +214,7 @@ public class UsuarioBean {
     public void setTelefono(
             String telefono) {
 
-        this.telefono = telefono;
-    }
-
-    public TipoRol getRol() {
-        return rol;
-    }
-
-    public void setRol(
-            TipoRol rol) {
-
-        this.rol = rol;
+        this.telefono =
+                telefono;
     }
 }

@@ -36,6 +36,14 @@ public final class PedidoMapper {
                 )
         );
 
+        entidad.setIdPlanAplicado(
+                pedido.getIdPlanAplicado()
+        );
+
+        entidad.setNombrePlanAplicado(
+                pedido.getNombrePlanAplicado()
+        );
+
         entidad.setEstado(
                 pedido.getEstado()
         );
@@ -102,8 +110,12 @@ public final class PedidoMapper {
                         entidad.getFechaPedido()
                 );
 
-        pedido.setFechaCompletado(
-                entidad.getFechaCompletado()
+        pedido.setIdPlanAplicado(
+                entidad.getIdPlanAplicado()
+        );
+
+        pedido.setNombrePlanAplicado(
+                entidad.getNombrePlanAplicado()
         );
 
         pedido.setTasaComision(
@@ -112,6 +124,10 @@ public final class PedidoMapper {
 
         pedido.setMontoComision(
                 entidad.getMontoComision()
+        );
+
+        pedido.setFechaCompletado(
+                entidad.getFechaCompletado()
         );
 
         for (DetallePedidoEntity detalleEntity

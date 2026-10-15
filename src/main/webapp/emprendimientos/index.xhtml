@@ -10,93 +10,302 @@
 <ui:composition template="/WEB-INF/base.xhtml">
 
     <ui:define name="title">
-        Mis negocios - EmprendeLink
+        Mi negocio - EmprendeLink
     </ui:define>
 
     <ui:define name="content">
 
-        <div class="page-header">
+        <h:panelGroup
+                rendered="#{not empty emprendimientoBean.negocioActual}"
+                layout="block">
 
-            <div>
+            <section class="entrepreneur-business-hero">
 
-                <div class="eyebrow">
-                    Emprendedor
+                <div class="entrepreneur-business-logo">
+
+                    <ui:fragment
+                            rendered="#{not empty emprendimientoBean.negocioActual.logoUrl}">
+
+                        <img src="#{emprendimientoBean.negocioActual.logoUrl}"
+                             alt="#{emprendimientoBean.negocioActual.nombre}"/>
+
+                    </ui:fragment>
+
+                    <ui:fragment
+                            rendered="#{empty emprendimientoBean.negocioActual.logoUrl}">
+
+                        <span>
+                            #{emprendimientoBean.negocioActual.nombre.substring(0, 1)}
+                        </span>
+
+                    </ui:fragment>
+
                 </div>
 
-                <h1>Mis negocios</h1>
+                <div class="entrepreneur-business-copy">
 
-                <p>
-                    Administra la informaciÃ³n de tus emprendimientos.
-                </p>
+                    <span class="market-kicker">
+                        #{emprendimientoBean.negocioActual.categoria.nombre}
+                    </span>
 
-            </div>
+                    <h1>
+                        #{emprendimientoBean.negocioActual.nombre}
+                    </h1>
 
-        </div>
+                    <p>
+                        Administra la información y revisa
+                        el desempeño de tu negocio.
+                    </p>
 
-        <div class="split-layout">
+                </div>
 
-            <section class="panel">
+                <span class="#{emprendimientoBean.negocioActual.activo
+                        ? 'entrepreneur-state is-active'
+                        : 'entrepreneur-state is-inactive'}">
 
-                <h2 class="section-title">
+                    #{emprendimientoBean.negocioActual.activo
+                            ? 'Activo'
+                            : 'Inactivo'}
 
-                    #{emprendimientoBean.editando
-                            ? 'Editar negocio'
-                            : 'Nuevo negocio'}
+                </span>
 
-                </h2>
+            </section>
 
-                <h:form id="emprendimientosForm">
+            <!-- VENTAS DEL PERÍODO -->
 
-                    <h:messages
-                            id="mensajes"
-                            styleClass="messages"
-                            globalOnly="true"/>
+            <h:form id="ventasFiltro">
 
-                    <div class="form-group">
+                <section class="entrepreneur-sales-summary">
+
+                    <div class="entrepreneur-sales-filter">
+
+                        <div>
+
+                            <span class="market-kicker">
+                                Ventas
+                            </span>
+
+                            <h2>
+                                Consultar período
+                            </h2>
+
+                        </div>
+
+                        <div class="entrepreneur-period-controls">
+
+                            <h:selectOneMenu
+                                    value="#{pedidoBean.mesSeleccionado}">
+
+                                <f:selectItem itemValue="1" itemLabel="Enero"/>
+                                <f:selectItem itemValue="2" itemLabel="Febrero"/>
+                                <f:selectItem itemValue="3" itemLabel="Marzo"/>
+                                <f:selectItem itemValue="4" itemLabel="Abril"/>
+                                <f:selectItem itemValue="5" itemLabel="Mayo"/>
+                                <f:selectItem itemValue="6" itemLabel="Junio"/>
+                                <f:selectItem itemValue="7" itemLabel="Julio"/>
+                                <f:selectItem itemValue="8" itemLabel="Agosto"/>
+                                <f:selectItem itemValue="9" itemLabel="Septiembre"/>
+                                <f:selectItem itemValue="10" itemLabel="Octubre"/>
+                                <f:selectItem itemValue="11" itemLabel="Noviembre"/>
+                                <f:selectItem itemValue="12" itemLabel="Diciembre"/>
+
+                                <f:ajax
+                                        execute="@this"
+                                        render="ventasMonto"/>
+
+                            </h:selectOneMenu>
+
+                            <h:selectOneMenu
+                                    value="#{pedidoBean.anioSeleccionado}">
+
+                                <f:selectItems
+                                        value="#{pedidoBean.aniosDisponibles}"
+                                        var="anio"
+                                        itemValue="#{anio}"
+                                        itemLabel="#{anio}"/>
+
+                                <f:ajax
+                                        execute="@this"
+                                        render="ventasMonto"/>
+
+                            </h:selectOneMenu>
+
+                        </div>
+
+                    </div>
+
+                    <h:panelGroup
+                            id="ventasMonto"
+                            layout="block"
+                            styleClass="entrepreneur-sales-value">
+
+                        <span>
+                            #{pedidoBean.periodoSeleccionado}
+                        </span>
+
+                        <h:outputText
+                                value="#{pedidoBean.totalVentasPeriodoSeleccionado}">
+
+                            <f:convertNumber
+                                    type="currency"
+                                    currencySymbol="$"/>
+
+                        </h:outputText>
+
+                    </h:panelGroup>
+
+                </section>
+
+            </h:form>
+
+            <!-- PLAN -->
+
+            <section class="entrepreneur-panel entrepreneur-section-space">
+
+                <div class="entrepreneur-panel-header">
+
+                    <div>
+
+                        <span class="market-kicker">
+                            Plan
+                        </span>
+
+                        <h2>
+                            Condiciones de tu plan
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <div class="entrepreneur-plan-row">
+
+                    <span>
+                        Plan actual
+                    </span>
+
+                    <strong>
+                        #{emprendimientoBean.planActual.nombre}
+                    </strong>
+
+                </div>
+
+                <div class="entrepreneur-plan-row">
+
+                    <span>
+                        Comisión por venta completada
+                    </span>
+
+                    <strong>
+                        #{emprendimientoBean.porcentajeComision}%
+                    </strong>
+
+                </div>
+
+                <div class="entrepreneur-plan-row">
+
+                    <span>
+                        Publicaciones activas
+                    </span>
+
+                    <strong>
+                        #{emprendimientoBean.publicacionesActivas}
+                        /
+                        #{emprendimientoBean.maxPublicaciones}
+                    </strong>
+
+                </div>
+
+                <div class="entrepreneur-plan-row">
+
+                    <span>
+                        Espacios disponibles
+                    </span>
+
+                    <strong>
+                        #{emprendimientoBean.espaciosDisponibles}
+                    </strong>
+
+                </div>
+
+            </section>
+
+            <!-- DATOS EDITABLES -->
+
+            <h:form id="negocioForm">
+
+                <h:messages
+                        globalOnly="true"
+                        styleClass="market-messages"/>
+
+                <section class="entrepreneur-panel entrepreneur-section-space">
+
+                    <div class="entrepreneur-panel-header">
+
+                        <div>
+
+                            <span class="market-kicker">
+                                Información pública
+                            </span>
+
+                            <h2>
+                                Datos del negocio
+                            </h2>
+
+                            <p>
+                                El nombre y la categoría
+                                son administrados por EmprendeLink.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="seller-form-field">
 
                         <h:outputLabel
-                                for="nombre"
-                                value="Nombre"/>
+                                for="logo"
+                                value="Logo / imagen URL"/>
 
                         <h:inputText
-                                id="nombre"
-                                value="#{emprendimientoBean.nombre}"
-                                required="true"
-                                requiredMessage="El nombre es obligatorio."
-                                maxlength="120">
+                                id="logo"
+                                value="#{emprendimientoBean.logoUrl}"
+                                maxlength="1000">
 
                             <f:ajax
                                     event="blur"
                                     execute="@this"
-                                    render="nombreMensaje"/>
+                                    render="logoPreview"/>
 
                         </h:inputText>
 
-                        <h:message
-                                id="nombreMensaje"
-                                styleClass="field-error"
-                                for="nombre"/>
-
                     </div>
 
-                    <br/>
+                    <h:panelGroup
+                            id="logoPreview"
+                            layout="block"
+                            styleClass="entrepreneur-logo-preview">
 
-                    <div class="form-group">
+                        <ui:fragment
+                                rendered="#{not empty emprendimientoBean.logoUrl}">
 
-                        <h:outputLabel
-                                for="descripcion"
-                                value="DescripciÃ³n"/>
+                            <img src="#{emprendimientoBean.logoUrl}"
+                                 alt="Vista previa del logo"/>
 
-                        <h:inputTextarea
-                                id="descripcion"
-                                value="#{emprendimientoBean.descripcion}"
-                                rows="4"/>
+                        </ui:fragment>
 
-                    </div>
+                        <ui:fragment
+                                rendered="#{empty emprendimientoBean.logoUrl}">
 
-                    <br/>
+                            <span>
+                                #{emprendimientoBean.negocioActual.nombre.substring(0, 1)}
+                            </span>
 
-                    <div class="form-group">
+                        </ui:fragment>
+
+                    </h:panelGroup>
+
+                    <div class="seller-form-field">
 
                         <h:outputLabel
                                 for="contacto"
@@ -109,111 +318,63 @@
 
                     </div>
 
-                    <div class="button-row">
+                    <div class="seller-form-field">
 
-                        <h:commandButton
-                                value="#{emprendimientoBean.editando
-                                ? 'Guardar cambios'
-                                : 'Crear negocio'}"
-                                styleClass="btn btn-primary"
-                                action="#{emprendimientoBean.guardar}">
+                        <h:outputLabel
+                                for="descripcion"
+                                value="Descripción"/>
 
-                            <f:ajax
-                                    execute="@form"
-                                    render="@form"/>
-
-                        </h:commandButton>
-
-                        <h:commandButton
-                                value="Cancelar"
-                                styleClass="btn btn-secondary"
-                                rendered="#{emprendimientoBean.editando}"
-                                action="#{emprendimientoBean.cancelarEdicion}"
-                                immediate="true">
-
-                            <f:ajax
-                                    execute="@this"
-                                    render="@form"/>
-
-                        </h:commandButton>
+                        <h:inputTextarea
+                                id="descripcion"
+                                value="#{emprendimientoBean.descripcion}"
+                                rows="5"/>
 
                     </div>
 
-                </h:form>
+                    <div class="seller-form-actions">
 
-            </section>
+                        <h:commandButton
+                                value="Guardar cambios"
+                                action="#{emprendimientoBean.guardarCambios}"
+                                styleClass="market-primary-button"/>
 
-            <section class="table-panel">
+                    </div>
 
-                <div class="table-wrap">
+                </section>
 
-                    <h:dataTable
-                            value="#{emprendimientoBean.emprendimientosPropios}"
-                            var="e"
-                            styleClass="data-table">
+            </h:form>
 
-                        <h:column>
+            <!-- CERRAR SESIÓN -->
 
-                            <f:facet name="header">
-                                Negocio
-                            </f:facet>
+            <h:form styleClass="entrepreneur-logout-section">
 
-                            <strong>#{e.nombre}</strong>
+                <h:commandButton
+                        value="Cerrar sesión"
+                        action="#{authBean.cerrarSesion}"
+                        styleClass="entrepreneur-logout-button"/>
 
-                        </h:column>
+            </h:form>
 
-                        <h:column>
+        </h:panelGroup>
 
-                            <f:facet name="header">
-                                Contacto
-                            </f:facet>
+        <h:panelGroup
+                rendered="#{empty emprendimientoBean.negocioActual}"
+                layout="block"
+                styleClass="market-empty-state">
 
-                            #{e.contacto}
+            <div class="market-empty-icon">
+                !
+            </div>
 
-                        </h:column>
+            <h2>
+                Tu cuenta no tiene un negocio asociado
+            </h2>
 
-                        <h:column>
+            <p>
+                Comunícate con la administración.
+            </p>
 
-                            <f:facet name="header">
-                                Estado
-                            </f:facet>
-
-                            #{e.activo ? 'Activo' : 'Inactivo'}
-
-                        </h:column>
-
-                        <h:column>
-
-                            <f:facet name="header">
-                                AcciÃ³n
-                            </f:facet>
-
-                            <h:form>
-
-                                <h:commandButton
-                                        value="Editar"
-                                        styleClass="btn btn-secondary btn-small"
-                                        action="#{emprendimientoBean.editar(
-                                        e.idEmprendimiento
-                                        )}">
-
-                                    <f:ajax
-                                            execute="@this"
-                                            render=":emprendimientosForm"/>
-
-                                </h:commandButton>
-
-                            </h:form>
-
-                        </h:column>
-
-                    </h:dataTable>
-
-                </div>
-
-            </section>
-
-        </div>
+        </h:panelGroup>
 
     </ui:define>
 

@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Ventas - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="entrepreneur-page-header">
+
+            <div>
+
+                <span class="market-kicker">
+                    Historial comercial
+                </span>
+
+                <h1>
+                    Ventas
+                </h1>
+
+                <p>
+                    Consulta tus pedidos completados
+                    y los productos que formaron parte
+                    de cada venta.
+                </p>
+
+            </div>
+
+        </section>
+
+        <h:form id="ventasFiltro">
+
+            <section class="entrepreneur-period-bar">
+
+                <div>
+
+                    <span>
+                        Período
+                    </span>
+
+                    <strong>
+                        #{pedidoBean.periodoSeleccionado}
+                    </strong>
+
+                </div>
+
+                <div class="entrepreneur-period-controls">
+
+                    <h:selectOneMenu
+                            value="#{pedidoBean.mesSeleccionado}">
+
+                        <f:selectItem itemValue="1" itemLabel="Enero"/>
+                        <f:selectItem itemValue="2" itemLabel="Febrero"/>
+                        <f:selectItem itemValue="3" itemLabel="Marzo"/>
+                        <f:selectItem itemValue="4" itemLabel="Abril"/>
+                        <f:selectItem itemValue="5" itemLabel="Mayo"/>
+                        <f:selectItem itemValue="6" itemLabel="Junio"/>
+                        <f:selectItem itemValue="7" itemLabel="Julio"/>
+                        <f:selectItem itemValue="8" itemLabel="Agosto"/>
+                        <f:selectItem itemValue="9" itemLabel="Septiembre"/>
+                        <f:selectItem itemValue="10" itemLabel="Octubre"/>
+                        <f:selectItem itemValue="11" itemLabel="Noviembre"/>
+                        <f:selectItem itemValue="12" itemLabel="Diciembre"/>
+
+                        <f:ajax
+                                execute="@this"
+                                render="contenidoVentas"/>
+
+                    </h:selectOneMenu>
+
+                    <h:selectOneMenu
+                            value="#{pedidoBean.anioSeleccionado}">
+
+                        <f:selectItems
+                                value="#{pedidoBean.aniosDisponibles}"
+                                var="anio"
+                                itemValue="#{anio}"
+                                itemLabel="#{anio}"/>
+
+                        <f:ajax
+                                execute="@this"
+                                render="contenidoVentas"/>
+
+                    </h:selectOneMenu>
+
+                </div>
+
+            </section>
+
+            <h:panelGroup
+                    id="contenidoVentas"
+                    layout="block">
+
+                <section class="entrepreneur-stats entrepreneur-stats-two">
+
+                    <article class="entrepreneur-stat">
+
+                        <span>
+                            Ventas totales
+                        </span>
+
+                        <h:outputText
+                                value="#{pedidoBean.totalVentasHistoricas}"
+                                styleClass="entrepreneur-stat-money">
+
+                            <f:convertNumber
+                                    type="currency"
+                                    currencySymbol="$"/>
+
+                        </h:outputText>
+
+                        <small>
+                            Todas tus ventas desde que formas parte de nosotros.
+                        </small>
+
+                    </article>
+
+                    <article class="entrepreneur-stat">
+
+                        <span>
+                            #{pedidoBean.periodoSeleccionado}
+                        </span>
+
+                        <h:outputText
+                                value="#{pedidoBean.totalVentasPeriodoSeleccionado}"
+                                styleClass="entrepreneur-stat-money">
+
+                            <f:convertNumber
+                                    type="currency"
+                                    currencySymbol="$"/>
+
+                        </h:outputText>
+
+                        <small>
+                            #{pedidoBean.cantidadVentasPeriodoSeleccionado}
+                            ventas completadas.
+                        </small>
+
+                    </article>
+
+                </section>
+
+                <section class="entrepreneur-panel entrepreneur-section-space">
+
+                    <div class="entrepreneur-panel-header">
+
+                        <div>
+
+                            <span class="market-kicker">
+                                #{pedidoBean.periodoSeleccionado}
+                            </span>
+
+                            <h2>
+                                Ventas completadas
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                    <h:panelGroup
+                            rendered="#{not empty pedidoBean.ventasPeriodoSeleccionado}"
+                            layout="block"
+                            styleClass="entrepreneur-sales-list">
+
+                        <ui:repeat
+                                value="#{pedidoBean.ventasPeriodoSeleccionado}"
+                                var="p">
+
+                            <article class="entrepreneur-sale-card">
+
+                                <div class="entrepreneur-sale-header">
+
+                                    <div>
+
+                                        <span>
+                                            Pedido ##{p.idPedido}
+                                        </span>
+
+                                        <strong>
+                                            #{p.cliente.nombre}
+                                            #{p.cliente.apellido}
+                                        </strong>
+
+                                        <small>
+                                            #{pedidoBean.formatearFecha(
+                                                    p.fechaCompletado
+                                                    )}
+                                        </small>
+
+                                    </div>
+
+                                    <h:outputText
+                                            value="#{p.total}"
+                                            styleClass="entrepreneur-sale-total">
+
+                                        <f:convertNumber
+                                                type="currency"
+                                                currencySymbol="$"/>
+
+                                    </h:outputText>
+
+                                </div>
+
+                                <div class="entrepreneur-sale-items">
+
+                                    <ui:repeat
+                                            value="#{p.detalles}"
+                                            var="d">
+
+                                        <div class="entrepreneur-sale-item">
+
+                                            <div>
+
+                                                <strong>
+                                                    #{d.publicacion.nombre}
+                                                </strong>
+
+                                                <span>
+                                                    #{d.cantidad}
+                                                    ×
+
+                                                    <h:outputText
+                                                            value="#{d.precioUnitario}">
+
+                                                        <f:convertNumber
+                                                                type="currency"
+                                                                currencySymbol="$"/>
+
+                                                    </h:outputText>
+
+                                                </span>
+
+                                            </div>
+
+                                            <h:outputText
+                                                    value="#{d.subtotal}">
+
+                                                <f:convertNumber
+                                                        type="currency"
+                                                        currencySymbol="$"/>
+
+                                            </h:outputText>
+
+                                        </div>
+
+                                    </ui:repeat>
+
+                                </div>
+
+                            </article>
+
+                        </ui:repeat>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup
+                            rendered="#{empty pedidoBean.ventasPeriodoSeleccionado}"
+                            layout="block"
+                            styleClass="market-empty-state">
+
+                        <div class="market-empty-icon">
+                            $
+                        </div>
+
+                        <h2>
+                            Sin ventas en este período
+                        </h2>
+
+                        <p>
+                            Selecciona otro mes o año.
+                        </p>
+
+                    </h:panelGroup>
+
+                </section>
+
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

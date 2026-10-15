@@ -38,7 +38,9 @@ public class CategoriaServiceImpl
         return categoriaDAO
                 .listarTodos()
                 .stream()
-                .filter(Categoria::isActivo)
+                .filter(
+                        Categoria::isActivo
+                )
                 .toList();
     }
 
@@ -46,6 +48,19 @@ public class CategoriaServiceImpl
     public void crear(
             String nombre,
             String descripcion) {
+
+        crear(
+                nombre,
+                descripcion,
+                true
+        );
+    }
+
+    @Override
+    public void crear(
+            String nombre,
+            String descripcion,
+            boolean manejaStock) {
 
         String nombreNormalizado =
                 validarYNormalizarNombre(
@@ -62,7 +77,8 @@ public class CategoriaServiceImpl
                         nombreNormalizado,
                         normalizarOpcional(
                                 descripcion
-                        )
+                        ),
+                        manejaStock
                 );
 
         categoriaDAO.crear(
@@ -76,7 +92,35 @@ public class CategoriaServiceImpl
             String nombre,
             String descripcion) {
 
+        Categoria actual =
+                categoriaDAO
+                        .buscarPorId(
+                                idCategoria
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "La categoría no existe."
+                                        )
+                        );
+
+        actualizar(
+                idCategoria,
+                nombre,
+                descripcion,
+                actual.isManejaStock()
+        );
+    }
+
+    @Override
+    public void actualizar(
+            Integer idCategoria,
+            String nombre,
+            String descripcion,
+            boolean manejaStock) {
+
         if (idCategoria == null) {
+
             throw new IllegalArgumentException(
                     "La categoría es obligatoria."
             );
@@ -92,10 +136,11 @@ public class CategoriaServiceImpl
                         .buscarPorId(
                                 idCategoria
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "La categoría no existe."
-                                )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "La categoría no existe."
+                                        )
                         );
 
         validarDuplicado(
@@ -111,6 +156,10 @@ public class CategoriaServiceImpl
                 normalizarOpcional(
                         descripcion
                 )
+        );
+
+        categoria.setManejaStock(
+                manejaStock
         );
 
         if (!categoriaDAO.actualizar(
@@ -129,6 +178,7 @@ public class CategoriaServiceImpl
             boolean activo) {
 
         if (idCategoria == null) {
+
             throw new IllegalArgumentException(
                     "La categoría es obligatoria."
             );
@@ -139,10 +189,11 @@ public class CategoriaServiceImpl
                         .buscarPorId(
                                 idCategoria
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "La categoría no existe."
-                                )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "La categoría no existe."
+                                        )
                         );
 
         categoria.setActivo(
@@ -192,16 +243,21 @@ public class CategoriaServiceImpl
                 categoriaDAO
                         .listarTodos()
                         .stream()
-                        .anyMatch(c ->
-                                c.getNombre() != null
-                                        && c.getNombre()
-                                        .equalsIgnoreCase(
-                                                nombre
+                        .anyMatch(
+                                categoria ->
+                                        categoria.getNombre() != null
+                                                && categoria
+                                                .getNombre()
+                                                .equalsIgnoreCase(
+                                                        nombre
+                                                )
+                                                && (
+                                                idActual == null
+                                                        || !idActual.equals(
+                                                        categoria
+                                                                .getIdCategoria()
+                                                )
                                         )
-                                        && (idActual == null
-                                        || !idActual.equals(
-                                        c.getIdCategoria()
-                                ))
                         );
 
         if (existe) {

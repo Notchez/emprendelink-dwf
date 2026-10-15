@@ -15,6 +15,14 @@ public interface PedidoService {
             Integer idEmprendedor
     );
 
+    List<Pedido> listarActivosRecibidos(
+            Integer idEmprendedor
+    );
+
+    List<Pedido> listarCompletados(
+            Integer idEmprendedor
+    );
+
     Pedido buscarVisibleParaUsuario(
             Integer idPedido,
             Integer idUsuario

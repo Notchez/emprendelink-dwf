@@ -1,12 +1,12 @@
 # Rutas — EmprendeLink DWF
 
-Context path local:
+## Context path
 
 ```text
 /emprendelink
 ```
 
-URL base:
+Ejemplo local:
 
 ```text
 http://localhost:8080/emprendelink
@@ -22,7 +22,15 @@ http://localhost:8080/emprendelink
 /login.xhtml
 ```
 
-Permite autenticarse.
+Función:
+
+- inicio de sesión.
+
+URL:
+
+```text
+http://localhost:8080/emprendelink/login.xhtml
+```
 
 ---
 
@@ -32,14 +40,14 @@ Permite autenticarse.
 /registro.xhtml
 ```
 
-Permite crear:
+Permite registrar:
 
 ```text
 ROLE_CLIENTE
 ROLE_EMPRENDEDOR
 ```
 
-No permite crear:
+No permite registrar:
 
 ```text
 ROLE_ADMIN
@@ -53,17 +61,24 @@ ROLE_ADMIN
 /catalogo/index.xhtml
 ```
 
-Muestra publicaciones visibles.
+Función:
+
+- consultar publicaciones visibles;
+- búsqueda;
+- filtros;
+- navegación al detalle.
 
 ---
 
 ## Detalle del catálogo
 
 ```text
-/catalogo/detalle.xhtml?id={idPublicacion}
+/catalogo/detalle.xhtml
 ```
 
-Muestra una publicación activa.
+Función:
+
+- mostrar información de una publicación visible.
 
 ---
 
@@ -75,7 +90,7 @@ Muestra una publicación activa.
 /inicio.xhtml
 ```
 
-Requiere sesión válida.
+Requiere sesión.
 
 Protección:
 
@@ -83,23 +98,41 @@ Protección:
 AutenticacionFilter
 ```
 
-La navegación presentada depende del rol del usuario.
-
 ---
 
 # 3. Administración
 
-Protección general:
+Todas las rutas:
 
 ```text
-/admin/* → ROLE_ADMIN
+/admin/*
 ```
 
-Filtro:
+requieren:
+
+```text
+ROLE_ADMIN
+```
+
+Protección:
 
 ```text
 AdminFilter
 ```
+
+---
+
+## Inicio administrativo
+
+```text
+/admin/inicio.xhtml
+```
+
+Función:
+
+- entrada al backoffice.
+
+---
 
 ## Usuarios
 
@@ -107,11 +140,11 @@ AdminFilter
 /admin/usuarios.xhtml
 ```
 
-Funciones:
+Función:
 
 - listar usuarios;
 - activar/desactivar;
-- impedir que el administrador desactive su propia cuenta.
+- consultar roles y estado.
 
 ---
 
@@ -121,12 +154,13 @@ Funciones:
 /admin/categorias.xhtml
 ```
 
-Funciones:
+Función:
 
 - crear;
-- editar;
 - listar;
-- activar/desactivar.
+- editar;
+- activar/desactivar;
+- operaciones AJAX.
 
 ---
 
@@ -136,43 +170,83 @@ Funciones:
 /admin/emprendimientos.xhtml
 ```
 
-Funciones:
+Función:
 
-- listar emprendimientos;
-- consultar propietario;
-- activar/desactivar.
+- listar negocios;
+- filtrar;
+- acceder al detalle administrativo.
 
 ---
 
-## Publicaciones
+## Detalle de negocio
 
 ```text
-/admin/publicaciones.xhtml
+/admin/negocio.xhtml
 ```
 
-Funciones:
+Función:
 
-- listar publicaciones;
-- consultar emprendimiento;
+- consultar información del emprendimiento;
 - consultar propietario;
-- consultar categoría;
-- activar/desactivar.
+- consultar plan;
+- cambiar plan;
+- activar/desactivar;
+- consultar ventas completadas;
+- consultar pedidos relacionados.
+
+---
+
+## Planes
+
+```text
+/admin/planes.xhtml
+```
+
+Función:
+
+- crear planes;
+- editar;
+- activar/desactivar;
+- consultar máximo de publicaciones;
+- consultar tasa de comisión.
+
+Planes oficiales:
+
+```text
+Básico
+Estándar
+Premium
+Max
+```
+
+---
+
+## Comisiones
+
+```text
+/admin/comisiones.xhtml
+```
+
+Función:
+
+- consultar pedidos completados;
+- ventas;
+- comisiones;
+- filtrar por negocio;
+- filtrar por mes;
+- filtrar por año.
 
 ---
 
 # 4. Emprendedor
 
-Protección:
+Estas rutas requieren:
 
 ```text
 ROLE_EMPRENDEDOR
 ```
 
-Filtro:
-
-```text
-EmprendedorFilter
-```
+---
 
 ## Mis emprendimientos
 
@@ -180,13 +254,17 @@ EmprendedorFilter
 /emprendimientos/index.xhtml
 ```
 
-Funciones:
+Protección:
 
+```text
+EmprendedorFilter
+```
+
+Función:
+
+- listar emprendimientos propios;
 - crear;
-- listar propios;
-- editar propios.
-
-El emprendedor no modifica directamente el estado administrativo de su emprendimiento.
+- editar.
 
 ---
 
@@ -196,29 +274,34 @@ El emprendedor no modifica directamente el estado administrativo de su emprendim
 /publicaciones/index.xhtml
 ```
 
-Funciones:
+Protección:
 
+```text
+EmprendedorFilter
+PublicacionFilter
+```
+
+Función:
+
+- listar publicaciones propias;
 - crear;
 - editar;
-- listar propias;
 - activar/desactivar;
-- seleccionar emprendimiento;
-- seleccionar categoría.
+- gestionar precio;
+- gestionar stock;
+- seleccionar categoría;
+- seleccionar emprendimiento.
+
+La creación y reactivación respetan el límite del plan.
 
 ---
 
 # 5. Pedidos del cliente
 
-Filtro:
-
-```text
-PedidosFilter
-```
-
 ## Nuevo pedido
 
 ```text
-/pedidos/nuevo.xhtml?id={idPublicacion}
+/pedidos/nuevo.xhtml
 ```
 
 Requiere:
@@ -227,7 +310,18 @@ Requiere:
 ROLE_CLIENTE
 ```
 
-Permite crear un pedido a partir de una publicación visible.
+Protección:
+
+```text
+PedidosFilter
+```
+
+Función:
+
+- seleccionar cantidad;
+- crear pedido;
+- registrar detalle;
+- descontar stock.
 
 ---
 
@@ -243,7 +337,9 @@ Requiere:
 ROLE_CLIENTE
 ```
 
-Muestra únicamente pedidos correspondientes al cliente autenticado.
+Función:
+
+- consultar pedidos propios.
 
 ---
 
@@ -261,63 +357,105 @@ Requiere:
 ROLE_EMPRENDEDOR
 ```
 
-Permite:
-
-- listar pedidos de sus emprendimientos;
-- confirmar;
-- marcar en proceso;
-- completar;
-- cancelar.
-
-La interfaz muestra:
+Protección:
 
 ```text
-EN_PROCESO → En camino
-COMPLETADO → Entregado
+PedidosFilter
 ```
+
+Función:
+
+- consultar pedidos de los emprendimientos propios;
+- gestionar estados permitidos.
 
 ---
 
 # 7. Detalle del pedido
 
 ```text
-/pedidos/detalle.xhtml?id={idPedido}
+/pedidos/detalle.xhtml
 ```
 
-El acceso final también es validado por el Service.
-
-Un usuario únicamente obtiene el pedido cuando tiene visibilidad sobre él.
-
----
-
-# 8. Seguridad de rutas
-
-Resumen:
+La ruta está dentro de:
 
 ```text
-/login.xhtml                     pública
-/registro.xhtml                  pública
-
-/catalogo/*                      pública
-
-/inicio.xhtml                    sesión válida
-
-/admin/*                         ROLE_ADMIN
-
-/emprendimientos/*               ROLE_EMPRENDEDOR
-/publicaciones/*                 ROLE_EMPRENDEDOR
-
-/pedidos/nuevo.xhtml             ROLE_CLIENTE
-/pedidos/mis-pedidos.xhtml       ROLE_CLIENTE
-/pedidos/recibidos.xhtml         ROLE_EMPRENDEDOR
-/pedidos/detalle.xhtml           validación de sesión + visibilidad
+/pedidos/*
 ```
 
-Además del filtro HTTP, los Services aplican validación funcional y propiedad de recursos.
+y por lo tanto requiere una sesión válida.
+
+La visibilidad del pedido se valida además en la lógica de negocio según:
+
+```text
+cliente propietario del pedido
+o
+emprendedor propietario del negocio
+```
+
+La interfaz muestra:
+
+- pedido;
+- negocio;
+- estado;
+- detalles;
+- cantidades;
+- precios;
+- total.
 
 ---
 
-# 9. Errores
+# 8. Matriz de rutas
+
+| Ruta | Visitante | Cliente | Emprendedor | Admin |
+|---|---:|---:|---:|---:|
+| `/login.xhtml` | Sí | Sí | Sí | Sí |
+| `/registro.xhtml` | Sí | Sí | Sí | Sí |
+| `/catalogo/index.xhtml` | Sí | Sí | Sí | Sí |
+| `/catalogo/detalle.xhtml` | Sí | Sí | Sí | Sí |
+| `/inicio.xhtml` | No | Sí | Sí | Sí |
+| `/emprendimientos/index.xhtml` | No | No | Sí | No |
+| `/publicaciones/index.xhtml` | No | No | Sí | No |
+| `/pedidos/nuevo.xhtml` | No | Sí | No | No |
+| `/pedidos/mis-pedidos.xhtml` | No | Sí | No | No |
+| `/pedidos/recibidos.xhtml` | No | No | Sí | No |
+| `/pedidos/detalle.xhtml` | No | Según propiedad | Según propiedad | Según lógica |
+| `/admin/*` | No | No | No | Sí |
+
+---
+
+# 9. Seguridad de rutas
+
+Filtros activos:
+
+```text
+AutenticacionFilter
+AdminFilter
+EmprendedorFilter
+PedidosFilter
+PublicacionFilter
+```
+
+Regla general:
+
+```text
+request
+   ↓
+Filter
+   ↓
+JSF
+   ↓
+Service
+   ↓
+validación de rol/propiedad
+```
+
+Los filtros controlan acceso general.
+
+Los Services continúan validando la autorización sobre recursos concretos.
+
+---
+
+# 10. Errores
 
 Páginas configuradas:
 
@@ -327,29 +465,35 @@ Páginas configuradas:
 /error/500.html
 ```
 
-El `web.xml` define las páginas correspondientes.
+Significado:
+
+```text
+403 → acceso prohibido
+404 → recurso no encontrado
+500 → error interno
+```
 
 ---
 
-# 10. Página inicial de la aplicación
+# 11. Página inicial
 
-El WAR utiliza como página inicial:
+El `welcome-file` configurado es:
 
 ```text
 login.xhtml
 ```
 
-Por lo tanto:
+Por tanto:
 
 ```text
 http://localhost:8080/emprendelink/
 ```
 
-lleva al flujo de autenticación.
+dirige al flujo inicial de autenticación.
 
 ---
 
-# 11. API REST — Fase 3
+# 12. API REST — Fase 3
 
 Ruta base prevista:
 
@@ -357,22 +501,24 @@ Ruta base prevista:
 /api/v1
 ```
 
-Recursos iniciales previstos:
+Recursos iniciales documentados en:
 
 ```text
-GET  /api/v1/emprendimientos
-
-GET  /api/v1/emprendimientos/{id}
-
-GET  /api/v1/publicaciones
-
-GET  /api/v1/publicaciones/{id}
-
-POST /api/v1/pedidos
-
-GET  /api/v1/pedidos/{id}
-
-PUT  /api/v1/pedidos/{id}/estado
+docs/API.md
 ```
 
-Las rutas REST deberán reutilizar la capa Service existente.
+La API deberá reutilizar:
+
+```text
+REST
+ ↓
+Services
+ ↓
+DAO
+ ↓
+JPA
+ ↓
+MySQL
+```
+
+No deberá duplicar reglas de negocio existentes.

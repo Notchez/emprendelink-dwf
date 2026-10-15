@@ -15,10 +15,23 @@ public interface CategoriaService {
             String descripcion
     );
 
+    void crear(
+            String nombre,
+            String descripcion,
+            boolean manejaStock
+    );
+
     void actualizar(
             Integer idCategoria,
             String nombre,
             String descripcion
+    );
+
+    void actualizar(
+            Integer idCategoria,
+            String nombre,
+            String descripcion,
+            boolean manejaStock
     );
 
     void cambiarEstado(

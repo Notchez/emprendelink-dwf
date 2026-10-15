@@ -6,6 +6,7 @@ import emprendelink.dao.PublicacionDAO;
 import emprendelink.dao.UsuarioDAO;
 import emprendelink.model.Categoria;
 import emprendelink.model.Emprendimiento;
+import emprendelink.model.Plan;
 import emprendelink.model.Publicacion;
 import emprendelink.model.Usuario;
 import emprendelink.model.enums.TipoPublicacion;
@@ -16,6 +17,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,8 +27,12 @@ public class PublicacionServiceImpl
         implements PublicacionService {
 
     private static final int MAX_NOMBRE = 150;
+    private static final int MAX_IMAGEN_URL = 1000;
+
     private static final BigDecimal PRECIO_MAXIMO =
-            new BigDecimal("99999999.99");
+            new BigDecimal(
+                    "99999999.99"
+            );
 
     private final PublicacionDAO publicacionDAO;
     private final EmprendimientoDAO emprendimientoDAO;
@@ -40,24 +46,36 @@ public class PublicacionServiceImpl
             CategoriaDAO categoriaDAO,
             UsuarioDAO usuarioDAO) {
 
-        this.publicacionDAO = publicacionDAO;
-        this.emprendimientoDAO = emprendimientoDAO;
-        this.categoriaDAO = categoriaDAO;
-        this.usuarioDAO = usuarioDAO;
+        this.publicacionDAO =
+                publicacionDAO;
+
+        this.emprendimientoDAO =
+                emprendimientoDAO;
+
+        this.categoriaDAO =
+                categoriaDAO;
+
+        this.usuarioDAO =
+                usuarioDAO;
     }
 
     @Override
     public List<Publicacion> listarActivas() {
 
-        return publicacionDAO.listarTodos()
+        return publicacionDAO
+                .listarTodos()
                 .stream()
-                .filter(this::esVisible)
+                .filter(
+                        this::esVisible
+                )
                 .toList();
     }
 
     @Override
     public List<Publicacion> listarTodas() {
-        return publicacionDAO.listarTodos();
+
+        return publicacionDAO
+                .listarTodos();
     }
 
     @Override
@@ -65,17 +83,23 @@ public class PublicacionServiceImpl
             Integer idPropietario) {
 
         if (idPropietario == null) {
+
             throw new IllegalArgumentException(
                     "El propietario es obligatorio."
             );
         }
 
-        return publicacionDAO.listarTodos()
+        return publicacionDAO
+                .listarTodos()
                 .stream()
-                .filter(p -> perteneceA(
-                        p.getEmprendimiento(),
-                        idPropietario
-                ))
+                .filter(
+                        publicacion ->
+                                perteneceA(
+                                        publicacion
+                                                .getEmprendimiento(),
+                                        idPropietario
+                                )
+                )
                 .toList();
     }
 
@@ -88,11 +112,15 @@ public class PublicacionServiceImpl
         }
 
         Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElse(null);
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElse(null);
 
-        return esVisible(publicacion)
+        return esVisible(
+                publicacion
+        )
                 ? publicacion
                 : null;
     }
@@ -104,18 +132,22 @@ public class PublicacionServiceImpl
 
         if (idPublicacion == null
                 || idPropietario == null) {
+
             return null;
         }
 
         Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElse(null);
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElse(null);
 
         if (publicacion == null
                 || !perteneceA(
                 publicacion.getEmprendimiento(),
-                idPropietario)) {
+                idPropietario
+        )) {
 
             return null;
         }
@@ -134,35 +166,94 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
-        validarEmprendedorActivo(idPropietario);
-        validarDatos(tipo, nombre, precio, stock);
+        crear(
+                idPropietario,
+                idEmprendimiento,
+                idCategoria,
+                tipo,
+                nombre,
+                descripcion,
+                precio,
+                stock,
+                null
+        );
+    }
 
-        Emprendimiento emprendimiento =
+    @Override
+    public void crear(
+            Integer idPropietario,
+            Integer idEmprendimiento,
+            Integer idCategoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            String imagenUrl) {
+
+        validarEmprendedorActivo(
+                idPropietario
+        );
+
+        Emprendimiento negocio =
                 obtenerEmprendimientoPropio(
                         idEmprendimiento,
                         idPropietario
                 );
 
-        if (!emprendimiento.isActivo()) {
+        if (!negocio.isActivo()) {
+
             throw new IllegalArgumentException(
-                    "El emprendimiento está inactivo."
+                    "El negocio está inactivo."
             );
         }
 
         Categoria categoria =
-                obtenerCategoriaActiva(idCategoria);
+                resolverCategoria(
+                        negocio,
+                        idCategoria
+                );
 
-        Publicacion publicacion = new Publicacion(
-                emprendimiento,
-                categoria,
-                tipo,
-                nombre.trim(),
-                normalizarOpcional(descripcion),
+        TipoPublicacion tipoResuelto =
+                resolverTipo(
+                        negocio,
+                        categoria,
+                        tipo
+                );
+
+        validarDatos(
+                tipoResuelto,
+                nombre,
                 precio,
-                normalizarStock(tipo, stock)
+                stock
         );
 
-        publicacionDAO.crear(publicacion);
+        validarLimitePublicacionesActivas(
+                negocio
+        );
+
+        Publicacion publicacion =
+                new Publicacion(
+                        negocio,
+                        categoria,
+                        tipoResuelto,
+                        nombre.trim(),
+                        normalizarOpcional(
+                                descripcion
+                        ),
+                        normalizarImagenUrl(
+                                imagenUrl
+                        ),
+                        precio,
+                        normalizarStock(
+                                tipoResuelto,
+                                stock
+                        )
+                );
+
+        publicacionDAO.crear(
+                publicacion
+        );
     }
 
     @Override
@@ -177,8 +268,44 @@ public class PublicacionServiceImpl
             BigDecimal precio,
             Integer stock) {
 
-        validarEmprendedorActivo(idPropietario);
-        validarDatos(tipo, nombre, precio, stock);
+        Publicacion actual =
+                buscarPropiaPorId(
+                        idPublicacion,
+                        idPropietario
+                );
+
+        actualizar(
+                idPropietario,
+                idPublicacion,
+                idEmprendimiento,
+                idCategoria,
+                tipo,
+                nombre,
+                descripcion,
+                precio,
+                stock,
+                actual == null
+                        ? null
+                        : actual.getImagenUrl()
+        );
+    }
+
+    @Override
+    public void actualizar(
+            Integer idPropietario,
+            Integer idPublicacion,
+            Integer idEmprendimiento,
+            Integer idCategoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            String imagenUrl) {
+
+        validarEmprendedorActivo(
+                idPropietario
+        );
 
         Publicacion publicacion =
                 buscarPropiaPorId(
@@ -187,42 +314,89 @@ public class PublicacionServiceImpl
                 );
 
         if (publicacion == null) {
+
             throw new IllegalArgumentException(
                     "La publicación no existe o no te pertenece."
             );
         }
 
-        Emprendimiento emprendimiento =
+        Emprendimiento negocio =
                 obtenerEmprendimientoPropio(
                         idEmprendimiento,
                         idPropietario
                 );
 
         if (!Objects.equals(
-                publicacion.getEmprendimiento()
+                publicacion
+                        .getEmprendimiento()
                         .getIdEmprendimiento(),
-                emprendimiento.getIdEmprendimiento())) {
+                negocio.getIdEmprendimiento()
+        )) {
 
             throw new IllegalArgumentException(
-                    "No se permite trasladar la publicación a otro emprendimiento."
+                    "No se permite trasladar la publicación a otro negocio."
             );
         }
 
         Categoria categoria =
-                obtenerCategoriaActiva(idCategoria);
+                resolverCategoria(
+                        negocio,
+                        idCategoria
+                );
 
-        publicacion.setCategoria(categoria);
-        publicacion.setTipo(tipo);
-        publicacion.setNombre(nombre.trim());
+        TipoPublicacion tipoResuelto =
+                resolverTipo(
+                        negocio,
+                        categoria,
+                        tipo
+                );
+
+        validarDatos(
+                tipoResuelto,
+                nombre,
+                precio,
+                stock
+        );
+
+        publicacion.setCategoria(
+                categoria
+        );
+
+        publicacion.setTipo(
+                tipoResuelto
+        );
+
+        publicacion.setNombre(
+                nombre.trim()
+        );
+
         publicacion.setDescripcion(
-                normalizarOpcional(descripcion)
-        );
-        publicacion.setPrecio(precio);
-        publicacion.setStock(
-                normalizarStock(tipo, stock)
+                normalizarOpcional(
+                        descripcion
+                )
         );
 
-        if (!publicacionDAO.actualizar(publicacion)) {
+        publicacion.setImagenUrl(
+                normalizarImagenUrl(
+                        imagenUrl
+                )
+        );
+
+        publicacion.setPrecio(
+                precio
+        );
+
+        publicacion.setStock(
+                normalizarStock(
+                        tipoResuelto,
+                        stock
+                )
+        );
+
+        if (!publicacionDAO.actualizar(
+                publicacion
+        )) {
+
             throw new IllegalStateException(
                     "No se pudo actualizar la publicación."
             );
@@ -236,20 +410,28 @@ public class PublicacionServiceImpl
             boolean activo) {
 
         Usuario usuario =
-                obtenerUsuarioActivo(idUsuario);
-
-        Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "La publicación no existe."
-                        )
+                obtenerUsuarioActivo(
+                        idUsuario
                 );
 
-        TipoRol rol = usuario.getRol() != null
-                ? usuario.getRol().getNombre()
-                : null;
+        Publicacion publicacion =
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "La publicación no existe."
+                                        )
+                        );
+
+        TipoRol rol =
+                usuario.getRol() != null
+                        ? usuario
+                        .getRol()
+                        .getNombre()
+                        : null;
 
         boolean esAdmin =
                 rol == TipoRol.ROLE_ADMIN;
@@ -257,43 +439,123 @@ public class PublicacionServiceImpl
         boolean esPropietario =
                 rol == TipoRol.ROLE_EMPRENDEDOR
                         && perteneceA(
-                        publicacion.getEmprendimiento(),
+                        publicacion
+                                .getEmprendimiento(),
                         usuario.getIdUsuario()
                 );
 
-        if (!esAdmin && !esPropietario) {
+        if (!esAdmin
+                && !esPropietario) {
+
             throw new IllegalArgumentException(
                     "No tienes permiso para cambiar esta publicación."
             );
         }
 
-        publicacion.setActivo(activo);
+        if (activo
+                && !publicacion.isActivo()) {
 
-        if (!publicacionDAO.actualizar(publicacion)) {
+            validarLimitePublicacionesActivas(
+                    publicacion
+                            .getEmprendimiento()
+            );
+        }
+
+        publicacion.setActivo(
+                activo
+        );
+
+        if (!publicacionDAO.actualizar(
+                publicacion
+        )) {
+
             throw new IllegalStateException(
                     "No se pudo cambiar el estado."
             );
         }
     }
 
+    private Categoria resolverCategoria(
+            Emprendimiento negocio,
+            Integer idCategoriaAlternativa) {
+
+        Integer idCategoria =
+                negocio.getCategoria() != null
+                        ? negocio
+                        .getCategoria()
+                        .getIdCategoria()
+                        : idCategoriaAlternativa;
+
+        if (idCategoria == null) {
+
+            throw new IllegalArgumentException(
+                    "El negocio no tiene una categoría asignada."
+            );
+        }
+
+        Categoria categoria =
+                categoriaDAO
+                        .buscarPorId(
+                                idCategoria
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "La categoría no existe."
+                                        )
+                        );
+
+        if (!categoria.isActivo()) {
+
+            throw new IllegalArgumentException(
+                    "La categoría del negocio está inactiva."
+            );
+        }
+
+        return categoria;
+    }
+
+    private TipoPublicacion resolverTipo(
+            Emprendimiento negocio,
+            Categoria categoria,
+            TipoPublicacion alternativa) {
+
+        if (negocio.getCategoria() != null) {
+
+            return categoria.isManejaStock()
+                    ? TipoPublicacion.PRODUCTO
+                    : TipoPublicacion.SERVICIO;
+        }
+
+        return alternativa == null
+                ? TipoPublicacion.PRODUCTO
+                : alternativa;
+    }
+
     private Usuario obtenerUsuarioActivo(
             Integer idUsuario) {
 
         if (idUsuario == null) {
+
             throw new IllegalArgumentException(
                     "El usuario es obligatorio."
             );
         }
 
-        Usuario usuario = usuarioDAO.buscarPorId(
-                idUsuario
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "El usuario no existe."
-                )
-        );
+        Usuario usuario =
+                usuarioDAO
+                        .buscarPorId(
+                                idUsuario
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "El usuario no existe."
+                                        )
+                        );
 
         if (!usuario.isActivo()) {
+
             throw new IllegalArgumentException(
                     "El usuario está inactivo."
             );
@@ -306,10 +568,14 @@ public class PublicacionServiceImpl
             Integer idUsuario) {
 
         Usuario usuario =
-                obtenerUsuarioActivo(idUsuario);
+                obtenerUsuarioActivo(
+                        idUsuario
+                );
 
         if (usuario.getRol() == null
-                || usuario.getRol().getNombre()
+                || usuario
+                .getRol()
+                .getNombre()
                 != TipoRol.ROLE_EMPRENDEDOR) {
 
             throw new IllegalArgumentException(
@@ -324,66 +590,84 @@ public class PublicacionServiceImpl
 
         if (idEmprendimiento == null
                 || idPropietario == null) {
+
             throw new IllegalArgumentException(
-                    "Falta identificar el emprendimiento."
+                    "Falta identificar el negocio."
             );
         }
 
-        Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
-                        idEmprendimiento
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El emprendimiento no existe."
+        Emprendimiento negocio =
+                emprendimientoDAO
+                        .buscarPorId(
+                                idEmprendimiento
                         )
-                );
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "El negocio no existe."
+                                        )
+                        );
 
         if (!perteneceA(
-                emprendimiento,
-                idPropietario)) {
+                negocio,
+                idPropietario
+        )) {
 
             throw new IllegalArgumentException(
-                    "El emprendimiento no te pertenece."
+                    "El negocio no te pertenece."
             );
         }
 
-        return emprendimiento;
+        return negocio;
     }
 
-    private Categoria obtenerCategoriaActiva(
-            Integer idCategoria) {
+    private void validarLimitePublicacionesActivas(
+            Emprendimiento negocio) {
 
-        if (idCategoria == null) {
+        Plan plan =
+                negocio.getPlan();
+
+        if (plan == null
+                || !plan.isActivo()) {
+
             throw new IllegalArgumentException(
-                    "Seleccione una categoría."
+                    "El negocio no tiene un plan activo."
             );
         }
 
-        Categoria categoria = categoriaDAO.buscarPorId(
-                idCategoria
-        ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "La categoría no existe."
-                )
-        );
+        Integer maximo =
+                plan.getMaxProductosActivos();
 
-        if (!categoria.isActivo()) {
-            throw new IllegalArgumentException(
-                    "La categoría está inactiva."
+        long activas =
+                publicacionDAO
+                        .listarPorEmprendimiento(
+                                negocio
+                                        .getIdEmprendimiento()
+                        )
+                        .stream()
+                        .filter(
+                                Publicacion::isActivo
+                        )
+                        .count();
+
+        if (maximo == null
+                || activas >= maximo) {
+
+            throw new IllegalStateException(
+                    "Has alcanzado el máximo de publicaciones activas de tu plan."
             );
         }
-
-        return categoria;
     }
 
     private boolean perteneceA(
-            Emprendimiento emprendimiento,
+            Emprendimiento negocio,
             Integer idPropietario) {
 
-        return emprendimiento != null
-                && emprendimiento.getPropietario() != null
+        return negocio != null
+                && negocio.getPropietario()
+                != null
                 && Objects.equals(
-                emprendimiento.getPropietario()
+                negocio.getPropietario()
                         .getIdUsuario(),
                 idPropietario
         );
@@ -395,18 +679,23 @@ public class PublicacionServiceImpl
         if (publicacion == null
                 || !publicacion.isActivo()
                 || publicacion.getCategoria() == null
-                || !publicacion.getCategoria().isActivo()) {
+                || !publicacion
+                .getCategoria()
+                .isActivo()) {
 
             return false;
         }
 
-        Emprendimiento emprendimiento =
+        Emprendimiento negocio =
                 publicacion.getEmprendimiento();
 
-        return emprendimiento != null
-                && emprendimiento.isActivo()
-                && emprendimiento.getPropietario() != null
-                && emprendimiento.getPropietario().isActivo();
+        return negocio != null
+                && negocio.isActivo()
+                && negocio.getPropietario()
+                != null
+                && negocio
+                .getPropietario()
+                .isActivo();
     }
 
     private void validarDatos(
@@ -416,19 +705,23 @@ public class PublicacionServiceImpl
             Integer stock) {
 
         if (tipo == null) {
+
             throw new IllegalArgumentException(
-                    "Seleccione el tipo de publicación."
+                    "La publicación no tiene una configuración válida."
             );
         }
 
         if (nombre == null
                 || nombre.isBlank()) {
+
             throw new IllegalArgumentException(
                     "El nombre es obligatorio."
             );
         }
 
-        if (nombre.trim().length() > MAX_NOMBRE) {
+        if (nombre.trim().length()
+                > MAX_NOMBRE) {
+
             throw new IllegalArgumentException(
                     "El nombre no puede superar 150 caracteres."
             );
@@ -436,15 +729,21 @@ public class PublicacionServiceImpl
 
         if (precio == null
                 || precio.signum() < 0
-                || precio.compareTo(PRECIO_MAXIMO) > 0
-                || precio.stripTrailingZeros().scale() > 2) {
+                || precio.compareTo(
+                PRECIO_MAXIMO
+        ) > 0
+                || precio
+                .stripTrailingZeros()
+                .scale() > 2) {
 
             throw new IllegalArgumentException(
-                    "El precio debe estar entre 0.00 y 99999999.99 con máximo 2 decimales."
+                    "El precio debe ser válido y usar máximo dos decimales."
             );
         }
 
-        if (stock != null && stock < 0) {
+        if (stock != null
+                && stock < 0) {
+
             throw new IllegalArgumentException(
                     "El stock no puede ser negativo."
             );
@@ -455,17 +754,72 @@ public class PublicacionServiceImpl
             TipoPublicacion tipo,
             Integer stock) {
 
-        if (tipo == TipoPublicacion.SERVICIO) {
+        if (tipo
+                == TipoPublicacion.SERVICIO) {
+
             return 0;
         }
 
-        return stock == null ? 0 : stock;
+        return stock == null
+                ? 0
+                : stock;
+    }
+
+    private String normalizarImagenUrl(
+            String imagenUrl) {
+
+        String valor =
+                normalizarOpcional(
+                        imagenUrl
+                );
+
+        if (valor == null) {
+            return null;
+        }
+
+        if (valor.length()
+                > MAX_IMAGEN_URL) {
+
+            throw new IllegalArgumentException(
+                    "La URL de la imagen no puede superar 1000 caracteres."
+            );
+        }
+
+        try {
+
+            URI uri =
+                    URI.create(
+                            valor
+                    );
+
+            String esquema =
+                    uri.getScheme();
+
+            if (esquema == null
+                    || (
+                    !esquema.equalsIgnoreCase("http")
+                            && !esquema.equalsIgnoreCase("https")
+            )) {
+
+                throw new IllegalArgumentException();
+            }
+
+        } catch (IllegalArgumentException e) {
+
+            throw new IllegalArgumentException(
+                    "La imagen debe utilizar una URL http o https."
+            );
+        }
+
+        return valor;
     }
 
     private String normalizarOpcional(
             String valor) {
 
-        if (valor == null || valor.isBlank()) {
+        if (valor == null
+                || valor.isBlank()) {
+
             return null;
         }
 

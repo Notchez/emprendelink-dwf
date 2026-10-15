@@ -2,42 +2,62 @@
 
 # Fase 1 — Sprint I
 
-Se construyó el primer incremento funcional utilizando:
+## Objetivo
 
-- Java Web;
-- JDBC;
-- Servlets;
-- JSP;
-- JSTL;
+Construir el primer incremento funcional utilizando Java Web y arquitectura MVC.
+
+Tecnologías utilizadas durante esa fase:
+
+```text
+Java
+Servlets
+JSP/JSTL
+JDBC
+MySQL
+```
+
+La Fase 1 permitió establecer:
+
+- modelo inicial;
+- contratos DAO;
 - Services;
-- DAO;
-- MySQL;
-- arquitectura MVC.
-
-Esta versión permitió validar:
-
-- dominio;
-- esquema inicial de base de datos;
-- flujo petición-respuesta;
-- acceso a datos;
-- primeras funcionalidades.
+- autenticación inicial;
+- estructura MVC;
+- conexión con base de datos;
+- repositorio y flujo de trabajo.
 
 ---
 
 # Fase 2 — Sprint II
 
-La aplicación evolucionó hacia una arquitectura empresarial basada en Jakarta EE y persistencia administrada.
+## Objetivo
+
+Evolucionar EmprendeLink hacia una aplicación empresarial basada en componentes JSF y persistencia JPA administrada.
+
+Stack principal:
+
+```text
+Java 25
+Jakarta EE 11
+Jakarta Faces 4.1
+Jakarta CDI 4.1
+Jakarta Persistence 3.2
+Jakarta Transactions
+EclipseLink
+GlassFish 8.0.4
+MySQL 8.x
+```
 
 ---
 
 ## Arquitectura
 
-Arquitectura actual:
+Arquitectura activa:
 
 ```text
 XHTML / JSF
       ↓
-Managed Beans CDI
+Managed Beans
       ↓
 Services
       ↓
@@ -54,31 +74,20 @@ GlassFish DataSource
 MySQL
 ```
 
-Se retiraron del runtime:
+Se retiraron del runtime las implementaciones paralelas utilizadas en Fase 1:
 
-- implementaciones JDBC anteriores;
-- Servlets de Fase 1;
-- JSP de Fase 1;
-- `DriverManager`;
-- conexión manual;
-- `EntityManagerFactory` manual;
-- Hibernate empaquetado en el WAR.
+```text
+DAO JDBC
+Servlets de negocio
+JSP
+EntityManagerFactory manual
+```
 
 ---
 
 ## Persistencia
 
-Entidades JPA implementadas:
-
-```text
-RolEntity
-UsuarioEntity
-CategoriaEntity
-EmprendimientoEntity
-PublicacionEntity
-PedidoEntity
-DetallePedidoEntity
-```
+Se implementó persistencia mediante JPA.
 
 Persistence Unit:
 
@@ -92,16 +101,29 @@ Proveedor:
 EclipseLink
 ```
 
+DataSource:
+
+```text
+jdbc/EmprendeLinkDS
+```
+
 Transacciones:
 
 ```text
 JTA
 ```
 
-DataSource:
+Entidades:
 
 ```text
-jdbc/EmprendeLinkDS
+RolEntity
+UsuarioEntity
+CategoriaEntity
+PlanEntity
+EmprendimientoEntity
+PublicacionEntity
+PedidoEntity
+DetallePedidoEntity
 ```
 
 ---
@@ -110,17 +132,25 @@ jdbc/EmprendeLinkDS
 
 Implementado:
 
-- login JSF;
+- login;
+- logout;
 - registro;
 - roles;
-- sesión;
-- logout;
+- sesiones;
 - administración de usuarios;
 - activación/desactivación;
 - validación de correo;
 - validación de contraseña;
-- hashing PBKDF2;
-- AJAX.
+- almacenamiento mediante hash;
+- protección contra registro público como administrador.
+
+Roles:
+
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
 
 ---
 
@@ -129,14 +159,12 @@ Implementado:
 Implementado:
 
 - persistencia JPA;
-- mapper;
-- DAO;
-- Service;
-- gestión JSF;
 - creación;
+- listado;
 - edición;
 - activación/desactivación;
-- AJAX.
+- AJAX;
+- validación de nombre.
 
 ---
 
@@ -146,14 +174,13 @@ Implementado:
 
 - persistencia JPA;
 - relación con propietario;
-- mapper;
-- DAO;
-- Service;
+- relación con plan;
 - creación;
 - edición;
 - listado por propietario;
 - validación de propiedad;
-- administración del estado.
+- gestión administrativa de estado;
+- vista administrativa de detalle.
 
 ---
 
@@ -161,17 +188,67 @@ Implementado:
 
 Implementado:
 
+- productos;
+- servicios;
 - persistencia JPA;
 - relación con emprendimiento;
 - relación con categoría;
 - creación;
 - edición;
 - activación/desactivación;
-- productos;
-- servicios;
 - precio;
 - stock;
-- reglas de propietario.
+- validación de propiedad;
+- validación de categoría activa;
+- validación de emprendimiento activo.
+
+---
+
+## Planes
+
+Se agregó el modelo de planes.
+
+Planes oficiales:
+
+```text
+Básico    → 10 publicaciones  → 7%
+Estándar  → 30 publicaciones  → 5%
+Premium   → 60 publicaciones  → 3%
+Max       → 100 publicaciones → 1%
+```
+
+Implementado:
+
+- `Plan`;
+- `PlanEntity`;
+- `PlanMapper`;
+- `PlanDAO`;
+- `JpaPlanDAO`;
+- `PlanService`;
+- administración JSF;
+- asignación de plan a negocios;
+- activación/desactivación;
+- validación de planes en uso.
+
+---
+
+## Límite de publicaciones
+
+La cantidad máxima de publicaciones activas depende del plan.
+
+Se valida al:
+
+```text
+crear publicación
+reactivar publicación
+asignar plan al negocio
+```
+
+No se permite superar:
+
+```text
+Plan.maxProductosActivos
+```
 
 ---
 
@@ -179,13 +256,15 @@ Implementado:
 
 Implementado:
 
-- listado de publicaciones visibles;
+- listado de publicaciones activas;
 - búsqueda;
 - filtros;
-- detalle;
-- categorías;
-- tipos;
-- navegación hacia pedidos.
+- filtro por categoría;
+- filtro por tipo;
+- vista de detalle;
+- operaciones AJAX.
+
+El refinamiento visual del catálogo puede continuar posteriormente sin modificar la arquitectura del Sprint II.
 
 ---
 
@@ -193,28 +272,24 @@ Implementado:
 
 Implementado:
 
-- `PedidoEntity`;
-- `DetallePedidoEntity`;
-- mappers;
-- DAO JPA;
-- Service;
-- creación de pedido;
+- creación de pedidos;
+- detalle;
 - cálculo de total;
-- relaciones;
-- validación de usuario;
-- validación de emprendimiento;
 - validación de publicaciones;
+- validación de emprendimiento;
 - control de stock;
-- restauración de stock al cancelar;
-- consulta de pedidos propios;
-- pedidos recibidos;
-- detalle.
+- descuento de inventario;
+- restauración al cancelar;
+- consulta por cliente;
+- pedidos recibidos por emprendedor;
+- detalle de pedido;
+- control de propiedad.
 
 ---
 
 ## Estados de pedido
 
-Estados internos:
+Estados:
 
 ```text
 PENDIENTE
@@ -224,7 +299,7 @@ COMPLETADO
 CANCELADO
 ```
 
-Transiciones válidas:
+Transiciones:
 
 ```text
 PENDIENTE → CONFIRMADO
@@ -237,148 +312,221 @@ EN_PROCESO → COMPLETADO
 EN_PROCESO → CANCELADO
 ```
 
-En interfaz:
+---
+
+## Comisiones
+
+Al completar una venta se guarda:
 
 ```text
-EN_PROCESO → En camino
-COMPLETADO → Entregado
+fechaCompletado
+tasaComision
+montoComision
 ```
+
+Cálculo:
+
+```text
+montoComision = total × tasaComision
+```
+
+La tasa se almacena directamente en el pedido para conservar la información histórica.
+
+---
+
+## Administración financiera
+
+Se implementó:
+
+- gestión de planes;
+- asignación de plan;
+- consulta de ventas completadas;
+- reporte de comisiones;
+- filtro por negocio;
+- filtro por mes;
+- filtro por año;
+- total de ventas;
+- total de comisiones.
 
 ---
 
 ## Seguridad
 
-Implementado:
+Filtros implementados:
 
 ```text
 AutenticacionFilter
 AdminFilter
 EmprendedorFilter
 PedidosFilter
+PublicacionFilter
 ```
 
-Además, los Services validan:
+Además de los filtros, los Services validan:
 
 - roles;
 - propiedad;
 - estado;
-- disponibilidad.
+- disponibilidad;
+- relaciones.
 
 ---
 
 ## AJAX y validaciones
 
-Implementado:
+La interfaz utiliza:
 
-- `<f:ajax>`;
-- validadores personalizados;
-- converter;
-- mensajes JSF;
-- validación en cliente/interfaz;
-- validación de reglas en Service;
-- Bean Validation en persistencia.
+```xml
+<f:ajax>
+```
+
+en diferentes operaciones.
+
+Validadores personalizados activos:
+
+```text
+CorreoValidator
+ContrasenaValidator
+```
+
+Converter activo:
+
+```text
+TipoRolConverter
+```
+
+Las entidades utilizan además Bean Validation.
+
+---
+
+## Base de datos
+
+Scripts:
+
+```text
+database/schema.sql
+database/seed.sql
+database/migrations/002_planes_comisiones.sql
+database/migrations/003_fecha_completado.sql
+```
+
+La estructura incorpora:
+
+- planes;
+- relación plan-emprendimiento;
+- comisión histórica;
+- fecha real de completado.
 
 ---
 
 ## Pruebas
 
-La línea estable cuenta actualmente con:
+Regresión automatizada actual:
 
 ```text
-39 pruebas automatizadas
+41 pruebas
+0 failures
+0 errors
+0 skipped
 ```
 
-Resultado esperado:
+Resultado:
 
 ```text
-Failures: 0
-Errors: 0
+BUILD SUCCESS
 ```
 
-Regresión:
+Comandos:
 
 ```bash
 mvn clean test
 mvn clean package
 ```
 
-También se realizaron pruebas manuales sobre:
-
-- login;
-- publicaciones;
-- catálogo;
-- pedidos;
-- estados;
-- stock;
-- cancelación;
-- deploy en GlassFish.
-
----
-
-## Infraestructura
-
-Servidor:
-
-```text
-GlassFish 8.0.4
-```
-
-Base:
-
-```text
-MySQL 8
-```
-
-WAR:
+El WAR se genera correctamente:
 
 ```text
 target/emprendelink.war
 ```
 
-Context path:
+---
+
+## Integración continua
+
+GitHub Actions ejecuta:
 
 ```text
-/emprendelink
+mvn -B clean test
 ```
+
+El Pull Request de integración completa de Fase 2 pasó correctamente el pipeline.
 
 ---
 
-## Decisiones técnicas
+## Documentación
 
-### Eliminación lógica
+Documentación consolidada:
 
-Usuarios, categorías, emprendimientos y publicaciones pueden desactivarse sin eliminación física.
+```text
+README.md
+docs/API.md
+docs/ARQUITECTURA.md
+docs/CIERRE-FASE2.md
+docs/CONVENCIONES.md
+docs/MATRIZ-PRUEBAS.md
+docs/MODELO-DATOS.md
+docs/MODELO-DOMINIO.md
+docs/PRODUCT-BACKLOG.md
+docs/RELEASE-NOTES.md
+docs/ROLES-PERMISOS.md
+docs/RUTAS.md
+docs/VERSIONS.md
+```
 
-Objetivo:
+Se retiró documentación histórica individual que ya no representaba la arquitectura activa.
 
-- preservar relaciones;
-- mantener historial;
-- evitar pérdida de datos relacionados.
+---
 
-### Servicios reutilizables
+# Pendiente de cierre del Sprint II
 
-La lógica de negocio permanece fuera de JSF para que Fase 3 pueda reutilizarla desde REST.
+Antes de la entrega final:
 
-### EclipseLink
-
-JPA utiliza EclipseLink, proveedor integrado con GlassFish.
-
-Hibernate no forma parte del runtime actual.
+```text
+ejecutar smoke test manual
+cerrar MATRIZ-PRUEBAS.md
+capturar evidencias
+generar PDF de Sprint Review
+```
 
 ---
 
 # Próximo incremento — Fase 3
 
+La Fase 3 incorporará servicios REST.
+
+Arquitectura prevista:
+
+```text
+REST
+ ↓
+Services existentes
+ ↓
+DAO
+ ↓
+JPA
+ ↓
+MySQL
+```
+
 Pendiente:
 
-- API REST;
-- JAX-RS o tecnología autorizada;
+- JAX-RS;
+- endpoints;
 - JSON;
 - DTO;
+- códigos HTTP;
 - manejo de errores;
 - seguridad REST;
 - cliente consumidor;
 - pruebas de API;
 - documentación de endpoints.
-
-La API reutilizará la capa Service y persistencia implementadas durante Fase 2.

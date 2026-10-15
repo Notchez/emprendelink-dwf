@@ -5,16 +5,25 @@ import java.time.LocalDateTime;
 public class Emprendimiento {
 
     private Integer idEmprendimiento;
+
     private Usuario propietario;
     private Plan plan;
+    private Categoria categoria;
+
     private String nombre;
     private String descripcion;
     private String contacto;
+    private String logoUrl;
+
     private boolean activo;
+
     private LocalDateTime fechaRegistro;
 
     public Emprendimiento() {
-        this.activo = true;
+
+        this.activo =
+                true;
+
         this.fechaRegistro =
                 LocalDateTime.now();
     }
@@ -32,9 +41,11 @@ public class Emprendimiento {
                 idEmprendimiento,
                 propietario,
                 null,
+                null,
                 nombre,
                 descripcion,
                 contacto,
+                null,
                 activo,
                 fechaRegistro
         );
@@ -50,6 +61,32 @@ public class Emprendimiento {
             boolean activo,
             LocalDateTime fechaRegistro) {
 
+        this(
+                idEmprendimiento,
+                propietario,
+                plan,
+                null,
+                nombre,
+                descripcion,
+                contacto,
+                null,
+                activo,
+                fechaRegistro
+        );
+    }
+
+    public Emprendimiento(
+            Integer idEmprendimiento,
+            Usuario propietario,
+            Plan plan,
+            Categoria categoria,
+            String nombre,
+            String descripcion,
+            String contacto,
+            String logoUrl,
+            boolean activo,
+            LocalDateTime fechaRegistro) {
+
         this.idEmprendimiento =
                 idEmprendimiento;
 
@@ -59,6 +96,9 @@ public class Emprendimiento {
         this.plan =
                 plan;
 
+        this.categoria =
+                categoria;
+
         this.nombre =
                 nombre;
 
@@ -67,6 +107,9 @@ public class Emprendimiento {
 
         this.contacto =
                 contacto;
+
+        this.logoUrl =
+                logoUrl;
 
         this.activo =
                 activo;
@@ -129,6 +172,17 @@ public class Emprendimiento {
                 plan;
     }
 
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(
+            Categoria categoria) {
+
+        this.categoria =
+                categoria;
+    }
+
     public String getNombre() {
         return nombre;
     }
@@ -160,6 +214,17 @@ public class Emprendimiento {
 
         this.contacto =
                 contacto;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(
+            String logoUrl) {
+
+        this.logoUrl =
+                logoUrl;
     }
 
     public boolean isActivo() {

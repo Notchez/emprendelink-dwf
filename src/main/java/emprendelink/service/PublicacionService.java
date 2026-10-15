@@ -36,6 +36,18 @@ public interface PublicacionService {
             Integer stock
     );
 
+    void crear(
+            Integer idPropietario,
+            Integer idEmprendimiento,
+            Integer idCategoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            String imagenUrl
+    );
+
     void actualizar(
             Integer idPropietario,
             Integer idPublicacion,
@@ -46,6 +58,19 @@ public interface PublicacionService {
             String descripcion,
             BigDecimal precio,
             Integer stock
+    );
+
+    void actualizar(
+            Integer idPropietario,
+            Integer idPublicacion,
+            Integer idEmprendimiento,
+            Integer idCategoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            String imagenUrl
     );
 
     void cambiarEstado(

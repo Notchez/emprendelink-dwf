@@ -14,23 +14,32 @@ import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
-public class JpaPublicacionDAO implements PublicacionDAO {
+public class JpaPublicacionDAO
+        implements PublicacionDAO {
 
-    @PersistenceContext(unitName = "emprendelinkPU")
+    @PersistenceContext(
+            unitName = "emprendelinkPU"
+    )
     private EntityManager entityManager;
 
     @Override
-    public Publicacion crear(Publicacion publicacion) {
+    public Publicacion crear(
+            Publicacion publicacion) {
 
-        validarRelaciones(publicacion);
+        validarRelaciones(
+                publicacion
+        );
 
         PublicacionEntity entidad =
-                PublicacionMapper.aEntidad(publicacion);
+                PublicacionMapper.aEntidad(
+                        publicacion
+                );
 
         entidad.setEmprendimiento(
                 entityManager.getReference(
                         EmprendimientoEntity.class,
-                        publicacion.getEmprendimiento()
+                        publicacion
+                                .getEmprendimiento()
                                 .getIdEmprendimiento()
                 )
         );
@@ -38,20 +47,25 @@ public class JpaPublicacionDAO implements PublicacionDAO {
         entidad.setCategoria(
                 entityManager.getReference(
                         CategoriaEntity.class,
-                        publicacion.getCategoria()
+                        publicacion
+                                .getCategoria()
                                 .getIdCategoria()
                 )
         );
 
-        entityManager.persist(entidad);
+        entityManager.persist(
+                entidad
+        );
+
         entityManager.flush();
 
-        return buscarPorId(entidad.getIdPublicacion())
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "No se pudo recuperar la publicación creada."
-                        )
-                );
+        return buscarPorId(
+                entidad.getIdPublicacion()
+        ).orElseThrow(() ->
+                new IllegalStateException(
+                        "No se pudo recuperar la publicación creada."
+                )
+        );
     }
 
     @Override
@@ -74,10 +88,15 @@ public class JpaPublicacionDAO implements PublicacionDAO {
                         """,
                         PublicacionEntity.class
                 )
-                .setParameter("id", idPublicacion)
+                .setParameter(
+                        "id",
+                        idPublicacion
+                )
                 .getResultStream()
                 .findFirst()
-                .map(PublicacionMapper::aDominio);
+                .map(
+                        PublicacionMapper::aDominio
+                );
     }
 
     @Override
@@ -96,7 +115,9 @@ public class JpaPublicacionDAO implements PublicacionDAO {
                         PublicacionEntity.class
                 )
                 .getResultStream()
-                .map(PublicacionMapper::aDominio)
+                .map(
+                        PublicacionMapper::aDominio
+                )
                 .toList();
     }
 
@@ -121,9 +142,14 @@ public class JpaPublicacionDAO implements PublicacionDAO {
                         """,
                         PublicacionEntity.class
                 )
-                .setParameter("id", idEmprendimiento)
+                .setParameter(
+                        "id",
+                        idEmprendimiento
+                )
                 .getResultStream()
-                .map(PublicacionMapper::aDominio)
+                .map(
+                        PublicacionMapper::aDominio
+                )
                 .toList();
     }
 
@@ -148,9 +174,14 @@ public class JpaPublicacionDAO implements PublicacionDAO {
                         """,
                         PublicacionEntity.class
                 )
-                .setParameter("id", idCategoria)
+                .setParameter(
+                        "id",
+                        idCategoria
+                )
                 .getResultStream()
-                .map(PublicacionMapper::aDominio)
+                .map(
+                        PublicacionMapper::aDominio
+                )
                 .toList();
     }
 
@@ -159,12 +190,15 @@ public class JpaPublicacionDAO implements PublicacionDAO {
             Publicacion publicacion) {
 
         if (publicacion == null
-                || publicacion.getIdPublicacion() == null) {
+                || publicacion
+                .getIdPublicacion() == null) {
 
             return false;
         }
 
-        validarRelaciones(publicacion);
+        validarRelaciones(
+                publicacion
+        );
 
         PublicacionEntity entidad =
                 entityManager.find(
@@ -179,7 +213,8 @@ public class JpaPublicacionDAO implements PublicacionDAO {
         entidad.setEmprendimiento(
                 entityManager.getReference(
                         EmprendimientoEntity.class,
-                        publicacion.getEmprendimiento()
+                        publicacion
+                                .getEmprendimiento()
                                 .getIdEmprendimiento()
                 )
         );
@@ -187,18 +222,43 @@ public class JpaPublicacionDAO implements PublicacionDAO {
         entidad.setCategoria(
                 entityManager.getReference(
                         CategoriaEntity.class,
-                        publicacion.getCategoria()
+                        publicacion
+                                .getCategoria()
                                 .getIdCategoria()
                 )
         );
 
-        entidad.setTipo(publicacion.getTipo());
-        entidad.setNombre(publicacion.getNombre());
-        entidad.setDescripcion(publicacion.getDescripcion());
-        entidad.setPrecio(publicacion.getPrecio());
-        entidad.setStock(publicacion.getStock());
-        entidad.setActivo(publicacion.isActivo());
-        entidad.setFechaPublicacion(publicacion.getFechaPublicacion());
+        entidad.setTipo(
+                publicacion.getTipo()
+        );
+
+        entidad.setNombre(
+                publicacion.getNombre()
+        );
+
+        entidad.setDescripcion(
+                publicacion.getDescripcion()
+        );
+
+        entidad.setImagenUrl(
+                publicacion.getImagenUrl()
+        );
+
+        entidad.setPrecio(
+                publicacion.getPrecio()
+        );
+
+        entidad.setStock(
+                publicacion.getStock()
+        );
+
+        entidad.setActivo(
+                publicacion.isActivo()
+        );
+
+        entidad.setFechaPublicacion(
+                publicacion.getFechaPublicacion()
+        );
 
         return true;
     }
@@ -221,7 +281,9 @@ public class JpaPublicacionDAO implements PublicacionDAO {
             return false;
         }
 
-        entityManager.remove(entidad);
+        entityManager.remove(
+                entidad
+        );
 
         return true;
     }
@@ -230,11 +292,15 @@ public class JpaPublicacionDAO implements PublicacionDAO {
             Publicacion publicacion) {
 
         if (publicacion == null
-                || publicacion.getEmprendimiento() == null
-                || publicacion.getEmprendimiento()
+                || publicacion
+                .getEmprendimiento() == null
+                || publicacion
+                .getEmprendimiento()
                 .getIdEmprendimiento() == null
-                || publicacion.getCategoria() == null
-                || publicacion.getCategoria()
+                || publicacion
+                .getCategoria() == null
+                || publicacion
+                .getCategoria()
                 .getIdCategoria() == null) {
 
             throw new IllegalArgumentException(

@@ -7,6 +7,7 @@ import emprendelink.dao.UsuarioDAO;
 import emprendelink.model.DetallePedido;
 import emprendelink.model.Emprendimiento;
 import emprendelink.model.Pedido;
+import emprendelink.model.Plan;
 import emprendelink.model.Publicacion;
 import emprendelink.model.Usuario;
 import emprendelink.model.enums.EstadoPedido;
@@ -17,6 +18,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,10 +40,15 @@ public class PedidoServiceImpl
             EmprendimientoDAO emprendimientoDAO,
             PublicacionDAO publicacionDAO) {
 
-        this.pedidoDAO = pedidoDAO;
-        this.usuarioDAO = usuarioDAO;
+        this.pedidoDAO =
+                pedidoDAO;
+
+        this.usuarioDAO =
+                usuarioDAO;
+
         this.emprendimientoDAO =
                 emprendimientoDAO;
+
         this.publicacionDAO =
                 publicacionDAO;
     }
@@ -70,11 +78,46 @@ public class PedidoServiceImpl
 
         return pedidoDAO.listarTodos()
                 .stream()
-                .filter(pedido ->
-                        perteneceAEmprendedor(
-                                pedido,
-                                idEmprendedor
-                        )
+                .filter(
+                        pedido ->
+                                perteneceAEmprendedor(
+                                        pedido,
+                                        idEmprendedor
+                                )
+                )
+                .toList();
+    }
+
+    @Override
+    public List<Pedido> listarActivosRecibidos(
+            Integer idEmprendedor) {
+
+        return listarRecibidos(
+                idEmprendedor
+        )
+                .stream()
+                .filter(
+                        pedido ->
+                                pedido.getEstado()
+                                        != EstadoPedido.COMPLETADO
+                                        && pedido.getEstado()
+                                        != EstadoPedido.CANCELADO
+                )
+                .toList();
+    }
+
+    @Override
+    public List<Pedido> listarCompletados(
+            Integer idEmprendedor) {
+
+        return listarRecibidos(
+                idEmprendedor
+        )
+                .stream()
+                .filter(
+                        pedido ->
+                                pedido.getEstado()
+                                        == EstadoPedido.COMPLETADO
                 )
                 .toList();
     }
@@ -217,6 +260,11 @@ public class PedidoServiceImpl
             );
         }
 
+        congelarPlanYComision(
+                pedido,
+                emprendimiento
+        );
+
         pedidoDAO.crear(
                 pedido
         );
@@ -244,18 +292,20 @@ public class PedidoServiceImpl
         Pedido pedido =
                 pedidoDAO.buscarPorId(
                         idPedido
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El pedido no existe."
-                        )
+                ).orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "El pedido no existe."
+                                )
                 );
 
         if (!perteneceAEmprendedor(
                 pedido,
-                idEmprendedor)) {
+                idEmprendedor
+        )) {
 
             throw new IllegalArgumentException(
-                    "El pedido no pertenece a tu emprendimiento."
+                    "El pedido no pertenece a tu negocio."
             );
         }
 
@@ -274,7 +324,8 @@ public class PedidoServiceImpl
 
         if (!pedidoDAO.actualizarEstado(
                 idPedido,
-                nuevoEstado)) {
+                nuevoEstado
+        )) {
 
             throw new IllegalStateException(
                     "No se pudo actualizar el pedido."
@@ -282,11 +333,58 @@ public class PedidoServiceImpl
         }
     }
 
+    private void congelarPlanYComision(
+            Pedido pedido,
+            Emprendimiento emprendimiento) {
+
+        Plan plan =
+                emprendimiento.getPlan();
+
+        if (plan == null
+                || plan.getIdPlan() == null
+                || plan.getNombre() == null
+                || plan.getTasaComision() == null) {
+
+            /*
+             * En producción esto no debería ocurrir:
+             * la BD exige id_plan en emprendimientos.
+             */
+            return;
+        }
+
+        pedido.setIdPlanAplicado(
+                plan.getIdPlan()
+        );
+
+        pedido.setNombrePlanAplicado(
+                plan.getNombre()
+        );
+
+        pedido.setTasaComision(
+                plan.getTasaComision()
+        );
+
+        BigDecimal monto =
+                pedido.getTotal()
+                        .multiply(
+                                plan.getTasaComision()
+                        )
+                        .setScale(
+                                2,
+                                RoundingMode.HALF_UP
+                        );
+
+        pedido.setMontoComision(
+                monto
+        );
+    }
+
     private Usuario requerirUsuarioActivo(
             Integer idUsuario,
             TipoRol rolEsperado) {
 
         if (idUsuario == null) {
+
             throw new IllegalArgumentException(
                     "El usuario es obligatorio."
             );
@@ -295,10 +393,11 @@ public class PedidoServiceImpl
         Usuario usuario =
                 usuarioDAO.buscarPorId(
                         idUsuario
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El usuario no existe."
-                        )
+                ).orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "El usuario no existe."
+                                )
                 );
 
         if (!usuario.isActivo()
@@ -321,10 +420,11 @@ public class PedidoServiceImpl
         Emprendimiento emprendimiento =
                 emprendimientoDAO.buscarPorId(
                         idEmprendimiento
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El emprendimiento no existe."
-                        )
+                ).orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "El negocio no existe."
+                                )
                 );
 
         if (!emprendimiento.isActivo()
@@ -335,7 +435,7 @@ public class PedidoServiceImpl
                 .isActivo()) {
 
             throw new IllegalArgumentException(
-                    "El emprendimiento no está disponible."
+                    "El negocio no está disponible."
             );
         }
 
@@ -349,10 +449,11 @@ public class PedidoServiceImpl
         Publicacion publicacion =
                 publicacionDAO.buscarPorId(
                         idPublicacion
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Una publicación no existe."
-                        )
+                ).orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "Una publicación no existe."
+                                )
                 );
 
         boolean disponible =
@@ -377,6 +478,7 @@ public class PedidoServiceImpl
                         .signum() >= 0;
 
         if (!disponible) {
+
             throw new IllegalArgumentException(
                     "Una publicación no está disponible."
             );
@@ -453,7 +555,8 @@ public class PedidoServiceImpl
         );
 
         if (!publicacionDAO.actualizar(
-                publicacion)) {
+                publicacion
+        )) {
 
             throw new IllegalStateException(
                     "No se pudo actualizar el stock."
@@ -488,7 +591,8 @@ public class PedidoServiceImpl
             );
 
             if (!publicacionDAO.actualizar(
-                    publicacion)) {
+                    publicacion
+            )) {
 
                 throw new IllegalStateException(
                         "No se pudo restaurar el stock."
@@ -502,6 +606,7 @@ public class PedidoServiceImpl
             EstadoPedido nuevo) {
 
         if (actual == null) {
+
             throw new IllegalStateException(
                     "El pedido no tiene un estado válido."
             );
@@ -534,6 +639,7 @@ public class PedidoServiceImpl
                 };
 
         if (!permitida) {
+
             throw new IllegalArgumentException(
                     "La transición de estado no está permitida."
             );

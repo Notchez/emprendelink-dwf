@@ -13,7 +13,8 @@ import java.util.List;
 
 @Named("categoriaBean")
 @ViewScoped
-public class CategoriaBean implements Serializable {
+public class CategoriaBean
+        implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,6 +25,9 @@ public class CategoriaBean implements Serializable {
     private String nombre;
     private String descripcion;
 
+    private boolean manejaStock =
+            true;
+
     public void guardar() {
 
         try {
@@ -32,7 +36,8 @@ public class CategoriaBean implements Serializable {
 
                 categoriaService.crear(
                         nombre,
-                        descripcion
+                        descripcion,
+                        manejaStock
                 );
 
                 mensajeInfo(
@@ -45,7 +50,8 @@ public class CategoriaBean implements Serializable {
                 categoriaService.actualizar(
                         idCategoria,
                         nombre,
-                        descripcion
+                        descripcion,
+                        manejaStock
                 );
 
                 mensajeInfo(
@@ -81,9 +87,13 @@ public class CategoriaBean implements Serializable {
 
         descripcion =
                 categoria.getDescripcion();
+
+        manejaStock =
+                categoria.isManejaStock();
     }
 
     public void cancelarEdicion() {
+
         limpiarFormulario();
     }
 
@@ -114,7 +124,9 @@ public class CategoriaBean implements Serializable {
     }
 
     public List<Categoria> getCategorias() {
-        return categoriaService.listarTodas();
+
+        return categoriaService
+                .listarTodas();
     }
 
     public boolean isEditando() {
@@ -126,13 +138,15 @@ public class CategoriaBean implements Serializable {
         idCategoria = null;
         nombre = null;
         descripcion = null;
+        manejaStock = true;
     }
 
     private void mensajeInfo(
             String resumen,
             String detalle) {
 
-        FacesContext.getCurrentInstance()
+        FacesContext
+                .getCurrentInstance()
                 .addMessage(
                         null,
                         new FacesMessage(
@@ -147,7 +161,8 @@ public class CategoriaBean implements Serializable {
             String resumen,
             String detalle) {
 
-        FacesContext.getCurrentInstance()
+        FacesContext
+                .getCurrentInstance()
                 .addMessage(
                         null,
                         new FacesMessage(
@@ -165,7 +180,8 @@ public class CategoriaBean implements Serializable {
     public void setIdCategoria(
             Integer idCategoria) {
 
-        this.idCategoria = idCategoria;
+        this.idCategoria =
+                idCategoria;
     }
 
     public String getNombre() {
@@ -175,7 +191,8 @@ public class CategoriaBean implements Serializable {
     public void setNombre(
             String nombre) {
 
-        this.nombre = nombre;
+        this.nombre =
+                nombre;
     }
 
     public String getDescripcion() {
@@ -185,6 +202,18 @@ public class CategoriaBean implements Serializable {
     public void setDescripcion(
             String descripcion) {
 
-        this.descripcion = descripcion;
+        this.descripcion =
+                descripcion;
+    }
+
+    public boolean isManejaStock() {
+        return manejaStock;
+    }
+
+    public void setManejaStock(
+            boolean manejaStock) {
+
+        this.manejaStock =
+                manejaStock;
     }
 }

@@ -1,8 +1,9 @@
 package emprendelink.model;
 
+import emprendelink.model.enums.TipoPublicacion;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import emprendelink.model.enums.TipoPublicacion;
 
 public class Publicacion {
 
@@ -12,6 +13,7 @@ public class Publicacion {
     private TipoPublicacion tipo;
     private String nombre;
     private String descripcion;
+    private String imagenUrl;
     private BigDecimal precio;
     private Integer stock;
     private boolean activo;
@@ -22,29 +24,101 @@ public class Publicacion {
         this.fechaPublicacion = LocalDateTime.now();
     }
 
-    public Publicacion(Integer idPublicacion, Emprendimiento emprendimiento, Categoria categoria,
-                       TipoPublicacion tipo, String nombre, String descripcion, BigDecimal precio,
-                       Integer stock, boolean activo, LocalDateTime fechaPublicacion) {
+    public Publicacion(
+            Integer idPublicacion,
+            Emprendimiento emprendimiento,
+            Categoria categoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock,
+            boolean activo,
+            LocalDateTime fechaPublicacion) {
+
+        this(
+                idPublicacion,
+                emprendimiento,
+                categoria,
+                tipo,
+                nombre,
+                descripcion,
+                null,
+                precio,
+                stock,
+                activo,
+                fechaPublicacion
+        );
+    }
+
+    public Publicacion(
+            Integer idPublicacion,
+            Emprendimiento emprendimiento,
+            Categoria categoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            String imagenUrl,
+            BigDecimal precio,
+            Integer stock,
+            boolean activo,
+            LocalDateTime fechaPublicacion) {
+
         this.idPublicacion = idPublicacion;
         this.emprendimiento = emprendimiento;
         this.categoria = categoria;
         this.tipo = tipo;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.imagenUrl = imagenUrl;
+
         setPrecio(precio);
         setStock(stock);
+
         this.activo = activo;
         this.fechaPublicacion = fechaPublicacion;
     }
 
-    public Publicacion(Emprendimiento emprendimiento, Categoria categoria, TipoPublicacion tipo,
-                       String nombre, String descripcion, BigDecimal precio, Integer stock) {
+    public Publicacion(
+            Emprendimiento emprendimiento,
+            Categoria categoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            BigDecimal precio,
+            Integer stock) {
+
+        this(
+                emprendimiento,
+                categoria,
+                tipo,
+                nombre,
+                descripcion,
+                null,
+                precio,
+                stock
+        );
+    }
+
+    public Publicacion(
+            Emprendimiento emprendimiento,
+            Categoria categoria,
+            TipoPublicacion tipo,
+            String nombre,
+            String descripcion,
+            String imagenUrl,
+            BigDecimal precio,
+            Integer stock) {
+
         this();
+
         this.emprendimiento = emprendimiento;
         this.categoria = categoria;
         this.tipo = tipo;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.imagenUrl = imagenUrl;
+
         setPrecio(precio);
         setStock(stock);
     }
@@ -61,7 +135,9 @@ public class Publicacion {
         return emprendimiento;
     }
 
-    public void setEmprendimiento(Emprendimiento emprendimiento) {
+    public void setEmprendimiento(
+            Emprendimiento emprendimiento) {
+
         this.emprendimiento = emprendimiento;
     }
 
@@ -69,7 +145,9 @@ public class Publicacion {
         return categoria;
     }
 
-    public void setCategoria(Categoria categoria) {
+    public void setCategoria(
+            Categoria categoria) {
+
         this.categoria = categoria;
     }
 
@@ -77,7 +155,9 @@ public class Publicacion {
         return tipo;
     }
 
-    public void setTipo(TipoPublicacion tipo) {
+    public void setTipo(
+            TipoPublicacion tipo) {
+
         this.tipo = tipo;
     }
 
@@ -85,7 +165,9 @@ public class Publicacion {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
+    public void setNombre(
+            String nombre) {
+
         this.nombre = nombre;
     }
 
@@ -93,18 +175,37 @@ public class Publicacion {
         return descripcion;
     }
 
-    public void setDescripcion(String descripcion) {
+    public void setDescripcion(
+            String descripcion) {
+
         this.descripcion = descripcion;
+    }
+
+    public String getImagenUrl() {
+        return imagenUrl;
+    }
+
+    public void setImagenUrl(
+            String imagenUrl) {
+
+        this.imagenUrl = imagenUrl;
     }
 
     public BigDecimal getPrecio() {
         return precio;
     }
 
-    public void setPrecio(BigDecimal precio) {
-        if (precio != null && precio.signum() < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo");
+    public void setPrecio(
+            BigDecimal precio) {
+
+        if (precio != null
+                && precio.signum() < 0) {
+
+            throw new IllegalArgumentException(
+                    "El precio no puede ser negativo"
+            );
         }
+
         this.precio = precio;
     }
 
@@ -112,10 +213,17 @@ public class Publicacion {
         return stock;
     }
 
-    public void setStock(Integer stock) {
-        if (stock != null && stock < 0) {
-            throw new IllegalArgumentException("El stock no puede ser negativo");
+    public void setStock(
+            Integer stock) {
+
+        if (stock != null
+                && stock < 0) {
+
+            throw new IllegalArgumentException(
+                    "El stock no puede ser negativo"
+            );
         }
+
         this.stock = stock;
     }
 
@@ -123,7 +231,9 @@ public class Publicacion {
         return activo;
     }
 
-    public void setActivo(boolean activo) {
+    public void setActivo(
+            boolean activo) {
+
         this.activo = activo;
     }
 
@@ -131,7 +241,9 @@ public class Publicacion {
         return fechaPublicacion;
     }
 
-    public void setFechaPublicacion(LocalDateTime fechaPublicacion) {
+    public void setFechaPublicacion(
+            LocalDateTime fechaPublicacion) {
+
         this.fechaPublicacion = fechaPublicacion;
     }
 }

@@ -75,7 +75,9 @@ public class AuthBean {
         correo = null;
         contrasena = null;
 
-        redirigir(usuario);
+        redirigirSegunRol(
+                usuario
+        );
     }
 
     public void cerrarSesion() {
@@ -109,6 +111,25 @@ public class AuthBean {
         }
     }
 
+    public void redirigirInicio() {
+
+        Usuario usuario =
+                getUsuario();
+
+        if (usuario == null) {
+
+            redirigirA(
+                    "/login.xhtml"
+            );
+
+            return;
+        }
+
+        redirigirSegunRol(
+                usuario
+        );
+    }
+
     public Usuario getUsuario() {
 
         Object valor =
@@ -116,7 +137,9 @@ public class AuthBean {
                         .getCurrentInstance()
                         .getExternalContext()
                         .getSessionMap()
-                        .get(SESION_USUARIO);
+                        .get(
+                                SESION_USUARIO
+                        );
 
         return valor instanceof Usuario
                 ? (Usuario) valor
@@ -124,27 +147,110 @@ public class AuthBean {
     }
 
     public boolean isAutenticado() {
-
         return getUsuario() != null;
     }
 
-    private void redirigir(
+    public boolean isCliente() {
+        return getRolActual()
+                == TipoRol.ROLE_CLIENTE;
+    }
+
+    public boolean isEmprendedor() {
+        return getRolActual()
+                == TipoRol.ROLE_EMPRENDEDOR;
+    }
+
+    public boolean isAdmin() {
+        return getRolActual()
+                == TipoRol.ROLE_ADMIN;
+    }
+
+    public String getRutaInicio() {
+
+        TipoRol rol =
+                getRolActual();
+
+        if (rol == null) {
+            return "/catalogo/index.xhtml";
+        }
+
+        return destinoPorRol(
+                rol
+        );
+    }
+
+    public String getSubtituloMarca() {
+
+        TipoRol rol =
+                getRolActual();
+
+        if (rol == TipoRol.ROLE_EMPRENDEDOR) {
+            return "Panel de negocio";
+        }
+
+        if (rol == TipoRol.ROLE_ADMIN) {
+            return "Administración";
+        }
+
+        return "Compra local";
+    }
+
+    private TipoRol getRolActual() {
+
+        Usuario usuario =
+                getUsuario();
+
+        if (usuario == null
+                || usuario.getRol() == null) {
+
+            return null;
+        }
+
+        return usuario
+                .getRol()
+                .getNombre();
+    }
+
+    private void redirigirSegunRol(
             Usuario usuario) {
 
         TipoRol rol =
-                usuario.getRol() != null
-                        ? usuario.getRol()
+                usuario != null
+                        && usuario.getRol() != null
+                        ? usuario
+                        .getRol()
                         .getNombre()
                         : null;
 
-        String destino =
-                "/inicio.xhtml";
+        redirigirA(
+                destinoPorRol(
+                        rol
+                )
+        );
+    }
 
-        if (rol == TipoRol.ROLE_ADMIN) {
+    private String destinoPorRol(
+            TipoRol rol) {
 
-            destino =
-                    "/admin/inicio.xhtml";
+        if (rol == null) {
+            return "/login.xhtml";
         }
+
+        return switch (rol) {
+
+            case ROLE_ADMIN ->
+                    "/admin/inicio.xhtml";
+
+            case ROLE_EMPRENDEDOR ->
+                    "/pedidos/recibidos.xhtml";
+
+            case ROLE_CLIENTE ->
+                    "/catalogo/index.xhtml";
+        };
+    }
+
+    private void redirigirA(
+            String destino) {
 
         FacesContext contexto =
                 FacesContext.getCurrentInstance();

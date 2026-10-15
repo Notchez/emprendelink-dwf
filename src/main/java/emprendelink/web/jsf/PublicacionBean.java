@@ -8,23 +8,29 @@ import emprendelink.model.enums.TipoPublicacion;
 import emprendelink.service.CategoriaService;
 import emprendelink.service.EmprendimientoService;
 import emprendelink.service.PublicacionService;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import java.io.Serializable;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import java.io.IOException;
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Named("publicacionBean")
 @ViewScoped
-public class PublicacionBean implements Serializable {
+public class PublicacionBean
+        implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Inject
@@ -39,10 +45,19 @@ public class PublicacionBean implements Serializable {
     private Integer idPublicacion;
     private Integer idEmprendimiento;
     private Integer idCategoria;
-    private TipoPublicacion tipo = TipoPublicacion.PRODUCTO;
+
+    private TipoPublicacion tipo =
+            TipoPublicacion.PRODUCTO;
+
     private String nombre;
     private String descripcion;
+    private String imagenUrl;
+
     private BigDecimal precio;
+
+    private String precioTexto =
+            "0.00";
+
     private Integer stock = 0;
 
     private String filtroTexto;
@@ -54,20 +69,43 @@ public class PublicacionBean implements Serializable {
 
     public void guardar() {
 
-        FacesContext contexto =
-                FacesContext.getCurrentInstance();
-
-        Usuario usuario = obtenerUsuarioSesion();
+        Usuario usuario =
+                obtenerUsuarioSesion();
 
         if (usuario == null) {
+
             mensajeError(
                     "Sesión inválida",
                     "Debes iniciar sesión nuevamente."
             );
+
             return;
         }
 
         try {
+
+            Emprendimiento negocio =
+                    obtenerNegocioActualObligatorio(
+                            usuario
+                    );
+
+            idEmprendimiento =
+                    negocio.getIdEmprendimiento();
+
+            idCategoria =
+                    negocio.getCategoria()
+                            .getIdCategoria();
+
+            tipo =
+                    negocio.getCategoria()
+                            .isManejaStock()
+                            ? TipoPublicacion.PRODUCTO
+                            : TipoPublicacion.SERVICIO;
+
+            precio =
+                    convertirPrecio(
+                            precioTexto
+                    );
 
             if (idPublicacion == null) {
 
@@ -79,16 +117,13 @@ public class PublicacionBean implements Serializable {
                         nombre,
                         descripcion,
                         precio,
-                        stock
+                        stock,
+                        imagenUrl
                 );
 
-                contexto.addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Publicación creada",
-                                "La publicación fue registrada correctamente."
-                        )
+                mensajeInfo(
+                        "Elemento agregado",
+                        "El catálogo fue actualizado."
                 );
 
             } else {
@@ -102,16 +137,13 @@ public class PublicacionBean implements Serializable {
                         nombre,
                         descripcion,
                         precio,
-                        stock
+                        stock,
+                        imagenUrl
                 );
 
-                contexto.addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Publicación actualizada",
-                                "Los cambios fueron guardados."
-                        )
+                mensajeInfo(
+                        "Elemento actualizado",
+                        "Los cambios fueron guardados."
                 );
             }
 
@@ -127,45 +159,74 @@ public class PublicacionBean implements Serializable {
         }
     }
 
-    public void editar(Integer id) {
+    public void editar(
+            Integer id) {
 
-        Usuario usuario = obtenerUsuarioSesion();
+        Usuario usuario =
+                obtenerUsuarioSesion();
 
         if (usuario == null) {
-            mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
-            );
             return;
         }
 
         Publicacion publicacion =
-                publicacionService.buscarPropiaPorId(
-                        id,
-                        usuario.getIdUsuario()
-                );
+                publicacionService
+                        .buscarPropiaPorId(
+                                id,
+                                usuario.getIdUsuario()
+                        );
 
         if (publicacion == null) {
+
             mensajeError(
                     "No disponible",
                     "La publicación no existe o no te pertenece."
             );
+
             return;
         }
 
-        idPublicacion = publicacion.getIdPublicacion();
-        idEmprendimiento = publicacion.getEmprendimiento()
-                .getIdEmprendimiento();
-        idCategoria = publicacion.getCategoria()
-                .getIdCategoria();
-        tipo = publicacion.getTipo();
-        nombre = publicacion.getNombre();
-        descripcion = publicacion.getDescripcion();
-        precio = publicacion.getPrecio();
-        stock = publicacion.getStock();
+        idPublicacion =
+                publicacion.getIdPublicacion();
+
+        idEmprendimiento =
+                publicacion
+                        .getEmprendimiento()
+                        .getIdEmprendimiento();
+
+        idCategoria =
+                publicacion
+                        .getCategoria()
+                        .getIdCategoria();
+
+        tipo =
+                publicacion.getTipo();
+
+        nombre =
+                publicacion.getNombre();
+
+        descripcion =
+                publicacion.getDescripcion();
+
+        imagenUrl =
+                publicacion.getImagenUrl();
+
+        precio =
+                publicacion.getPrecio();
+
+        precioTexto =
+                precio == null
+                        ? "0.00"
+                        : precio
+                        .setScale(2)
+                        .toPlainString();
+
+        stock =
+                publicacion.getStock();
     }
 
     public void cancelarEdicion() {
+
         limpiarFormulario();
     }
 
@@ -173,13 +234,10 @@ public class PublicacionBean implements Serializable {
             Integer id,
             boolean estadoActual) {
 
-        Usuario usuario = obtenerUsuarioSesion();
+        Usuario usuario =
+                obtenerUsuarioSesion();
 
         if (usuario == null) {
-            mensajeError(
-                    "Sesión inválida",
-                    "Debes iniciar sesión nuevamente."
-            );
             return;
         }
 
@@ -191,15 +249,10 @@ public class PublicacionBean implements Serializable {
                     !estadoActual
             );
 
-            FacesContext.getCurrentInstance()
-                    .addMessage(
-                            null,
-                            new FacesMessage(
-                                    FacesMessage.SEVERITY_INFO,
-                                    "Estado actualizado",
-                                    "El estado de la publicación fue actualizado."
-                            )
-                    );
+            mensajeInfo(
+                    "Estado actualizado",
+                    "El catálogo fue actualizado."
+            );
 
         } catch (IllegalArgumentException
                  | IllegalStateException e) {
@@ -211,113 +264,362 @@ public class PublicacionBean implements Serializable {
         }
     }
 
-    public List<Publicacion> getPublicacionesPropias() {
+    public void limpiarFiltros() {
 
-        Usuario usuario = obtenerUsuarioSesion();
+        filtroTexto = null;
+        filtroTipo = null;
+        filtroCategoriaId = null;
+    }
+
+    public List<Publicacion>
+    getPublicacionesPropias() {
+
+        Usuario usuario =
+                obtenerUsuarioSesion();
 
         if (usuario == null) {
             return List.of();
         }
 
-        return publicacionService.listarPorPropietario(
-                usuario.getIdUsuario()
+        return publicacionService
+                .listarPorPropietario(
+                        usuario.getIdUsuario()
+                );
+    }
+
+    public List<Publicacion>
+    getPublicacionesAdmin() {
+
+        return publicacionService
+                .listarTodas();
+    }
+
+    public List<Publicacion>
+    getCatalogoFiltrado() {
+
+        String texto =
+                filtroTexto == null
+                        ? ""
+                        : filtroTexto
+                        .trim()
+                        .toLowerCase(
+                                Locale.ROOT
+                        );
+
+        return publicacionService
+                .listarActivas()
+                .stream()
+                .filter(
+                        publicacion ->
+                                coincideTexto(
+                                        publicacion,
+                                        texto
+                                )
+                )
+                .filter(
+                        publicacion ->
+                                filtroTipo == null
+                                        || publicacion.getTipo()
+                                        == filtroTipo
+                )
+                .filter(
+                        publicacion ->
+                                filtroCategoriaId == null
+                                        || (
+                                        publicacion.getCategoria()
+                                                != null
+                                                && filtroCategoriaId.equals(
+                                                publicacion
+                                                        .getCategoria()
+                                                        .getIdCategoria()
+                                        )
+                                )
+                )
+                .toList();
+    }
+
+    public List<SeccionCatalogo>
+    getSeccionesCatalogo() {
+
+        Map<Integer, SeccionCatalogo> secciones =
+                new LinkedHashMap<>();
+
+        for (Publicacion publicacion
+                : getCatalogoFiltrado()) {
+
+            if (publicacion.getEmprendimiento()
+                    == null
+                    || publicacion
+                    .getEmprendimiento()
+                    .getIdEmprendimiento()
+                    == null) {
+
+                continue;
+            }
+
+            Integer id =
+                    publicacion
+                            .getEmprendimiento()
+                            .getIdEmprendimiento();
+
+            SeccionCatalogo seccion =
+                    secciones.computeIfAbsent(
+                            id,
+                            clave ->
+                                    new SeccionCatalogo(
+                                            publicacion
+                                                    .getEmprendimiento()
+                                    )
+                    );
+
+            seccion.getPublicaciones()
+                    .add(
+                            publicacion
+                    );
+        }
+
+        return new ArrayList<>(
+                secciones.values()
         );
     }
 
-    public List<Publicacion> getPublicacionesAdmin() {
-        return publicacionService.listarTodas();
+    public int getCantidadResultados() {
+
+        return getCatalogoFiltrado()
+                .size();
     }
 
-    public List<Publicacion> getCatalogoFiltrado() {
+    public Emprendimiento getNegocioActual() {
 
-        String texto = filtroTexto == null
-                ? ""
-                : filtroTexto.trim()
-                .toLowerCase(Locale.ROOT);
-
-        return publicacionService.listarActivas()
-                .stream()
-                .filter(p -> texto.isBlank()
-                        || p.getNombre()
-                        .toLowerCase(Locale.ROOT)
-                        .contains(texto)
-                        || (p.getDescripcion() != null
-                        && p.getDescripcion()
-                        .toLowerCase(Locale.ROOT)
-                        .contains(texto)))
-                .filter(p -> filtroTipo == null
-                        || p.getTipo() == filtroTipo)
-                .filter(p -> filtroCategoriaId == null
-                        || p.getCategoria() != null
-                        && filtroCategoriaId.equals(
-                        p.getCategoria().getIdCategoria()
-                ))
-                .toList();
-    }
-
-    public List<Emprendimiento> getEmprendimientosPropios() {
-
-        Usuario usuario = obtenerUsuarioSesion();
+        Usuario usuario =
+                obtenerUsuarioSesion();
 
         if (usuario == null) {
-            return List.of();
+            return null;
         }
 
-        return emprendimientoService.listarPorPropietario(
+        return emprendimientoService
+                .listarPorPropietario(
                         usuario.getIdUsuario()
                 )
                 .stream()
-                .filter(Emprendimiento::isActivo)
-                .toList();
+                .findFirst()
+                .orElse(null);
     }
 
-    public List<Categoria> getCategoriasActivas() {
-        return categoriaService.listarActivas();
+    public boolean isManejaStock() {
+
+        Emprendimiento negocio =
+                getNegocioActual();
+
+        return negocio != null
+                && negocio.getCategoria() != null
+                && negocio
+                .getCategoria()
+                .isManejaStock();
+    }
+
+    public String getCategoriaNegocioNombre() {
+
+        Emprendimiento negocio =
+                getNegocioActual();
+
+        if (negocio == null
+                || negocio.getCategoria() == null) {
+
+            return "";
+        }
+
+        return negocio
+                .getCategoria()
+                .getNombre();
+    }
+
+    public List<Emprendimiento>
+    getEmprendimientosPropios() {
+
+        Emprendimiento negocio =
+                getNegocioActual();
+
+        return negocio == null
+                ? List.of()
+                : List.of(
+                negocio
+        );
+    }
+
+    public List<Categoria>
+    getCategoriasActivas() {
+
+        return categoriaService
+                .listarActivas();
     }
 
     public TipoPublicacion[] getTipos() {
+
         return TipoPublicacion.values();
     }
 
     public boolean isServicio() {
-        return tipo == TipoPublicacion.SERVICIO;
+
+        return tipo
+                == TipoPublicacion.SERVICIO;
     }
 
     public boolean isEditando() {
+
         return idPublicacion != null;
     }
 
     public void cargarDetalle() {
 
         if (idDetalle == null) {
+
             enviar404();
             return;
         }
 
-        detalle = publicacionService.buscarActivaPorId(
-                idDetalle
-        );
+        detalle =
+                publicacionService
+                        .buscarActivaPorId(
+                                idDetalle
+                        );
 
         if (detalle == null) {
             enviar404();
         }
     }
 
+    private Emprendimiento
+    obtenerNegocioActualObligatorio(
+            Usuario usuario) {
+
+        Emprendimiento negocio =
+                emprendimientoService
+                        .listarPorPropietario(
+                                usuario.getIdUsuario()
+                        )
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Tu cuenta no tiene un negocio asociado."
+                                        )
+                        );
+
+        if (negocio.getCategoria() == null) {
+
+            throw new IllegalStateException(
+                    "Tu negocio no tiene una categoría asignada."
+            );
+        }
+
+        return negocio;
+    }
+
+    private BigDecimal convertirPrecio(
+            String valor) {
+
+        if (valor == null
+                || valor.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "El precio es obligatorio."
+            );
+        }
+
+        try {
+
+            return new BigDecimal(
+                    valor.trim()
+                            .replace(
+                                    ",",
+                                    ""
+                            )
+            );
+
+        } catch (NumberFormatException e) {
+
+            throw new IllegalArgumentException(
+                    "El precio no es válido."
+            );
+        }
+    }
+
+    private boolean coincideTexto(
+            Publicacion publicacion,
+            String texto) {
+
+        if (texto.isBlank()) {
+            return true;
+        }
+
+        return contiene(
+                publicacion.getNombre(),
+                texto
+        )
+                || contiene(
+                publicacion.getDescripcion(),
+                texto
+        )
+                || (
+                publicacion.getEmprendimiento()
+                        != null
+                        && contiene(
+                        publicacion
+                                .getEmprendimiento()
+                                .getNombre(),
+                        texto
+                )
+        )
+                || (
+                publicacion.getCategoria()
+                        != null
+                        && contiene(
+                        publicacion
+                                .getCategoria()
+                                .getNombre(),
+                        texto
+                )
+        );
+    }
+
+    private boolean contiene(
+            String valor,
+            String texto) {
+
+        return valor != null
+                && valor
+                .toLowerCase(
+                        Locale.ROOT
+                )
+                .contains(
+                        texto
+                );
+    }
+
     private void enviar404() {
 
         FacesContext contexto =
-                FacesContext.getCurrentInstance();
+                FacesContext
+                        .getCurrentInstance();
 
         ExternalContext externo =
-                contexto.getExternalContext();
+                contexto
+                        .getExternalContext();
 
         try {
+
             externo.responseSendError(
                     404,
                     "Publicación no encontrada"
             );
+
             contexto.responseComplete();
+
         } catch (IOException e) {
+
             throw new IllegalStateException(
                     "No se pudo responder con 404.",
                     e
@@ -327,22 +629,42 @@ public class PublicacionBean implements Serializable {
 
     private Usuario obtenerUsuarioSesion() {
 
-        Object valor = FacesContext
-                .getCurrentInstance()
-                .getExternalContext()
-                .getSessionMap()
-                .get("usuarioAutenticado");
+        Object valor =
+                FacesContext
+                        .getCurrentInstance()
+                        .getExternalContext()
+                        .getSessionMap()
+                        .get(
+                                "usuarioAutenticado"
+                        );
 
         return valor instanceof Usuario
                 ? (Usuario) valor
                 : null;
     }
 
+    private void mensajeInfo(
+            String resumen,
+            String detalleMensaje) {
+
+        FacesContext
+                .getCurrentInstance()
+                .addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                resumen,
+                                detalleMensaje
+                        )
+                );
+    }
+
     private void mensajeError(
             String resumen,
             String detalleMensaje) {
 
-        FacesContext.getCurrentInstance()
+        FacesContext
+                .getCurrentInstance()
                 .addMessage(
                         null,
                         new FacesMessage(
@@ -358,10 +680,17 @@ public class PublicacionBean implements Serializable {
         idPublicacion = null;
         idEmprendimiento = null;
         idCategoria = null;
-        tipo = TipoPublicacion.PRODUCTO;
+
+        tipo =
+                TipoPublicacion.PRODUCTO;
+
         nombre = null;
         descripcion = null;
+        imagenUrl = null;
+
         precio = null;
+        precioTexto = "0.00";
+
         stock = 0;
     }
 
@@ -369,99 +698,191 @@ public class PublicacionBean implements Serializable {
         return idPublicacion;
     }
 
-    public void setIdPublicacion(Integer idPublicacion) {
-        this.idPublicacion = idPublicacion;
+    public void setIdPublicacion(
+            Integer idPublicacion) {
+
+        this.idPublicacion =
+                idPublicacion;
     }
 
     public Integer getIdEmprendimiento() {
         return idEmprendimiento;
     }
 
-    public void setIdEmprendimiento(Integer idEmprendimiento) {
-        this.idEmprendimiento = idEmprendimiento;
+    public void setIdEmprendimiento(
+            Integer idEmprendimiento) {
+
+        this.idEmprendimiento =
+                idEmprendimiento;
     }
 
     public Integer getIdCategoria() {
         return idCategoria;
     }
 
-    public void setIdCategoria(Integer idCategoria) {
-        this.idCategoria = idCategoria;
+    public void setIdCategoria(
+            Integer idCategoria) {
+
+        this.idCategoria =
+                idCategoria;
     }
 
     public TipoPublicacion getTipo() {
         return tipo;
     }
 
-    public void setTipo(TipoPublicacion tipo) {
-        this.tipo = tipo;
+    public void setTipo(
+            TipoPublicacion tipo) {
+
+        this.tipo =
+                tipo;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombre(
+            String nombre) {
+
+        this.nombre =
+                nombre;
     }
 
     public String getDescripcion() {
         return descripcion;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setDescripcion(
+            String descripcion) {
+
+        this.descripcion =
+                descripcion;
+    }
+
+    public String getImagenUrl() {
+        return imagenUrl;
+    }
+
+    public void setImagenUrl(
+            String imagenUrl) {
+
+        this.imagenUrl =
+                imagenUrl;
     }
 
     public BigDecimal getPrecio() {
         return precio;
     }
 
-    public void setPrecio(BigDecimal precio) {
-        this.precio = precio;
+    public void setPrecio(
+            BigDecimal precio) {
+
+        this.precio =
+                precio;
+
+        this.precioTexto =
+                precio == null
+                        ? "0.00"
+                        : precio
+                        .setScale(2)
+                        .toPlainString();
+    }
+
+    public String getPrecioTexto() {
+        return precioTexto;
+    }
+
+    public void setPrecioTexto(
+            String precioTexto) {
+
+        this.precioTexto =
+                precioTexto;
     }
 
     public Integer getStock() {
         return stock;
     }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
+    public void setStock(
+            Integer stock) {
+
+        this.stock =
+                stock;
     }
 
     public String getFiltroTexto() {
         return filtroTexto;
     }
 
-    public void setFiltroTexto(String filtroTexto) {
-        this.filtroTexto = filtroTexto;
+    public void setFiltroTexto(
+            String filtroTexto) {
+
+        this.filtroTexto =
+                filtroTexto;
     }
 
     public TipoPublicacion getFiltroTipo() {
         return filtroTipo;
     }
 
-    public void setFiltroTipo(TipoPublicacion filtroTipo) {
-        this.filtroTipo = filtroTipo;
+    public void setFiltroTipo(
+            TipoPublicacion filtroTipo) {
+
+        this.filtroTipo =
+                filtroTipo;
     }
 
     public Integer getFiltroCategoriaId() {
         return filtroCategoriaId;
     }
 
-    public void setFiltroCategoriaId(Integer filtroCategoriaId) {
-        this.filtroCategoriaId = filtroCategoriaId;
+    public void setFiltroCategoriaId(
+            Integer filtroCategoriaId) {
+
+        this.filtroCategoriaId =
+                filtroCategoriaId;
     }
 
     public Integer getIdDetalle() {
         return idDetalle;
     }
 
-    public void setIdDetalle(Integer idDetalle) {
-        this.idDetalle = idDetalle;
+    public void setIdDetalle(
+            Integer idDetalle) {
+
+        this.idDetalle =
+                idDetalle;
     }
 
     public Publicacion getDetalle() {
         return detalle;
+    }
+
+    public static class SeccionCatalogo
+            implements Serializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        private final Emprendimiento emprendimiento;
+
+        private final List<Publicacion> publicaciones =
+                new ArrayList<>();
+
+        public SeccionCatalogo(
+                Emprendimiento emprendimiento) {
+
+            this.emprendimiento =
+                    emprendimiento;
+        }
+
+        public Emprendimiento getEmprendimiento() {
+            return emprendimiento;
+        }
+
+        public List<Publicacion> getPublicaciones() {
+            return publicaciones;
+        }
     }
 }

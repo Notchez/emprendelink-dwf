@@ -31,6 +31,10 @@
         </class>
 
         <class>
+            emprendelink.persistence.jpa.entity.PlanEntity
+        </class>
+
+        <class>
             emprendelink.persistence.jpa.entity.EmprendimientoEntity
         </class>
 

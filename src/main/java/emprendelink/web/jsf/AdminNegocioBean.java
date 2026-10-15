@@ -1,10 +1,13 @@
 package emprendelink.web.jsf;
 
+import emprendelink.model.Categoria;
 import emprendelink.model.Emprendimiento;
 import emprendelink.model.Pedido;
 import emprendelink.model.Plan;
+import emprendelink.model.Usuario;
 import emprendelink.model.enums.EstadoPedido;
 import emprendelink.service.AdminConsultaService;
+import emprendelink.service.CategoriaService;
 import emprendelink.service.EmprendimientoService;
 import emprendelink.service.PlanService;
 import jakarta.annotation.PostConstruct;
@@ -21,7 +24,8 @@ import java.util.List;
 
 @Named
 @ViewScoped
-public class AdminNegocioBean implements Serializable {
+public class AdminNegocioBean
+        implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,9 +38,16 @@ public class AdminNegocioBean implements Serializable {
     @Inject
     private PlanService planService;
 
+    @Inject
+    private CategoriaService categoriaService;
+
     private Integer idEmprendimiento;
 
     private Integer idPlanSeleccionado;
+    private Integer idCategoriaSeleccionada;
+
+    private String nombre;
+    private String logoUrl;
 
     private Emprendimiento emprendimiento;
 
@@ -46,17 +57,26 @@ public class AdminNegocioBean implements Serializable {
     private List<Plan> planes =
             Collections.emptyList();
 
+    private List<Categoria> categorias =
+            Collections.emptyList();
+
     @PostConstruct
     public void inicializar() {
 
-        cargarPlanes();
+        planes =
+                planService.listarActivos();
+
+        categorias =
+                categoriaService.listarActivas();
 
         String parametro =
                 FacesContext
                         .getCurrentInstance()
                         .getExternalContext()
                         .getRequestParameterMap()
-                        .get("id");
+                        .get(
+                                "id"
+                        );
 
         if (parametro == null
                 || parametro.isBlank()) {
@@ -85,10 +105,11 @@ public class AdminNegocioBean implements Serializable {
                 emprendimientoService
                         .listarTodos()
                         .stream()
-                        .filter(item ->
-                                idEmprendimiento.equals(
-                                        item.getIdEmprendimiento()
-                                )
+                        .filter(
+                                item ->
+                                        idEmprendimiento.equals(
+                                                item.getIdEmprendimiento()
+                                        )
                         )
                         .findFirst()
                         .orElse(null);
@@ -97,9 +118,6 @@ public class AdminNegocioBean implements Serializable {
 
             pedidos =
                     Collections.emptyList();
-
-            idPlanSeleccionado =
-                    null;
 
             return;
         }
@@ -110,25 +128,67 @@ public class AdminNegocioBean implements Serializable {
                                 idEmprendimiento
                         );
 
-        if (emprendimiento.getPlan()
-                != null) {
+        nombre =
+                emprendimiento.getNombre();
 
-            idPlanSeleccionado =
-                    emprendimiento
-                            .getPlan()
-                            .getIdPlan();
+        logoUrl =
+                emprendimiento.getLogoUrl();
 
-        } else {
+        idPlanSeleccionado =
+                emprendimiento.getPlan() == null
+                        ? null
+                        : emprendimiento
+                        .getPlan()
+                        .getIdPlan();
 
-            idPlanSeleccionado =
-                    null;
-        }
+        idCategoriaSeleccionada =
+                emprendimiento.getCategoria()
+                        == null
+                        ? null
+                        : emprendimiento
+                        .getCategoria()
+                        .getIdCategoria();
     }
 
-    private void cargarPlanes() {
+    public void guardarDatos() {
 
-        planes =
-                planService.listarActivos();
+        Usuario administrador =
+                obtenerUsuarioSesion();
+
+        if (administrador == null) {
+
+            mensajeError(
+                    "No se pudo identificar al administrador."
+            );
+
+            return;
+        }
+
+        try {
+
+            emprendimientoService
+                    .actualizarDatosAdministrativos(
+                            administrador
+                                    .getIdUsuario(),
+                            idEmprendimiento,
+                            nombre,
+                            idCategoriaSeleccionada,
+                            logoUrl
+                    );
+
+            cargar();
+
+            mensajeExito(
+                    "Datos del negocio actualizados."
+            );
+
+        } catch (IllegalArgumentException
+                 | IllegalStateException e) {
+
+            mensajeError(
+                    e.getMessage()
+            );
+        }
     }
 
     public void guardarPlan() {
@@ -159,10 +219,10 @@ public class AdminNegocioBean implements Serializable {
             );
 
         } catch (IllegalArgumentException
-                 | IllegalStateException ex) {
+                 | IllegalStateException e) {
 
             mensajeError(
-                    ex.getMessage()
+                    e.getMessage()
             );
         }
     }
@@ -170,13 +230,17 @@ public class AdminNegocioBean implements Serializable {
     public BigDecimal getTotalVentas() {
 
         return pedidos.stream()
-                .filter(pedido ->
-                        pedido.getEstado()
-                                == EstadoPedido.COMPLETADO
+                .filter(
+                        pedido ->
+                                pedido.getEstado()
+                                        == EstadoPedido.COMPLETADO
                 )
-                .map(Pedido::getTotal)
-                .filter(total ->
-                        total != null
+                .map(
+                        Pedido::getTotal
+                )
+                .filter(
+                        total ->
+                                total != null
                 )
                 .reduce(
                         BigDecimal.ZERO,
@@ -201,41 +265,28 @@ public class AdminNegocioBean implements Serializable {
                 .getPlan()
                 .getTasaComision()
                 .multiply(
-                        BigDecimal.valueOf(100)
+                        BigDecimal.valueOf(
+                                100
+                        )
                 )
                 .stripTrailingZeros()
                 .toPlainString();
     }
 
-    public Integer getIdEmprendimiento() {
-        return idEmprendimiento;
-    }
+    private Usuario obtenerUsuarioSesion() {
 
-    public Emprendimiento getEmprendimiento() {
-        return emprendimiento;
-    }
+        Object valor =
+                FacesContext
+                        .getCurrentInstance()
+                        .getExternalContext()
+                        .getSessionMap()
+                        .get(
+                                "usuarioAutenticado"
+                        );
 
-    public List<Pedido> getPedidos() {
-        return pedidos;
-    }
-
-    public List<Plan> getPlanes() {
-        return planes;
-    }
-
-    public Integer getIdPlanSeleccionado() {
-        return idPlanSeleccionado;
-    }
-
-    public void setIdPlanSeleccionado(
-            Integer idPlanSeleccionado) {
-
-        this.idPlanSeleccionado =
-                idPlanSeleccionado;
-    }
-
-    public boolean isEncontrado() {
-        return emprendimiento != null;
+        return valor instanceof Usuario
+                ? (Usuario) valor
+                : null;
     }
 
     private void mensajeExito(
@@ -266,5 +317,73 @@ public class AdminNegocioBean implements Serializable {
                                 null
                         )
                 );
+    }
+
+    public Integer getIdEmprendimiento() {
+        return idEmprendimiento;
+    }
+
+    public Emprendimiento getEmprendimiento() {
+        return emprendimiento;
+    }
+
+    public List<Pedido> getPedidos() {
+        return pedidos;
+    }
+
+    public List<Plan> getPlanes() {
+        return planes;
+    }
+
+    public List<Categoria> getCategorias() {
+        return categorias;
+    }
+
+    public Integer getIdPlanSeleccionado() {
+        return idPlanSeleccionado;
+    }
+
+    public void setIdPlanSeleccionado(
+            Integer idPlanSeleccionado) {
+
+        this.idPlanSeleccionado =
+                idPlanSeleccionado;
+    }
+
+    public Integer getIdCategoriaSeleccionada() {
+        return idCategoriaSeleccionada;
+    }
+
+    public void setIdCategoriaSeleccionada(
+            Integer idCategoriaSeleccionada) {
+
+        this.idCategoriaSeleccionada =
+                idCategoriaSeleccionada;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(
+            String nombre) {
+
+        this.nombre =
+                nombre;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(
+            String logoUrl) {
+
+        this.logoUrl =
+                logoUrl;
+    }
+
+    public boolean isEncontrado() {
+        return emprendimiento != null;
     }
 }

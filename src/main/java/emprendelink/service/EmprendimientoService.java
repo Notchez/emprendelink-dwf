@@ -38,6 +38,22 @@ public interface EmprendimientoService {
             String contacto
     );
 
+    void actualizarDatosEmprendedor(
+            Integer idPropietario,
+            Integer idEmprendimiento,
+            String descripcion,
+            String contacto,
+            String logoUrl
+    );
+
+    void actualizarDatosAdministrativos(
+            Integer idAdministrador,
+            Integer idEmprendimiento,
+            String nombre,
+            Integer idCategoria,
+            String logoUrl
+    );
+
     void cambiarEstado(
             Integer idUsuario,
             Integer idEmprendimiento,
