@@ -8,13 +8,21 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-El rol forma parte del usuario autenticado y se utiliza tanto para proteger rutas como para aplicar reglas dentro de Services.
+La autorización se aplica mediante:
+
+```text
+Servlet Filters
++
+Services
+```
+
+Ocultar una opción en la interfaz no sustituye las reglas de autorización del backend.
 
 ---
 
-# 2. Visitante
+## 2. Visitante
 
-Un visitante no autenticado puede acceder a:
+Puede acceder a:
 
 ```text
 /login.xhtml
@@ -26,87 +34,153 @@ Un visitante no autenticado puede acceder a:
 Puede:
 
 - iniciar sesión;
-- registrarse;
-- consultar el catálogo público;
-- consultar información pública de publicaciones.
+- crear una cuenta de cliente;
+- consultar el catálogo;
+- consultar detalle de publicaciones.
 
 No puede:
 
-- administrar usuarios;
-- administrar categorías;
+- utilizar carrito;
+- consultar pedidos privados;
 - administrar negocios;
-- crear publicaciones;
-- gestionar pedidos privados;
-- administrar planes;
-- consultar comisiones.
+- administrar publicaciones;
+- acceder a administración.
 
 ---
 
-# 3. ROLE_CLIENTE
+## 3. `ROLE_CLIENTE`
 
-Un Cliente puede:
+Landing:
 
-- iniciar y cerrar sesión;
-- consultar el catálogo;
-- consultar publicaciones;
-- crear pedidos;
+```text
+/catalogo/index.xhtml
+```
+
+Navegación:
+
+```text
+Explorar
+Mis pedidos
+Mi perfil
+Carrito
+```
+
+Puede:
+
+- consultar catálogo;
+- usar búsqueda y filtro por categoría;
+- consultar detalle;
+- agregar al carrito;
+- cambiar cantidades;
+- eliminar artículos;
+- comprar a varios negocios dentro del mismo carrito;
+- confirmar checkout;
 - consultar sus pedidos;
-- consultar el detalle de sus pedidos.
+- consultar detalle propio;
+- actualizar teléfono;
+- actualizar dirección;
+- cerrar sesión desde Mi perfil.
 
 Rutas principales:
 
 ```text
-/inicio.xhtml
 /catalogo/index.xhtml
 /catalogo/detalle.xhtml
+/carrito/index.xhtml
 /pedidos/nuevo.xhtml
 /pedidos/mis-pedidos.xhtml
 /pedidos/detalle.xhtml
+/perfil/index.xhtml
 ```
 
 No puede:
 
 - acceder a `/admin/*`;
-- administrar emprendimientos;
-- administrar publicaciones;
-- consultar pedidos recibidos de emprendimientos;
-- modificar pedidos de otros clientes.
+- acceder a áreas del emprendedor;
+- modificar publicaciones;
+- modificar negocios;
+- consultar pedidos ajenos.
 
 ---
 
-# 4. ROLE_EMPRENDEDOR
+## 4. `ROLE_EMPRENDEDOR`
 
-Un Emprendedor puede:
-
-- iniciar y cerrar sesión;
-- administrar sus emprendimientos;
-- administrar publicaciones de sus propios emprendimientos;
-- consultar pedidos recibidos;
-- consultar detalles autorizados;
-- cambiar estados de pedidos asociados a sus negocios.
-
-Rutas principales:
+Landing:
 
 ```text
-/inicio.xhtml
-/emprendimientos/index.xhtml
-/publicaciones/index.xhtml
+/pedidos/recibidos.xhtml
+```
+
+Navegación:
+
+```text
+Pedidos
+Mi negocio
+Catálogo
+Ventas
+Comisiones
+```
+
+Puede:
+
+- consultar pedidos recibidos de su negocio;
+- cambiar estados permitidos;
+- consultar detalle de pedidos autorizados;
+- consultar su único negocio;
+- editar descripción, contacto y logo;
+- crear publicaciones;
+- editar publicaciones;
+- activar/desactivar publicaciones;
+- consultar límite del plan;
+- consultar ventas;
+- filtrar ventas por período;
+- consultar comisiones.
+
+Rutas:
+
+```text
 /pedidos/recibidos.xhtml
 /pedidos/detalle.xhtml
+/emprendimientos/index.xhtml
+/publicaciones/index.xhtml
+/ventas/index.xhtml
+/comisiones/index.xhtml
 ```
 
 No puede:
 
-- modificar emprendimientos de otros usuarios;
-- modificar publicaciones ajenas;
-- gestionar pedidos pertenecientes a negocios ajenos;
-- acceder a `/admin/*`.
+- acceder al catálogo público como consumidor mientras está autenticado como emprendedor;
+- acceder a `/admin/*`;
+- crear un segundo negocio;
+- cambiar por sí mismo nombre, categoría o plan;
+- gestionar publicaciones ajenas;
+- gestionar pedidos ajenos.
 
 ---
 
-# 5. ROLE_ADMIN
+## 5. `ROLE_ADMIN`
 
-Un Administrador puede utilizar el backoffice.
+Landing:
+
+```text
+/admin/inicio.xhtml
+```
+
+Puede:
+
+- listar usuarios;
+- activar/desactivar usuarios;
+- crear cuentas de emprendedor;
+- crear simultáneamente el negocio asociado;
+- administrar categorías;
+- administrar planes;
+- listar negocios;
+- consultar detalle de negocio;
+- cambiar datos administrativos;
+- activar/desactivar negocios;
+- cambiar plan;
+- consultar ventas;
+- consultar comisiones.
 
 Rutas:
 
@@ -120,43 +194,82 @@ Rutas:
 /admin/comisiones.xhtml
 ```
 
-Puede:
-
-- consultar usuarios;
-- activar/desactivar usuarios;
-- administrar categorías;
-- consultar emprendimientos;
-- activar/desactivar emprendimientos;
-- ver detalle administrativo de negocios;
-- consultar pedidos del negocio desde su detalle;
-- administrar planes;
-- asignar planes;
-- consultar ventas completadas;
-- consultar comisiones.
-
-El administrador no se crea mediante el registro público.
+El administrador no se crea desde registro público.
 
 ---
 
-# 6. Propiedad de recursos
+## 6. Creación de cuentas
 
-Además de verificar el rol, los Services validan propiedad.
+### Registro público
 
-## Emprendimiento
-
-Para modificar un emprendimiento:
+Permite exclusivamente:
 
 ```text
-usuario.idUsuario == emprendimiento.propietario.idUsuario
+ROLE_CLIENTE
 ```
 
-excepto operaciones administrativas explícitamente autorizadas.
+### Emprendedor
+
+Se crea mediante:
+
+```text
+ROLE_ADMIN
+   ↓
+AdminEmprendedorBean
+   ↓
+AdminEmprendedorService
+```
+
+La misma operación crea:
+
+```text
+Usuario ROLE_EMPRENDEDOR
++
+Emprendimiento
+```
+
+con:
+
+```text
+plan
+categoria
+nombre
+contacto
+logo opcional
+```
 
 ---
 
-## Publicación
+## 7. Regla de un negocio por emprendedor
 
-Para que un emprendedor gestione una publicación:
+La base aplica:
+
+```text
+UNIQUE (id_propietario)
+```
+
+Por tanto:
+
+```text
+ROLE_EMPRENDEDOR
+→ máximo 1 Emprendimiento
+```
+
+La interfaz utiliza el concepto:
+
+```text
+Mi negocio
+```
+
+y no “Mis emprendimientos”.
+
+---
+
+## 8. Propiedad de recursos
+
+### Publicación
+
+Para gestionar una publicación:
 
 ```text
 publicacion.emprendimiento.propietario.idUsuario
@@ -164,15 +277,9 @@ publicacion.emprendimiento.propietario.idUsuario
 usuario.idUsuario
 ```
 
-El administrador únicamente puede realizar las operaciones que los Services autoricen expresamente.
+### Pedido — Cliente
 
----
-
-## Pedido — Cliente
-
-Un cliente no debe consultar pedidos pertenecientes a otro cliente.
-
-Regla conceptual:
+Para consultar un pedido:
 
 ```text
 pedido.cliente.idUsuario
@@ -180,13 +287,9 @@ pedido.cliente.idUsuario
 usuario.idUsuario
 ```
 
----
+### Pedido — Emprendedor
 
-## Pedido — Emprendedor
-
-Un emprendedor solamente puede administrar pedidos asociados a sus negocios.
-
-Regla:
+Para gestionar un pedido:
 
 ```text
 pedido.emprendimiento.propietario.idUsuario
@@ -196,9 +299,9 @@ usuario.idUsuario
 
 ---
 
-# 7. Seguridad por filtros
+## 9. Filtros
 
-## `AutenticacionFilter`
+### `AutenticacionFilter`
 
 Protege:
 
@@ -206,15 +309,9 @@ Protege:
 /inicio.xhtml
 ```
 
-Si no existe sesión válida:
+La ruta actúa como redirección por rol.
 
-```text
-redirect → /login.xhtml
-```
-
----
-
-## `AdminFilter`
+### `AdminFilter`
 
 Protege:
 
@@ -228,27 +325,46 @@ Requiere:
 ROLE_ADMIN
 ```
 
-Sin sesión:
+### `CatalogoFilter`
+
+Protege el comportamiento de:
 
 ```text
-redirect → /login.xhtml
+/catalogo/*
 ```
 
-Rol incorrecto:
+Reglas:
 
 ```text
-HTTP 403
+Visitante     → permitido
+ROLE_CLIENTE  → permitido
+ROLE_EMPRENDEDOR → redirect a pedidos
+ROLE_ADMIN       → redirect a administración
 ```
 
----
+### `ClienteFilter`
 
-## `EmprendedorFilter`
+Protege:
+
+```text
+/carrito/*
+/perfil/*
+```
+
+Requiere:
+
+```text
+ROLE_CLIENTE
+```
+
+### `EmprendedorFilter`
 
 Protege:
 
 ```text
 /emprendimientos/*
-/publicaciones/*
+/ventas/*
+/comisiones/*
 ```
 
 Requiere:
@@ -257,40 +373,21 @@ Requiere:
 ROLE_EMPRENDEDOR
 ```
 
-Sin sesión:
+### `PublicacionFilter`
 
-```text
-redirect → /login.xhtml
-```
-
-Rol incorrecto:
-
-```text
-HTTP 403
-```
-
----
-
-## `PublicacionFilter`
-
-Aplica específicamente sobre:
+Protege:
 
 ```text
 /publicaciones/*
 ```
 
-Comprueba adicionalmente:
+Requiere usuario activo:
 
 ```text
-usuario activo
 ROLE_EMPRENDEDOR
 ```
 
-La autorización final sobre propiedad continúa dentro de los Services.
-
----
-
-## `PedidosFilter`
+### `PedidosFilter`
 
 Protege:
 
@@ -298,104 +395,83 @@ Protege:
 /pedidos/*
 ```
 
-Reglas específicas:
+Rutas cliente:
 
 ```text
 /pedidos/nuevo.xhtml
 /pedidos/mis-pedidos.xhtml
 ```
 
-requieren:
-
-```text
-ROLE_CLIENTE
-```
-
-La ruta:
+Ruta emprendedor:
 
 ```text
 /pedidos/recibidos.xhtml
 ```
 
-requiere:
-
-```text
-ROLE_EMPRENDEDOR
-```
-
-El acceso al detalle se complementa con validaciones de propiedad dentro del Service.
+El detalle se complementa con la autorización del Service.
 
 ---
 
-# 8. Usuario activo
+## 10. Usuario activo
 
-Un usuario puede conservar su registro en la base de datos y encontrarse:
+Un usuario con:
 
 ```text
 activo = false
 ```
 
-Un usuario inactivo no debe utilizar las operaciones normales protegidas.
-
-La desactivación es lógica para conservar:
-
-- historial;
-- pedidos;
-- relaciones.
+permanece en la base para preservar historial, pero no debe operar normalmente en rutas protegidas.
 
 ---
 
-# 9. Planes
+## 11. Datos del negocio
 
-Los planes son administrados desde:
+### Emprendedor puede modificar
 
 ```text
-/admin/planes.xhtml
+descripcion
+contacto
+logoUrl
 ```
 
-El administrador puede:
+### Administración controla
 
-- crear;
-- editar;
-- activar;
-- desactivar;
-- asignar planes a emprendimientos.
-
-Un plan en uso no puede desactivarse si la regla de negocio lo impide.
+```text
+nombre
+categoria
+plan
+estado
+```
 
 ---
 
-# 10. Comisiones
+## 12. Categoría e inventario
 
-Las comisiones son información administrativa.
-
-Ruta:
+La categoría define:
 
 ```text
-/admin/comisiones.xhtml
+manejaStock
 ```
 
-Requiere:
+El emprendedor no selecciona tipo de publicación.
 
 ```text
-ROLE_ADMIN
+manejaStock = true
+→ PRODUCTO
+→ stock
+
+manejaStock = false
+→ SERVICIO
+→ stock = 0
 ```
-
-Permite consultar:
-
-- pedidos completados;
-- ventas completadas;
-- tasas aplicadas;
-- montos de comisión;
-- filtros por negocio;
-- mes;
-- año.
 
 ---
 
-# 11. Estados de pedido
+## 13. Pedido
 
-El emprendedor únicamente puede realizar transiciones válidas.
+El cliente puede crear pedidos mediante checkout.
+
+El emprendedor puede ejecutar únicamente transiciones válidas:
 
 ```text
 PENDIENTE → CONFIRMADO
@@ -412,84 +488,31 @@ No se permiten transiciones arbitrarias.
 
 ---
 
-# 12. Autenticación
-
-El usuario autenticado se mantiene en sesión mediante:
-
-```text
-usuarioAutenticado
-```
-
-Las vistas no deben confiar exclusivamente en ocultar botones.
-
-La autorización real se valida mediante:
-
-```text
-Filtros
-+
-Services
-```
-
----
-
-# 13. Contraseñas
+## 14. Contraseñas
 
 Las contraseñas:
 
 - no se almacenan en texto plano;
-- se procesan mediante el mecanismo de hash utilizado por la aplicación;
-- el hash no debe exponerse innecesariamente en la sesión ni en la interfaz.
+- se guardan mediante hash;
+- no se muestran en vistas;
+- no deben exponerse en futuros DTO REST.
 
 ---
 
-# 14. Eliminación lógica
-
-Utilizan estado `activo`:
-
-```text
-Usuario
-Categoria
-Plan
-Emprendimiento
-Publicacion
-```
-
-Esto permite conservar la información relacionada con operaciones históricas.
-
----
-
-# 15. Fase 3
-
-Los futuros endpoints REST deberán mantener las mismas reglas de:
-
-- autenticación;
-- roles;
-- propiedad;
-- estado;
-- integridad.
-
-La API no debe duplicar las reglas existentes: deberá reutilizar la capa Service.
-
----
-
-# 16. Principio de seguridad
-
-La autorización no depende únicamente de la interfaz.
-
-Modelo:
+## 15. Principio de seguridad
 
 ```text
 Ruta
  ↓
 Filter
  ↓
-Managed Bean / futura API
+Managed Bean / futura API REST
  ↓
 Service
  ↓
-Regla de rol + propiedad + estado
+rol + propiedad + estado + disponibilidad
  ↓
 DAO
 ```
 
-De esta manera, ocultar o modificar un enlace en la interfaz no permite evitar las reglas de negocio.
+La futura Fase 3 deberá reutilizar estas reglas desde los Services.

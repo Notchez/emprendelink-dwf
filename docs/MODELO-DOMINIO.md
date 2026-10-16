@@ -2,7 +2,19 @@
 
 ## 1. Principio general
 
-El dominio de EmprendeLink representa usuarios, emprendimientos, publicaciones, planes y pedidos sin depender directamente de JSF ni de las entidades JPA.
+El dominio representa:
+
+```text
+usuarios
+negocios
+categorías
+planes
+publicaciones
+pedidos
+detalles
+```
+
+sin depender directamente de JSF ni de entidades JPA.
 
 Ubicación:
 
@@ -10,19 +22,11 @@ Ubicación:
 src/main/java/emprendelink/model/
 ```
 
-Enumeraciones:
-
-```text
-src/main/java/emprendelink/model/enums/
-```
-
 ---
 
 ## 2. `Rol`
 
-Representa el rol asignado a un usuario.
-
-### Atributos
+Atributos:
 
 ```text
 idRol
@@ -43,19 +47,11 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-### Relación
-
-```text
-Rol 1:N Usuario
-```
-
 ---
 
 ## 3. `Usuario`
 
-Representa una cuenta registrada.
-
-### Atributos
+Atributos:
 
 ```text
 idUsuario
@@ -65,33 +61,34 @@ apellido
 correo
 contrasenaHash
 telefono
+direccion
 activo
 fechaRegistro
 ```
 
-### Reglas
+Reglas:
 
-- cada usuario debe poseer un rol;
-- el correo identifica la cuenta;
+- cada usuario tiene un rol;
+- el correo es único;
 - la contraseña se almacena como hash;
-- un usuario inactivo no debe poder operar normalmente dentro de las funciones protegidas;
-- el registro público únicamente permite Cliente o Emprendedor.
+- el usuario debe estar activo para operar;
+- el registro público crea únicamente clientes;
+- un emprendedor se crea desde administración;
+- teléfono y dirección pueden ser actualizados por el cliente.
 
-### Relaciones
+Relaciones:
 
 ```text
 Usuario → Rol
-Usuario → Emprendimiento
-Usuario → Pedido
+Usuario emprendedor → 0..1 Emprendimiento
+Usuario cliente → N Pedido
 ```
 
 ---
 
 ## 4. `Plan`
 
-Representa las condiciones comerciales asignadas a un emprendimiento.
-
-### Atributos
+Atributos:
 
 ```text
 idPlan
@@ -101,100 +98,97 @@ tasaComision
 activo
 ```
 
-### Planes actuales
+Planes actuales:
 
 ```text
-Básico    → 10 publicaciones  → 7%
-Estándar  → 30 publicaciones  → 5%
-Premium   → 60 publicaciones  → 3%
-Max       → 100 publicaciones → 1%
+Básico    → 10  → 7%
+Estándar  → 30  → 5%
+Premium   → 60  → 3%
+Max       → 100 → 1%
 ```
 
-### Reglas
+Reglas:
 
-- el nombre es obligatorio;
-- el máximo de publicaciones debe ser mayor que cero;
-- la tasa debe encontrarse entre 0 y 1;
-- un plan asignado a negocios no debe desactivarse si ello deja referencias inválidas;
-- un negocio no puede cambiar a un plan cuyo límite sea inferior a su cantidad actual de publicaciones activas.
+- nombre obligatorio;
+- máximo > 0;
+- tasa entre 0 y 1;
+- se utiliza para limitar publicaciones activas;
+- se congela como snapshot cuando se crea un pedido.
 
-### Relaciones
+---
+
+## 5. `Categoria`
+
+Atributos:
 
 ```text
-Plan 1:N Emprendimiento
+idCategoria
+nombre
+descripcion
+manejaStock
+activo
+```
+
+Reglas:
+
+- nombre obligatorio;
+- sin duplicados;
+- una categoría inactiva no debe utilizarse en operaciones nuevas;
+- `manejaStock` define si el negocio trabaja con inventario limitado.
+
+Interpretación:
+
+```text
+manejaStock = true  → PRODUCTO
+manejaStock = false → SERVICIO
 ```
 
 ---
 
-## 5. `Emprendimiento`
+## 6. `Emprendimiento`
 
-Representa un negocio registrado por un emprendedor.
-
-### Atributos
+Atributos:
 
 ```text
 idEmprendimiento
 propietario
 plan
+categoria
 nombre
 descripcion
 contacto
+logoUrl
 activo
 fechaRegistro
 ```
 
-### Reglas
+Reglas:
 
-- debe tener propietario;
-- el propietario debe tener rol de emprendedor;
-- debe tener un plan válido;
-- únicamente el propietario puede modificar sus datos;
-- el administrador puede gestionar su estado;
-- un emprendimiento inactivo no debe aparecer como opción disponible en los flujos normales.
+- propietario obligatorio;
+- propietario con `ROLE_EMPRENDEDOR`;
+- plan válido;
+- categoría válida;
+- un emprendedor tiene máximo un negocio;
+- el administrador crea la cuenta y el negocio;
+- el emprendedor puede editar descripción, contacto y logo;
+- nombre, categoría y plan son datos administrativos;
+- un negocio inactivo no aparece como disponible.
 
-### Relaciones
+Relaciones:
 
 ```text
 Emprendimiento → Usuario
 Emprendimiento → Plan
+Emprendimiento → Categoria
 Emprendimiento 1:N Publicacion
 Emprendimiento 1:N Pedido
 ```
 
 ---
 
-## 6. `Categoria`
-
-Representa una clasificación de publicaciones.
-
-### Atributos
-
-```text
-idCategoria
-nombre
-descripcion
-activo
-```
-
-### Reglas
-
-- el nombre es obligatorio;
-- no deben existir categorías duplicadas;
-- una categoría inactiva no puede utilizarse para nuevas publicaciones.
-
-### Relaciones
-
-```text
-Categoria 1:N Publicacion
-```
-
----
-
 ## 7. `Publicacion`
 
-Representa un producto o servicio ofrecido por un emprendimiento.
-
-### Atributos
+Atributos:
 
 ```text
 idPublicacion
@@ -203,15 +197,14 @@ categoria
 tipo
 nombre
 descripcion
+imagenUrl
 precio
 stock
 activo
 fechaPublicacion
 ```
 
-### Tipo
-
-Utiliza:
+`tipo` utiliza:
 
 ```text
 TipoPublicacion
@@ -224,86 +217,63 @@ PRODUCTO
 SERVICIO
 ```
 
+### Resolución de tipo
+
+En el flujo actual, el emprendedor no selecciona tipo ni categoría.
+
+El Service utiliza la categoría del negocio:
+
+```text
+Categoria.manejaStock = true
+→ PRODUCTO
+
+Categoria.manejaStock = false
+→ SERVICIO
+```
+
 ### Reglas
 
-- debe pertenecer a un emprendimiento;
-- debe utilizar una categoría válida;
+- pertenece al negocio del emprendedor;
 - nombre obligatorio;
 - precio no negativo;
+- máximo dos decimales;
+- imagen URL opcional;
 - stock no negativo;
-- solamente el propietario del emprendimiento puede administrarla;
-- el emprendimiento debe estar activo;
-- la categoría debe estar activa;
-- no puede superar el límite de publicaciones activas definido por el plan.
-
-El límite se valida:
-
-```text
-al crear
-al reactivar
-```
-
-### Productos
-
-Para:
-
-```text
-PRODUCTO
-```
-
-se utiliza el stock como control de inventario.
-
-### Servicios
-
-Para:
-
-```text
-SERVICIO
-```
-
-el stock se normaliza a:
-
-```text
-0
-```
-
-### Relaciones
-
-```text
-Publicacion → Emprendimiento
-Publicacion → Categoria
-Publicacion 1:N DetallePedido
-```
+- negocio activo;
+- categoría activa;
+- propietario activo;
+- respeta máximo de publicaciones activas del plan.
 
 ---
 
 ## 8. `Pedido`
 
-Representa una compra realizada por un cliente a un emprendimiento.
-
-### Atributos
+Atributos:
 
 ```text
 idPedido
 cliente
 emprendimiento
+idPlanAplicado
+nombrePlanAplicado
 estado
 total
 tasaComision
 montoComision
+direccionEntrega
 observaciones
 fechaPedido
 fechaCompletado
 detalles
 ```
 
-### Estado inicial
+Estado inicial:
 
 ```text
 PENDIENTE
 ```
 
-### Estados
+Estados:
 
 ```text
 PENDIENTE
@@ -313,7 +283,7 @@ COMPLETADO
 CANCELADO
 ```
 
-### Transiciones permitidas
+Transiciones:
 
 ```text
 PENDIENTE → CONFIRMADO
@@ -333,50 +303,47 @@ COMPLETADO
 CANCELADO
 ```
 
-### Reglas
+Reglas:
 
-- debe pertenecer a un cliente;
-- debe estar asociado a un emprendimiento;
-- sus publicaciones deben pertenecer al mismo emprendimiento;
-- cantidades mayores que cero;
-- debe existir stock suficiente;
-- el total se calcula desde los detalles;
-- un emprendedor únicamente puede administrar pedidos de sus propios negocios;
-- un cliente únicamente puede consultar pedidos autorizados para él.
+- cliente activo;
+- negocio activo;
+- publicaciones válidas;
+- cantidades > 0;
+- stock suficiente cuando corresponde;
+- total calculado desde detalles;
+- un pedido pertenece a un solo negocio;
+- cliente solo consulta sus pedidos;
+- emprendedor solo administra pedidos de su negocio.
 
-### Comisión
+### Snapshot comercial
 
-Al completar el pedido se conserva:
+Al crear:
 
 ```text
-fechaCompletado
+idPlanAplicado
+nombrePlanAplicado
 tasaComision
 montoComision
+direccionEntrega
 ```
 
-Cálculo:
+La comisión se calcula:
 
 ```text
 montoComision = total × tasaComision
 ```
 
-La tasa se almacena como snapshot histórico del plan utilizado al completar la venta.
-
-### Relaciones
+Al completar:
 
 ```text
-Pedido → Usuario
-Pedido → Emprendimiento
-Pedido 1:N DetallePedido
+fechaCompletado
 ```
 
 ---
 
 ## 9. `DetallePedido`
 
-Representa una línea de un pedido.
-
-### Atributos
+Atributos:
 
 ```text
 idDetallePedido
@@ -387,33 +354,65 @@ precioUnitario
 subtotal
 ```
 
-### Reglas
+Reglas:
 
 ```text
 cantidad > 0
 precioUnitario >= 0
-```
-
-Cálculo:
-
-```text
 subtotal = precioUnitario × cantidad
-```
-
-Cuando se agrega un detalle al pedido, el total del pedido se recalcula a partir de todos los subtotales.
-
-### Relaciones
-
-```text
-DetallePedido → Pedido
-DetallePedido → Publicacion
 ```
 
 ---
 
-## 10. `TipoRol`
+## 10. Carrito
 
-Enumeración:
+El carrito no es una entidad persistida.
+
+Se implementa como estado de sesión en:
+
+```text
+CarritoBean
+```
+
+Estructura conceptual:
+
+```text
+Map<idPublicacion, cantidad>
+```
+
+Puede contener publicaciones de varios negocios.
+
+Al confirmar:
+
+```text
+agrupar por negocio
+→ crear un Pedido por negocio
+```
+
+---
+
+## 11. Perfil del cliente
+
+El cliente puede actualizar:
+
+```text
+telefono
+direccion
+```
+
+Nombre y correo permanecen de solo lectura en la interfaz de perfil.
+
+La dirección del perfil es el valor sugerido para nuevos pedidos.
+
+Cada pedido conserva su propia:
+
+```text
+direccionEntrega
+```
+
+---
+
+## 12. `TipoRol`
 
 ```text
 ROLE_ADMIN
@@ -421,26 +420,22 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-Se utiliza para autorización y control de funciones.
-
 ---
 
-## 11. `TipoPublicacion`
-
-Enumeración:
+## 13. `TipoPublicacion`
 
 ```text
 PRODUCTO
 SERVICIO
 ```
 
-Permite diferenciar publicaciones que manejan inventario de aquellas que representan servicios.
+Se mantiene como parte técnica del dominio.
+
+La interfaz del emprendedor no lo expone como selector.
 
 ---
 
-## 12. `EstadoPedido`
-
-Enumeración:
+## 14. `EstadoPedido`
 
 ```text
 PENDIENTE
@@ -450,9 +445,7 @@ COMPLETADO
 CANCELADO
 ```
 
-La interfaz puede mostrar nombres diferentes sin modificar el valor interno.
-
-Ejemplo:
+Presentación:
 
 ```text
 EN_PROCESO → En camino
@@ -461,83 +454,78 @@ COMPLETADO → Entregado
 
 ---
 
-## 13. Inventario
+## 15. Inventario
 
-Cuando se crea un pedido con productos:
+Para `PRODUCTO`:
 
 ```text
+crear pedido:
 stock -= cantidad
-```
 
-Al cancelar un pedido cuando corresponde:
-
-```text
+cancelar:
 stock += cantidad
 ```
 
-No se permite generar un pedido cuando el stock solicitado no está disponible.
+Para `SERVICIO`:
+
+```text
+stock = 0
+```
 
 ---
 
-## 14. Planes y publicaciones
+## 16. Planes y catálogo
 
-Cada emprendimiento tiene un plan.
+Cada negocio tiene un plan.
 
 ```text
 Emprendimiento
-      ↓
-     Plan
-      ↓
+    ↓
+Plan
+    ↓
 maxProductosActivos
 tasaComision
 ```
 
-El límite de publicaciones se aplica exclusivamente sobre publicaciones activas.
+El contador de plan utiliza únicamente publicaciones:
+
+```text
+activo = true
+```
 
 ---
 
-## 15. Eliminación lógica
+## 17. Eliminación lógica
 
-Las siguientes clases poseen estado:
-
-```text
-activo
-```
+Poseen estado:
 
 ```text
 Usuario
 Plan
-Emprendimiento
 Categoria
+Emprendimiento
 Publicacion
 ```
 
 El objetivo es preservar:
 
-- referencias históricas;
-- pedidos;
+- historial;
 - relaciones;
+- pedidos;
 - trazabilidad.
 
 ---
 
-## 16. Separación del dominio
+## 18. Separación del dominio
 
-El modelo no conoce directamente:
+Adaptación de persistencia:
 
 ```text
-JSF
-XHTML
-EntityManager
+Domain Model
+     ↕
+Mapper
+     ↕
 JPA Entity
-REST
-Spring
 ```
 
-La adaptación hacia persistencia se realiza mediante mappers:
-
-```text
-Domain Model ↔ JPA Entity
-```
-
-Esta separación permite reutilizar el dominio y los Services en fases posteriores.
+Esto permite reutilizar la lógica desde JSF y, posteriormente, desde REST.
