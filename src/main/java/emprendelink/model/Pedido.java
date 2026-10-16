@@ -10,6 +10,7 @@ import java.util.List;
 public class Pedido {
 
     private Integer idPedido;
+
     private Usuario cliente;
     private Emprendimiento emprendimiento;
 
@@ -22,6 +23,7 @@ public class Pedido {
     private BigDecimal tasaComision;
     private BigDecimal montoComision;
 
+    private String direccionEntrega;
     private String observaciones;
 
     private LocalDateTime fechaPedido;
@@ -55,23 +57,16 @@ public class Pedido {
 
         this();
 
-        this.idPedido =
-                idPedido;
-
-        this.cliente =
-                cliente;
-
-        this.emprendimiento =
-                emprendimiento;
+        this.idPedido = idPedido;
+        this.cliente = cliente;
+        this.emprendimiento = emprendimiento;
 
         this.estado =
                 estado == null
                         ? EstadoPedido.PENDIENTE
                         : estado;
 
-        setTotal(
-                total
-        );
+        setTotal(total);
 
         this.observaciones =
                 observaciones;
@@ -87,14 +82,9 @@ public class Pedido {
 
         this();
 
-        this.cliente =
-                cliente;
-
-        this.emprendimiento =
-                emprendimiento;
-
-        this.observaciones =
-                observaciones;
+        this.cliente = cliente;
+        this.emprendimiento = emprendimiento;
+        this.observaciones = observaciones;
     }
 
     public void agregarDetalle(
@@ -107,13 +97,9 @@ public class Pedido {
             );
         }
 
-        detalle.setPedido(
-                this
-        );
+        detalle.setPedido(this);
 
-        detalles.add(
-                detalle
-        );
+        detalles.add(detalle);
 
         recalcularTotal();
     }
@@ -132,8 +118,7 @@ public class Pedido {
                     );
         }
 
-        total =
-                nuevoTotal;
+        total = nuevoTotal;
     }
 
     public Integer getIdPedido() {
@@ -143,8 +128,7 @@ public class Pedido {
     public void setIdPedido(
             Integer idPedido) {
 
-        this.idPedido =
-                idPedido;
+        this.idPedido = idPedido;
     }
 
     public Usuario getCliente() {
@@ -154,8 +138,7 @@ public class Pedido {
     public void setCliente(
             Usuario cliente) {
 
-        this.cliente =
-                cliente;
+        this.cliente = cliente;
     }
 
     public Emprendimiento getEmprendimiento() {
@@ -205,8 +188,7 @@ public class Pedido {
             );
         }
 
-        this.estado =
-                estado;
+        this.estado = estado;
     }
 
     public BigDecimal getTotal() {
@@ -271,6 +253,17 @@ public class Pedido {
 
         this.montoComision =
                 montoComision;
+    }
+
+    public String getDireccionEntrega() {
+        return direccionEntrega;
+    }
+
+    public void setDireccionEntrega(
+            String direccionEntrega) {
+
+        this.direccionEntrega =
+                direccionEntrega;
     }
 
     public String getObservaciones() {

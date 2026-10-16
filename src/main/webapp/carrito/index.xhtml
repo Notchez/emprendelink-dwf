@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Carrito - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="client-page-header">
+
+            <div>
+
+                <span class="market-kicker">
+                    Tu compra
+                </span>
+
+                <h1>
+                    Carrito
+                </h1>
+
+                <p>
+                    Ajusta cantidades antes de confirmar tu pedido.
+                </p>
+
+            </div>
+
+        </section>
+
+        <h:form id="carritoForm">
+
+            <h:messages
+                    id="mensajes"
+                    globalOnly="true"
+                    styleClass="market-messages"/>
+
+            <h:panelGroup
+                    id="contenido"
+                    layout="block">
+
+                <h:panelGroup
+                        rendered="#{not carritoBean.vacio}"
+                        layout="block"
+                        styleClass="client-cart-layout">
+
+                    <section class="client-cart-groups">
+
+                        <ui:repeat
+                                value="#{carritoBean.grupos}"
+                                var="grupo">
+
+                            <article class="client-cart-business">
+
+                                <header class="client-cart-business-header">
+
+                                    <div class="business-avatar">
+
+                                        <ui:fragment
+                                                rendered="#{empty grupo.emprendimiento.logoUrl}">
+
+                                            #{grupo.emprendimiento.nombre.substring(0, 1)}
+
+                                        </ui:fragment>
+
+                                        <ui:fragment
+                                                rendered="#{not empty grupo.emprendimiento.logoUrl}">
+
+                                            <img src="#{grupo.emprendimiento.logoUrl}"
+                                                 alt="#{grupo.emprendimiento.nombre}"
+                                                 class="client-business-logo"/>
+
+                                        </ui:fragment>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span>
+                                            Negocio
+                                        </span>
+
+                                        <strong>
+                                            #{grupo.emprendimiento.nombre}
+                                        </strong>
+
+                                    </div>
+
+                                </header>
+
+                                <div class="client-cart-items">
+
+                                    <ui:repeat
+                                            value="#{grupo.items}"
+                                            var="item">
+
+                                        <div class="client-cart-item">
+
+                                            <div class="client-cart-item-image">
+
+                                                <ui:fragment
+                                                        rendered="#{not empty item.publicacion.imagenUrl}">
+
+                                                    <img src="#{item.publicacion.imagenUrl}"
+                                                         alt="#{item.publicacion.nombre}"/>
+
+                                                </ui:fragment>
+
+                                                <ui:fragment
+                                                        rendered="#{empty item.publicacion.imagenUrl}">
+
+                                                    <span>
+                                                        ◫
+                                                    </span>
+
+                                                </ui:fragment>
+
+                                            </div>
+
+                                            <div class="client-cart-item-info">
+
+                                                <strong>
+                                                    #{item.publicacion.nombre}
+                                                </strong>
+
+                                                <span>
+                                                    #{item.publicacion.categoria.nombre}
+                                                </span>
+
+                                                <h:outputText
+                                                        value="#{item.publicacion.precio}">
+
+                                                    <f:convertNumber
+                                                            type="currency"
+                                                            currencySymbol="$"/>
+
+                                                </h:outputText>
+
+                                            </div>
+
+                                            <div class="client-cart-item-controls">
+
+                                                <div class="client-cart-stepper">
+
+                                                    <h:commandButton
+                                                            value="#{item.cantidad eq 1
+                                                                    ? '🗑'
+                                                                    : '−'}"
+                                                            action="#{carritoBean.disminuir(
+                                                                    item.publicacion.idPublicacion
+                                                            )}"
+                                                            styleClass="client-step-button">
+
+                                                        <f:ajax
+                                                                execute="@this"
+                                                                render="@form :carritoHeader"/>
+
+                                                    </h:commandButton>
+
+                                                    <span>
+                                                        #{item.cantidad}
+                                                    </span>
+
+                                                    <h:commandButton
+                                                            value="+"
+                                                            action="#{carritoBean.incrementar(
+                                                                    item.publicacion.idPublicacion
+                                                            )}"
+                                                            disabled="#{not carritoBean.puedeIncrementar(
+                                                                    item.publicacion.idPublicacion
+                                                            )}"
+                                                            styleClass="client-step-button">
+
+                                                        <f:ajax
+                                                                execute="@this"
+                                                                render="@form :carritoHeader"/>
+
+                                                    </h:commandButton>
+
+                                                </div>
+
+                                                <h:outputText
+                                                        value="#{item.subtotal}"
+                                                        styleClass="client-cart-item-subtotal">
+
+                                                    <f:convertNumber
+                                                            type="currency"
+                                                            currencySymbol="$"/>
+
+                                                </h:outputText>
+
+                                            </div>
+
+                                        </div>
+
+                                    </ui:repeat>
+
+                                </div>
+
+                                <footer class="client-cart-business-total">
+
+                                    <span>
+                                        Subtotal
+                                    </span>
+
+                                    <h:outputText
+                                            value="#{grupo.subtotal}">
+
+                                        <f:convertNumber
+                                                type="currency"
+                                                currencySymbol="$"/>
+
+                                    </h:outputText>
+
+                                </footer>
+
+                            </article>
+
+                        </ui:repeat>
+
+                    </section>
+
+                    <aside class="client-cart-summary">
+
+                        <span class="market-kicker">
+                            Resumen
+                        </span>
+
+                        <h2>
+                            Tu pedido
+                        </h2>
+
+                        <div class="client-summary-row">
+
+                            <span>
+                                Artículos
+                            </span>
+
+                            <strong>
+                                #{carritoBean.cantidadTotal}
+                            </strong>
+
+                        </div>
+
+                        <div class="client-summary-total">
+
+                            <span>
+                                Total
+                            </span>
+
+                            <h:outputText
+                                    value="#{carritoBean.total}">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </div>
+
+                        <a href="#{request.contextPath}/pedidos/nuevo.xhtml"
+                           class="market-primary-link client-checkout-button">
+                            Continuar
+                        </a>
+
+                        <a href="#{request.contextPath}/catalogo/index.xhtml"
+                           class="client-continue-shopping">
+                            Seguir comprando
+                        </a>
+
+                    </aside>
+
+                </h:panelGroup>
+
+                <h:panelGroup
+                        rendered="#{carritoBean.vacio}"
+                        layout="block"
+                        styleClass="market-empty-state">
+
+                    <div class="market-empty-icon">
+                        🛒
+                    </div>
+
+                    <h2>
+                        Tu carrito está vacío
+                    </h2>
+
+                    <p>
+                        Explora los negocios y agrega algo que te guste.
+                    </p>
+
+                    <a href="#{request.contextPath}/catalogo/index.xhtml"
+                       class="market-primary-link">
+                        Explorar catálogo
+                    </a>
+
+                </h:panelGroup>
+
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

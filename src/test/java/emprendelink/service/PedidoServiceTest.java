@@ -7,6 +7,7 @@ import emprendelink.dao.UsuarioDAO;
 import emprendelink.model.Categoria;
 import emprendelink.model.Emprendimiento;
 import emprendelink.model.Pedido;
+import emprendelink.model.Plan;
 import emprendelink.model.Publicacion;
 import emprendelink.model.Rol;
 import emprendelink.model.Usuario;
@@ -66,7 +67,8 @@ class PedidoServiceTest {
                 prepararEscenario();
 
         pedidoService.crear(
-                escenario.cliente.getIdUsuario(),
+                escenario.cliente
+                        .getIdUsuario(),
                 escenario.emprendimiento
                         .getIdEmprendimiento(),
                 List.of(
@@ -95,6 +97,30 @@ class PedidoServiceTest {
                 8,
                 escenario.publicacion
                         .getStock()
+        );
+
+        /*
+         * También comprobamos el snapshot
+         * del plan aplicado al pedido.
+         */
+        assertEquals(
+                1,
+                pedido.getIdPlanAplicado()
+        );
+
+        assertEquals(
+                "Básico",
+                pedido.getNombrePlanAplicado()
+        );
+
+        assertEquals(
+                new BigDecimal("0.0700"),
+                pedido.getTasaComision()
+        );
+
+        assertEquals(
+                new BigDecimal("0.70"),
+                pedido.getMontoComision()
         );
     }
 
@@ -151,7 +177,8 @@ class PedidoServiceTest {
                 prepararEscenario();
 
         pedidoService.crear(
-                escenario.cliente.getIdUsuario(),
+                escenario.cliente
+                        .getIdUsuario(),
                 escenario.emprendimiento
                         .getIdEmprendimiento(),
                 List.of(
@@ -184,7 +211,8 @@ class PedidoServiceTest {
                 prepararEscenario();
 
         pedidoService.crear(
-                escenario.cliente.getIdUsuario(),
+                escenario.cliente
+                        .getIdUsuario(),
                 escenario.emprendimiento
                         .getIdEmprendimiento(),
                 List.of(
@@ -197,12 +225,13 @@ class PedidoServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> pedidoService.actualizarEstado(
-                        escenario.propietario
-                                .getIdUsuario(),
-                        1,
-                        EstadoPedido.COMPLETADO
-                )
+                () ->
+                        pedidoService.actualizarEstado(
+                                escenario.propietario
+                                        .getIdUsuario(),
+                                1,
+                                EstadoPedido.COMPLETADO
+                        )
         );
     }
 
@@ -213,7 +242,8 @@ class PedidoServiceTest {
                 prepararEscenario();
 
         pedidoService.crear(
-                escenario.cliente.getIdUsuario(),
+                escenario.cliente
+                        .getIdUsuario(),
                 escenario.emprendimiento
                         .getIdEmprendimiento(),
                 List.of(
@@ -261,7 +291,8 @@ class PedidoServiceTest {
         );
 
         pedidoService.crear(
-                escenario.cliente.getIdUsuario(),
+                escenario.cliente
+                        .getIdUsuario(),
                 escenario.emprendimiento
                         .getIdEmprendimiento(),
                 List.of(
@@ -274,11 +305,12 @@ class PedidoServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> pedidoService.actualizarEstado(
-                        otro.getIdUsuario(),
-                        1,
-                        EstadoPedido.CONFIRMADO
-                )
+                () ->
+                        pedidoService.actualizarEstado(
+                                otro.getIdUsuario(),
+                                1,
+                                EstadoPedido.CONFIRMADO
+                        )
         );
     }
 
@@ -288,10 +320,20 @@ class PedidoServiceTest {
         Escenario escenario =
                 prepararEscenario();
 
+        Plan planOtro =
+                new Plan(
+                        2,
+                        "Estándar",
+                        30,
+                        new BigDecimal("0.0500"),
+                        true
+                );
+
         Emprendimiento otro =
                 new Emprendimiento(
                         999,
                         escenario.propietario,
+                        planOtro,
                         "Otro negocio",
                         null,
                         null,
@@ -312,17 +354,18 @@ class PedidoServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> pedidoService.crear(
-                        escenario.cliente
-                                .getIdUsuario(),
-                        escenario.emprendimiento
-                                .getIdEmprendimiento(),
-                        List.of(
-                                ajena.getIdPublicacion()
-                        ),
-                        List.of(1),
-                        null
-                )
+                () ->
+                        pedidoService.crear(
+                                escenario.cliente
+                                        .getIdUsuario(),
+                                escenario.emprendimiento
+                                        .getIdEmprendimiento(),
+                                List.of(
+                                        ajena.getIdPublicacion()
+                                ),
+                                List.of(1),
+                                null
+                        )
         );
     }
 
@@ -348,10 +391,27 @@ class PedidoServiceTest {
                 propietario
         );
 
+        /*
+         * Todo emprendimiento real tiene plan.
+         *
+         * Antes este fixture creaba el negocio
+         * con plan = null, cosa que ya no representa
+         * el modelo actual de EmprendeLink.
+         */
+        Plan plan =
+                new Plan(
+                        1,
+                        "Básico",
+                        10,
+                        new BigDecimal("0.0700"),
+                        true
+                );
+
         Emprendimiento emprendimiento =
                 new Emprendimiento(
                         10,
                         propietario,
+                        plan,
                         "Panadería",
                         null,
                         null,
@@ -415,9 +475,15 @@ class PedidoServiceTest {
 
         int idRol =
                 switch (tipoRol) {
-                    case ROLE_ADMIN -> 1;
-                    case ROLE_EMPRENDEDOR -> 2;
-                    case ROLE_CLIENTE -> 3;
+
+                    case ROLE_ADMIN ->
+                            1;
+
+                    case ROLE_EMPRENDEDOR ->
+                            2;
+
+                    case ROLE_CLIENTE ->
+                            3;
                 };
 
         return new Usuario(
@@ -428,7 +494,9 @@ class PedidoServiceTest {
                 ),
                 "Usuario",
                 "Prueba",
-                "usuario" + id + "@test.com",
+                "usuario"
+                        + id
+                        + "@test.com",
                 "hash",
                 "7000-0000",
                 true,
@@ -471,15 +539,19 @@ class PedidoServiceTest {
                 Integer idPedido) {
 
             return pedidos.stream()
-                    .filter(p ->
-                            p.getIdPedido()
-                                    .equals(idPedido)
+                    .filter(
+                            p ->
+                                    p.getIdPedido()
+                                            .equals(
+                                                    idPedido
+                                            )
                     )
                     .findFirst();
         }
 
         @Override
         public List<Pedido> listarTodos() {
+
             return new ArrayList<>(
                     pedidos
             );
@@ -490,11 +562,14 @@ class PedidoServiceTest {
                 Integer idCliente) {
 
             return pedidos.stream()
-                    .filter(p ->
-                            p.getCliente() != null
-                                    && p.getCliente()
-                                    .getIdUsuario()
-                                    .equals(idCliente)
+                    .filter(
+                            p ->
+                                    p.getCliente() != null
+                                            && p.getCliente()
+                                            .getIdUsuario()
+                                            .equals(
+                                                    idCliente
+                                            )
                     )
                     .toList();
         }
@@ -504,14 +579,15 @@ class PedidoServiceTest {
                 Integer idEmprendimiento) {
 
             return pedidos.stream()
-                    .filter(p ->
-                            p.getEmprendimiento()
-                                    != null
-                                    && p.getEmprendimiento()
-                                    .getIdEmprendimiento()
-                                    .equals(
-                                            idEmprendimiento
-                                    )
+                    .filter(
+                            p ->
+                                    p.getEmprendimiento()
+                                            != null
+                                            && p.getEmprendimiento()
+                                            .getIdEmprendimiento()
+                                            .equals(
+                                                    idEmprendimiento
+                                            )
                     )
                     .toList();
         }
@@ -530,9 +606,10 @@ class PedidoServiceTest {
                 return false;
             }
 
-            pedido.get().setEstado(
-                    nuevoEstado
-            );
+            pedido.get()
+                    .setEstado(
+                            nuevoEstado
+                    );
 
             return true;
         }
@@ -544,7 +621,9 @@ class PedidoServiceTest {
             return pedidos.removeIf(
                     p ->
                             p.getIdPedido()
-                                    .equals(idPedido)
+                                    .equals(
+                                            idPedido
+                                    )
             );
         }
     }
@@ -555,15 +634,22 @@ class PedidoServiceTest {
         private final List<Usuario> usuarios =
                 new ArrayList<>();
 
-        void agregar(Usuario usuario) {
-            usuarios.add(usuario);
+        void agregar(
+                Usuario usuario) {
+
+            usuarios.add(
+                    usuario
+            );
         }
 
         @Override
         public Usuario crear(
                 Usuario usuario) {
 
-            usuarios.add(usuario);
+            usuarios.add(
+                    usuario
+            );
+
             return usuario;
         }
 
@@ -572,9 +658,12 @@ class PedidoServiceTest {
                 Integer idUsuario) {
 
             return usuarios.stream()
-                    .filter(u ->
-                            u.getIdUsuario()
-                                    .equals(idUsuario)
+                    .filter(
+                            u ->
+                                    u.getIdUsuario()
+                                            .equals(
+                                                    idUsuario
+                                            )
                     )
                     .findFirst();
         }
@@ -584,15 +673,19 @@ class PedidoServiceTest {
                 String correo) {
 
             return usuarios.stream()
-                    .filter(u ->
-                            u.getCorreo()
-                                    .equalsIgnoreCase(correo)
+                    .filter(
+                            u ->
+                                    u.getCorreo()
+                                            .equalsIgnoreCase(
+                                                    correo
+                                            )
                     )
                     .findFirst();
         }
 
         @Override
         public List<Usuario> listarTodos() {
+
             return new ArrayList<>(
                     usuarios
             );
@@ -614,7 +707,9 @@ class PedidoServiceTest {
             return usuarios.removeIf(
                     u ->
                             u.getIdUsuario()
-                                    .equals(idUsuario)
+                                    .equals(
+                                            idUsuario
+                                    )
             );
         }
     }
@@ -650,17 +745,19 @@ class PedidoServiceTest {
                 Integer idEmprendimiento) {
 
             return emprendimientos.stream()
-                    .filter(e ->
-                            e.getIdEmprendimiento()
-                                    .equals(
-                                            idEmprendimiento
-                                    )
+                    .filter(
+                            e ->
+                                    e.getIdEmprendimiento()
+                                            .equals(
+                                                    idEmprendimiento
+                                            )
                     )
                     .findFirst();
         }
 
         @Override
         public List<Emprendimiento> listarTodos() {
+
             return new ArrayList<>(
                     emprendimientos
             );
@@ -671,11 +768,15 @@ class PedidoServiceTest {
                 Integer idUsuario) {
 
             return emprendimientos.stream()
-                    .filter(e ->
-                            e.getPropietario() != null
-                                    && e.getPropietario()
-                                    .getIdUsuario()
-                                    .equals(idUsuario)
+                    .filter(
+                            e ->
+                                    e.getPropietario()
+                                            != null
+                                            && e.getPropietario()
+                                            .getIdUsuario()
+                                            .equals(
+                                                    idUsuario
+                                            )
                     )
                     .toList();
         }
@@ -735,15 +836,19 @@ class PedidoServiceTest {
                 Integer idPublicacion) {
 
             return publicaciones.stream()
-                    .filter(p ->
-                            p.getIdPublicacion()
-                                    .equals(idPublicacion)
+                    .filter(
+                            p ->
+                                    p.getIdPublicacion()
+                                            .equals(
+                                                    idPublicacion
+                                            )
                     )
                     .findFirst();
         }
 
         @Override
         public List<Publicacion> listarTodos() {
+
             return new ArrayList<>(
                     publicaciones
             );
@@ -754,14 +859,15 @@ class PedidoServiceTest {
                 Integer idEmprendimiento) {
 
             return publicaciones.stream()
-                    .filter(p ->
-                            p.getEmprendimiento()
-                                    != null
-                                    && p.getEmprendimiento()
-                                    .getIdEmprendimiento()
-                                    .equals(
-                                            idEmprendimiento
-                                    )
+                    .filter(
+                            p ->
+                                    p.getEmprendimiento()
+                                            != null
+                                            && p.getEmprendimiento()
+                                            .getIdEmprendimiento()
+                                            .equals(
+                                                    idEmprendimiento
+                                            )
                     )
                     .toList();
         }
@@ -771,14 +877,15 @@ class PedidoServiceTest {
                 Integer idCategoria) {
 
             return publicaciones.stream()
-                    .filter(p ->
-                            p.getCategoria()
-                                    != null
-                                    && p.getCategoria()
-                                    .getIdCategoria()
-                                    .equals(
-                                            idCategoria
-                                    )
+                    .filter(
+                            p ->
+                                    p.getCategoria()
+                                            != null
+                                            && p.getCategoria()
+                                            .getIdCategoria()
+                                            .equals(
+                                                    idCategoria
+                                            )
                     )
                     .toList();
         }

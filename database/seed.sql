@@ -1,15 +1,7 @@
--- =====================================================================
--- EmprendeLink DWF — seed.sql
---
--- Contraseña de TODOS los usuarios demo:
--- Demo1234!
--- =====================================================================
-
 USE emprendelink_dwf;
 
--- =========================================================
--- ROLES
--- =========================================================
+-- Contraseña demo para todos:
+-- Demo1234!
 
 INSERT INTO roles (nombre)
 VALUES
@@ -17,17 +9,14 @@ VALUES
     ('ROLE_EMPRENDEDOR'),
     ('ROLE_CLIENTE');
 
--- =========================================================
--- USUARIOS
--- =========================================================
-
 INSERT INTO usuarios (
     id_rol,
     nombre,
     apellido,
     correo,
     contrasena_hash,
-    telefono
+    telefono,
+    direccion
 )
 VALUES
     (
@@ -36,7 +25,8 @@ VALUES
         'Martínez',
         'admin@emprendelink.com',
         'pbkdf2_sha256$210000$2UIPWJ23PkRwzgQpI2V75A==$snEd3L3mu26O2YpvU1QxLWvb3Ht7ngHXLssXWCBKXtQ=',
-        '7000-0001'
+        '7000-0001',
+        NULL
     ),
     (
         2,
@@ -44,7 +34,8 @@ VALUES
         'Ruiz',
         'carlos@emprendelink.com',
         'pbkdf2_sha256$210000$n+AJaAv1sN4RmUJWpZa9cg==$XShbLlttnkcUfeM0ye8x4Wo7HQnyGHAQcKJW2N/jN0Q=',
-        '7000-0002'
+        '7000-0002',
+        NULL
     ),
     (
         2,
@@ -52,7 +43,8 @@ VALUES
         'Flores',
         'lucia@emprendelink.com',
         'pbkdf2_sha256$210000$RKT87ZpFCq8KKND5i1du7A==$FjIPbDOjTwfiN+otzBvf/Mi6ji4P7D9HYghYVCDObn0=',
-        '7000-0003'
+        '7000-0003',
+        NULL
     ),
     (
         3,
@@ -60,7 +52,8 @@ VALUES
         'Gómez',
         'david@emprendelink.com',
         'pbkdf2_sha256$210000$xRgVTE7jJ2sAyYch5/pa/A==$xAYBbMctyD4tOmK6JLpj5DoiMu51TMEnxyvLAQ/aTJw=',
-        '7000-0004'
+        '7000-0004',
+        'Colonia Escalón, San Salvador'
     ),
     (
         3,
@@ -68,12 +61,9 @@ VALUES
         'López',
         'mariana@emprendelink.com',
         'pbkdf2_sha256$210000$0BfQnGVUnCbDjy/FWFpviw==$ciimcEPFerzOf3O4JZdxMzJ+HKdFpqAMYF3wl/VMtwo=',
-        '7000-0005'
+        '7000-0005',
+        'Santa Tecla, La Libertad'
     );
-
--- =========================================================
--- PLANES
--- =========================================================
 
 INSERT INTO planes (
     nombre,
@@ -86,10 +76,6 @@ VALUES
     ('Estándar', 30, 0.0500, TRUE),
     ('Premium', 60, 0.0300, TRUE),
     ('Max', 100, 0.0100, TRUE);
-
--- =========================================================
--- CATEGORÍAS
--- =========================================================
 
 INSERT INTO categorias (
     nombre,
@@ -110,10 +96,6 @@ VALUES
         FALSE,
         TRUE
     );
-
--- =========================================================
--- NEGOCIOS
--- =========================================================
 
 INSERT INTO emprendimientos (
     id_propietario,
@@ -143,10 +125,6 @@ VALUES
         '7000-1002',
         NULL
     );
-
--- =========================================================
--- PUBLICACIONES
--- =========================================================
 
 INSERT INTO publicaciones (
     id_emprendimiento,
@@ -190,10 +168,6 @@ VALUES
         0
     );
 
--- =========================================================
--- PEDIDOS
--- =========================================================
-
 INSERT INTO pedidos (
     id_cliente,
     id_emprendimiento,
@@ -203,6 +177,7 @@ INSERT INTO pedidos (
     total,
     tasa_comision,
     monto_comision,
+    direccion_entrega,
     observaciones,
     fecha_pedido,
     fecha_completado
@@ -217,6 +192,7 @@ VALUES
         17.50,
         0.0700,
         1.23,
+        'Colonia Escalón, San Salvador',
         'Entregar en la tarde',
         CURRENT_TIMESTAMP,
         NULL
@@ -230,6 +206,7 @@ VALUES
         60.00,
         0.0500,
         3.00,
+        'Santa Tecla, La Libertad',
         NULL,
         CURRENT_TIMESTAMP,
         NULL
@@ -243,6 +220,7 @@ VALUES
         30.00,
         0.0700,
         2.10,
+        'Santa Tecla, La Libertad',
         'Pedido entregado correctamente',
         DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY),
         CURRENT_TIMESTAMP
@@ -256,14 +234,11 @@ VALUES
         2.50,
         0.0700,
         0.18,
+        'Colonia Escalón, San Salvador',
         NULL,
         DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY),
         NULL
     );
-
--- =========================================================
--- DETALLE DE PEDIDOS
--- =========================================================
 
 INSERT INTO detalle_pedido (
     id_pedido,
@@ -273,38 +248,8 @@ INSERT INTO detalle_pedido (
     subtotal
 )
 VALUES
-    (
-        1,
-        1,
-        1,
-        2.50,
-        2.50
-    ),
-    (
-        1,
-        2,
-        1,
-        15.00,
-        15.00
-    ),
-    (
-        2,
-        3,
-        1,
-        60.00,
-        60.00
-    ),
-    (
-        3,
-        2,
-        2,
-        15.00,
-        30.00
-    ),
-    (
-        4,
-        1,
-        1,
-        2.50,
-        2.50
-    );
+    (1, 1, 1, 2.50, 2.50),
+    (1, 2, 1, 15.00, 15.00),
+    (2, 3, 1, 60.00, 60.00),
+    (3, 2, 2, 15.00, 30.00),
+    (4, 1, 1, 2.50, 2.50);

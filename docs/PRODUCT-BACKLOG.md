@@ -23,8 +23,7 @@ Incluye:
 - `emprendelinkPU`;
 - JTA;
 - EclipseLink;
-- DataSource `jdbc/EmprendeLinkDS`;
-- `@PersistenceContext`;
+- DataSource;
 - GlassFish;
 - MySQL.
 
@@ -43,7 +42,7 @@ Incluye:
 
 ---
 
-## Autenticación y usuarios
+## Autenticación y cuentas
 
 ### HU-F2-03 — Login JSF
 
@@ -51,20 +50,24 @@ Incluye:
 HECHO
 ```
 
-### HU-F2-04 — Registro
+Incluye:
+
+- autenticación;
+- sesión;
+- redirección por rol;
+- logout.
+
+### HU-F2-04 — Registro público de cliente
 
 ```text
 HECHO
 ```
 
-Roles públicos:
+El registro público permite únicamente:
 
 ```text
 ROLE_CLIENTE
-ROLE_EMPRENDEDOR
 ```
-
-El registro público no permite crear administradores.
 
 ### HU-F2-05 — Administración de usuarios
 
@@ -77,33 +80,48 @@ Incluye:
 - listado;
 - roles;
 - activar/desactivar;
-- evitar auto-desactivación administrativa.
+- control de permisos.
 
-### HU-F2-06 — Validaciones y AJAX
+### HU-F2-06 — Crear emprendedor desde administración
 
 ```text
 HECHO
 ```
 
-Incluye:
+El administrador crea en una operación:
 
-- correo;
-- contraseña;
-- mensajes;
-- converter de rol;
-- AJAX.
+```text
+Usuario ROLE_EMPRENDEDOR
++
+Emprendimiento
+```
+
+El negocio recibe:
+
+- plan;
+- categoría;
+- nombre;
+- descripción;
+- contacto;
+- logo opcional.
+
+### HU-F2-07 — Un negocio por emprendedor
+
+```text
+HECHO
+```
+
+Se refuerza con:
+
+```text
+UNIQUE(id_propietario)
+```
 
 ---
 
 ## Categorías
 
-### HU-F2-10 — Persistencia JPA
-
-```text
-HECHO
-```
-
-### HU-F2-11 — Gestión JSF
+### HU-F2-10 — Persistencia y gestión
 
 ```text
 HECHO
@@ -117,9 +135,23 @@ Incluye:
 - activar/desactivar;
 - AJAX.
 
+### HU-F2-11 — Configuración de inventario por categoría
+
+```text
+HECHO
+```
+
+Campo:
+
+```text
+manejaStock
+```
+
+Define si las publicaciones del negocio utilizan inventario limitado.
+
 ---
 
-## Emprendimientos
+## Negocio del emprendedor
 
 ### HU-F2-20 — Persistencia JPA
 
@@ -133,24 +165,11 @@ Incluye:
 - mapper;
 - DAO;
 - Service;
-- relación con propietario;
-- relación con plan.
+- propietario;
+- plan;
+- categoría.
 
-### HU-F2-21 — Gestión del emprendedor
-
-```text
-HECHO
-```
-
-Incluye:
-
-- crear;
-- listar propios;
-- editar;
-- validar propiedad;
-- AJAX.
-
-### HU-F2-22 — Administración
+### HU-F2-21 — Vista “Mi negocio”
 
 ```text
 HECHO
@@ -158,12 +177,23 @@ HECHO
 
 Incluye:
 
-- listar negocios;
-- ver detalle;
-- activar/desactivar;
-- consultar ventas completadas;
-- consultar pedidos;
-- asignar plan.
+- negocio único;
+- plan actual;
+- comisión;
+- publicaciones activas;
+- máximo del plan;
+- espacios disponibles;
+- edición de descripción;
+- edición de contacto;
+- edición de logo.
+
+### HU-F2-22 — Datos administrativos del negocio
+
+```text
+HECHO
+```
+
+Nombre, categoría, plan y estado se gestionan desde administración.
 
 ---
 
@@ -175,14 +205,7 @@ Incluye:
 HECHO
 ```
 
-Relaciones:
-
-```text
-Publicacion → Emprendimiento
-Publicacion → Categoria
-```
-
-### HU-F2-31 — Gestión JSF
+### HU-F2-31 — CRUD del catálogo del emprendedor
 
 ```text
 HECHO
@@ -194,14 +217,59 @@ Incluye:
 - editar;
 - listar;
 - activar/desactivar;
+- nombre;
+- descripción;
+- imagen URL;
 - precio;
-- stock;
-- propiedad;
-- categoría;
-- emprendimiento;
+- stock cuando corresponde;
 - AJAX.
 
-### HU-F2-32 — Catálogo
+### HU-F2-32 — Derivación de categoría y tipo
+
+```text
+HECHO
+```
+
+La publicación utiliza la categoría del negocio.
+
+```text
+manejaStock = true  → PRODUCTO
+manejaStock = false → SERVICIO
+```
+
+El emprendedor no selecciona manualmente tipo ni categoría.
+
+### HU-F2-33 — Límite por plan
+
+```text
+HECHO
+```
+
+Se valida al:
+
+```text
+crear
+reactivar
+asignar/cambiar plan
+```
+
+### HU-F2-34 — Contador AJAX de catálogo
+
+```text
+HECHO
+```
+
+Activar/desactivar actualiza:
+
+- contador;
+- espacios disponibles;
+- estado.
+
+---
+
+## Catálogo cliente
+
+### HU-F2-35 — Explorar catálogo
 
 ```text
 HECHO
@@ -210,47 +278,91 @@ HECHO
 Incluye:
 
 - publicaciones activas;
-- detalle;
+- agrupación por negocio;
 - búsqueda;
-- filtros;
-- categorías;
-- tipos;
-- AJAX.
+- filtro por categoría;
+- detalle.
 
-### HU-F2-33 — Límite de publicaciones por plan
+El filtro visual `Tipo` fue retirado.
+
+---
+
+## Carrito y checkout
+
+### HU-F2-40 — Carrito en sesión
 
 ```text
 HECHO
 ```
 
-La aplicación valida:
+Implementado mediante:
 
 ```text
-crear publicación
-reactivar publicación
-asignar plan
+CarritoBean @SessionScoped
 ```
 
-contra:
+### HU-F2-41 — Controles de cantidad
 
 ```text
-Plan.maxProductosActivos
+HECHO
 ```
 
-Planes:
+Incluye:
+
+- agregar;
+- incrementar;
+- disminuir;
+- papelera cuando cantidad = 1;
+- AJAX;
+- validación de stock.
+
+### HU-F2-42 — Carrito multi-negocio
 
 ```text
-Básico    → 10
-Estándar  → 30
-Premium   → 60
-Max       → 100
+HECHO
 ```
+
+El cliente puede mantener publicaciones de distintos negocios dentro de un mismo carrito visual.
+
+### HU-F2-43 — Checkout agrupado por negocio
+
+```text
+HECHO
+```
+
+El Service agrupa las líneas y crea:
+
+```text
+1 Pedido por negocio
+```
+
+dentro de la operación transaccional.
+
+### HU-F2-44 — Dirección histórica del pedido
+
+```text
+HECHO
+```
+
+El checkout guarda:
+
+```text
+direccionEntrega
+```
+
+como snapshot.
 
 ---
 
 ## Pedidos
 
-### HU-F2-40 — Persistencia JPA de pedidos
+### HU-F2-45 — Persistencia de pedidos y detalles
+
+```text
+HECHO
+```
+
+### HU-F2-46 — Total y stock
 
 ```text
 HECHO
@@ -258,38 +370,16 @@ HECHO
 
 Incluye:
 
-```text
-PedidoEntity
-DetallePedidoEntity
-PedidoMapper
-DetallePedidoMapper
-JpaPedidoDAO
-```
+- total desde detalles;
+- validación de stock;
+- descuento al crear;
+- restauración al cancelar.
 
-### HU-F2-41 — Crear pedido
+### HU-F2-47 — Estados
 
 ```text
 HECHO
 ```
-
-Incluye:
-
-- cliente;
-- emprendimiento;
-- publicaciones;
-- cantidades;
-- precios;
-- total;
-- detalles;
-- stock.
-
-### HU-F2-42 — Estados
-
-```text
-HECHO
-```
-
-Transiciones:
 
 ```text
 PENDIENTE → CONFIRMADO
@@ -302,13 +392,7 @@ EN_PROCESO → COMPLETADO
 EN_PROCESO → CANCELADO
 ```
 
-### HU-F2-43 — Restauración de stock
-
-```text
-HECHO
-```
-
-### HU-F2-44 — Consulta por rol
+### HU-F2-48 — Consulta por rol
 
 ```text
 HECHO
@@ -322,68 +406,53 @@ Cliente:
 Emprendedor:
 
 - pedidos recibidos;
-- pedidos de negocios propios.
+- detalle de su negocio.
 
 ---
 
 ## Planes y comisiones
 
-### HU-F2-45 — Persistencia de planes
+### HU-F2-50 — Planes
 
 ```text
 HECHO
 ```
 
-Incluye:
-
 ```text
-Plan
-PlanEntity
-PlanMapper
-PlanDAO
-JpaPlanDAO
-PlanService
-PlanServiceImpl
+Básico    → 10  → 7%
+Estándar  → 30  → 5%
+Premium   → 60  → 3%
+Max       → 100 → 1%
 ```
 
-### HU-F2-46 — Gestión administrativa de planes
+### HU-F2-51 — Snapshot comercial
 
 ```text
 HECHO
 ```
 
-Planes definidos:
+Al crear el pedido se conservan:
 
 ```text
-Básico    → 10 publicaciones  → 7%
-Estándar  → 30 publicaciones  → 5%
-Premium   → 60 publicaciones  → 3%
-Max       → 100 publicaciones → 1%
-```
-
-Incluye:
-
-- crear;
-- editar;
-- activar/desactivar;
-- asignar a negocios;
-- impedir desactivar un plan en uso.
-
-### HU-F2-47 — Comisión histórica por pedido
-
-```text
-HECHO
-```
-
-Al completar un pedido se almacenan:
-
-```text
-fechaCompletado
+idPlanAplicado
+nombrePlanAplicado
 tasaComision
 montoComision
 ```
 
-### HU-F2-48 — Reporte administrativo de comisiones
+### HU-F2-52 — Fecha de completado
+
+```text
+HECHO
+```
+
+Al finalizar:
+
+```text
+fechaCompletado
+```
+
+### HU-F2-53 — Ventas del emprendedor
 
 ```text
 HECHO
@@ -391,202 +460,213 @@ HECHO
 
 Incluye:
 
-- filtro por negocio;
-- filtro por mes;
-- filtro por año;
+- ventas totales;
+- filtro de período;
 - ventas completadas;
-- tasa;
-- monto de comisión.
+- detalle del pedido.
+
+### HU-F2-54 — Comisiones del emprendedor
+
+```text
+HECHO
+```
+
+Permite consultar la comisión asociada al histórico de ventas.
+
+### HU-F2-55 — Reporte administrativo
+
+```text
+HECHO
+```
+
+Incluye:
+
+- ventas;
+- comisiones;
+- filtros.
 
 ---
 
-## Seguridad
+## Perfil del cliente
 
-### HU-F2-50 — Seguridad por rutas
+### HU-F2-60 — Mi perfil
 
 ```text
 HECHO
 ```
 
-Filtros:
+Cliente puede modificar:
 
 ```text
-AutenticacionFilter
-AdminFilter
-EmprendedorFilter
+telefono
+direccion
+```
+
+Nombre y correo son de solo lectura.
+
+### HU-F2-61 — Logout dentro del perfil
+
+```text
+HECHO
+```
+
+El botón se retiró del header para el cliente.
+
+---
+
+## Seguridad y navegación
+
+### HU-F2-70 — Navegación por rol
+
+```text
+HECHO
+```
+
+Landing:
+
+```text
+Admin       → /admin/inicio.xhtml
+Emprendedor → /pedidos/recibidos.xhtml
+Cliente     → /catalogo/index.xhtml
+```
+
+### HU-F2-71 — Bloqueo del catálogo al emprendedor
+
+```text
+HECHO
+```
+
+Implementado mediante:
+
+```text
+CatalogoFilter
+```
+
+### HU-F2-72 — Rutas cliente
+
+```text
+HECHO
+```
+
+Implementado mediante:
+
+```text
+ClienteFilter
 PedidosFilter
-PublicacionFilter
 ```
 
-### HU-F2-51 — Propiedad de recursos
+### HU-F2-73 — Rutas emprendedor
 
 ```text
 HECHO
 ```
 
-Se valida:
+Implementado mediante:
 
-- propiedad de emprendimientos;
-- propiedad de publicaciones;
-- propiedad de pedidos;
-- rol requerido;
-- estado de usuarios.
+```text
+EmprendedorFilter
+PublicacionFilter
+PedidosFilter
+```
+
+### HU-F2-74 — Rutas administrativas
+
+```text
+HECHO
+```
+
+Implementado mediante:
+
+```text
+AdminFilter
+```
 
 ---
 
 ## Calidad
 
-### HU-F2-52 — Pruebas de Auth/Usuarios
+### HU-F2-80 — Pruebas automatizadas
 
 ```text
 HECHO
 ```
 
-### HU-F2-53 — Pruebas de Categorías
+Último resultado:
 
 ```text
-HECHO
-```
-
-### HU-F2-54 — Pruebas de Emprendimientos
-
-```text
-HECHO
-```
-
-### HU-F2-55 — Pruebas de Publicaciones
-
-```text
-HECHO
-```
-
-Incluye:
-
-- creación;
-- normalización;
-- categoría;
-- propiedad;
-- cambio de estado;
-- límite de plan al crear;
-- límite de plan al reactivar.
-
-### HU-F2-56 — Pruebas de Pedidos
-
-```text
-HECHO
-```
-
-Incluye:
-
-- creación;
-- total;
-- stock;
-- roles;
-- propiedad;
-- transiciones;
-- cancelación.
-
-### HU-F2-57 — Integración continua
-
-```text
-HECHO
-```
-
-GitHub Actions ejecuta:
-
-```text
-mvn -B clean test
-```
-
-El pipeline del Pull Request de integración de Fase 2 finalizó correctamente.
-
-### HU-F2-58 — Regresión Maven
-
-```text
-HECHO
-```
-
-Resultado actual:
-
-```text
-41 pruebas
+41 tests
 0 failures
 0 errors
 BUILD SUCCESS
 ```
 
-También:
-
-```text
-mvn clean package
-BUILD SUCCESS
-target/emprendelink.war
-```
-
----
-
-## Documentación
-
-### HU-F2-60 — Actualizar documentación
+### HU-F2-81 — Integración continua
 
 ```text
 HECHO
 ```
 
-Incluye:
+GitHub Actions:
+
+```text
+mvn -B clean test
+```
+
+### HU-F2-82 — Documentación técnica actualizada
+
+```text
+HECHO
+```
+
+Incluye actualización de:
 
 - README;
 - arquitectura;
-- Product Backlog;
-- matriz de pruebas;
+- modelos;
 - rutas;
-- roles;
-- Release Notes;
-- cierre de Fase 2.
+- permisos;
+- backlog;
+- matriz;
+- release notes;
+- cierre de Fase 2;
+- contrato preliminar de API.
 
-### HU-F2-61 — Pruebas manuales finales
+### HU-F2-83 — Smoke test manual final documentado
 
 ```text
 EN_CURSO
 ```
 
-Pendiente ejecutar y registrar los casos manuales finales definidos en:
+La funcionalidad principal ha sido probada durante el desarrollo, pero la matriz conserva como pendientes los casos manuales que todavía deban ejecutarse formalmente para evidencia.
 
-```text
-docs/MATRIZ-PRUEBAS.md
-```
-
-### HU-F2-62 — Evidencias de Sprint Review
+### HU-F2-84 — Evidencias de Sprint Review
 
 ```text
 PENDIENTE
 ```
 
-Debe incluir:
+Debe consolidar:
 
 - capturas;
 - persistencia;
-- relaciones;
+- CRUD;
 - AJAX;
-- validaciones;
 - roles;
+- carrito;
+- pedidos;
 - pruebas;
 - CI;
-- WAR;
-- repositorio;
-- Product Backlog.
+- repositorio.
 
-### HU-F2-63 — PDF de entrega
+### HU-F2-85 — PDF de entrega
 
 ```text
 PENDIENTE
 ```
 
-Se generará después del smoke test final.
-
 ---
 
-# Fase 3 — Servicios REST
+# Fase 3 — Servicios REST e Integración de Clientes
 
 Estado:
 
@@ -594,22 +674,20 @@ Estado:
 PENDIENTE
 ```
 
+Existe scaffolding de Resources y DTO, pero no endpoints funcionales.
+
 Alcance:
 
+- contrato REST definitivo;
 - JAX-RS;
-- `/api/v1`;
-- recursos;
-- métodos HTTP;
 - JSON;
-- DTO;
-- validaciones;
+- DTO reales;
+- códigos HTTP;
 - manejo de errores;
-- seguridad;
+- seguridad REST;
 - cliente consumidor;
-- pruebas;
-- documentación.
-
-Los endpoints reutilizarán los Services existentes.
+- pruebas de API;
+- documentación de consumo.
 
 ---
 
@@ -623,10 +701,10 @@ PENDIENTE
 
 Alcance previsto:
 
-- Spring;
+- integración Spring;
 - seguridad final;
-- pruebas;
-- trazabilidad;
+- pruebas sistemáticas;
 - despliegue;
-- documentación;
-- liberación.
+- manuales;
+- Release Notes;
+- liberación final.

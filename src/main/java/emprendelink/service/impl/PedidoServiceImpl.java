@@ -20,7 +20,10 @@ import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @ApplicationScoped
@@ -40,15 +43,10 @@ public class PedidoServiceImpl
             EmprendimientoDAO emprendimientoDAO,
             PublicacionDAO publicacionDAO) {
 
-        this.pedidoDAO =
-                pedidoDAO;
-
-        this.usuarioDAO =
-                usuarioDAO;
-
+        this.pedidoDAO = pedidoDAO;
+        this.usuarioDAO = usuarioDAO;
         this.emprendimientoDAO =
                 emprendimientoDAO;
-
         this.publicacionDAO =
                 publicacionDAO;
     }
@@ -183,6 +181,10 @@ public class PedidoServiceImpl
         };
     }
 
+    /*
+     * Se conserva para compatibilidad con el flujo
+     * anterior y con las pruebas existentes.
+     */
     @Override
     public void crear(
             Integer idCliente,
@@ -217,6 +219,12 @@ public class PedidoServiceImpl
                         )
                 );
 
+        pedido.setDireccionEntrega(
+                normalizarOpcional(
+                        cliente.getDireccion()
+                )
+        );
+
         for (int i = 0;
              i < idsPublicacion.size();
              i++) {
@@ -243,15 +251,12 @@ public class PedidoServiceImpl
                     cantidad
             );
 
-            DetallePedido detalle =
+            pedido.agregarDetalle(
                     new DetallePedido(
                             publicacion,
                             cantidad,
                             publicacion.getPrecio()
-                    );
-
-            pedido.agregarDetalle(
-                    detalle
+                    )
             );
 
             descontarStock(
@@ -268,6 +273,167 @@ public class PedidoServiceImpl
         pedidoDAO.crear(
                 pedido
         );
+    }
+
+    /*
+     * El carrito puede contener artículos de varios negocios.
+     *
+     * Para el cliente sigue siendo una sola compra visual,
+     * pero internamente se genera un pedido por negocio.
+     *
+     * Todo sucede dentro de la misma transacción.
+     */
+    @Override
+    public void crearDesdeCarrito(
+            Integer idCliente,
+            List<Integer> idsPublicacion,
+            List<Integer> cantidades,
+            String direccionEntrega,
+            String observaciones) {
+
+        Usuario cliente =
+                requerirUsuarioActivo(
+                        idCliente,
+                        TipoRol.ROLE_CLIENTE
+                );
+
+        if (idsPublicacion == null
+                || cantidades == null
+                || idsPublicacion.isEmpty()
+                || idsPublicacion.size()
+                != cantidades.size()) {
+
+            throw new IllegalArgumentException(
+                    "El carrito está vacío o contiene datos inválidos."
+            );
+        }
+
+        String direccion =
+                normalizarDireccionObligatoria(
+                        direccionEntrega
+                );
+
+        /*
+         * Consolidamos por publicación para evitar
+         * líneas duplicadas.
+         */
+        Map<Integer, Integer> cantidadesPorPublicacion =
+                new LinkedHashMap<>();
+
+        for (int i = 0;
+             i < idsPublicacion.size();
+             i++) {
+
+            Integer idPublicacion =
+                    idsPublicacion.get(i);
+
+            Integer cantidad =
+                    cantidades.get(i);
+
+            validarCantidad(
+                    idPublicacion,
+                    cantidad
+            );
+
+            cantidadesPorPublicacion.merge(
+                    idPublicacion,
+                    cantidad,
+                    Integer::sum
+            );
+        }
+
+        /*
+         * Agrupamos por negocio.
+         */
+        Map<Integer, List<LineaCarrito>> grupos =
+                new LinkedHashMap<>();
+
+        for (Map.Entry<Integer, Integer> entrada
+                : cantidadesPorPublicacion.entrySet()) {
+
+            Publicacion publicacion =
+                    obtenerPublicacionDisponible(
+                            entrada.getKey()
+                    );
+
+            int cantidad =
+                    entrada.getValue();
+
+            validarStock(
+                    publicacion,
+                    cantidad
+            );
+
+            Integer idEmprendimiento =
+                    publicacion
+                            .getEmprendimiento()
+                            .getIdEmprendimiento();
+
+            grupos.computeIfAbsent(
+                    idEmprendimiento,
+                    clave ->
+                            new ArrayList<>()
+            ).add(
+                    new LineaCarrito(
+                            publicacion,
+                            cantidad
+                    )
+            );
+        }
+
+        for (Map.Entry<Integer, List<LineaCarrito>> grupo
+                : grupos.entrySet()) {
+
+            Emprendimiento emprendimiento =
+                    obtenerEmprendimientoDisponible(
+                            grupo.getKey()
+                    );
+
+            Pedido pedido =
+                    new Pedido(
+                            cliente,
+                            emprendimiento,
+                            normalizarObservaciones(
+                                    observaciones
+                            )
+                    );
+
+            pedido.setDireccionEntrega(
+                    direccion
+            );
+
+            for (LineaCarrito linea
+                    : grupo.getValue()) {
+
+                Publicacion publicacion =
+                        linea.publicacion();
+
+                int cantidad =
+                        linea.cantidad();
+
+                pedido.agregarDetalle(
+                        new DetallePedido(
+                                publicacion,
+                                cantidad,
+                                publicacion.getPrecio()
+                        )
+                );
+
+                descontarStock(
+                        publicacion,
+                        cantidad
+                );
+            }
+
+            congelarPlanYComision(
+                    pedido,
+                    emprendimiento
+            );
+
+            pedidoDAO.crear(
+                    pedido
+            );
+        }
     }
 
     @Override
@@ -345,11 +511,9 @@ public class PedidoServiceImpl
                 || plan.getNombre() == null
                 || plan.getTasaComision() == null) {
 
-            /*
-             * En producción esto no debería ocurrir:
-             * la BD exige id_plan en emprendimientos.
-             */
-            return;
+            throw new IllegalStateException(
+                    "El negocio no tiene un plan válido."
+            );
         }
 
         pedido.setIdPlanAplicado(
@@ -402,7 +566,8 @@ public class PedidoServiceImpl
 
         if (!usuario.isActivo()
                 || usuario.getRol() == null
-                || usuario.getRol()
+                || usuario
+                .getRol()
                 .getNombre()
                 != rolEsperado) {
 
@@ -418,18 +583,19 @@ public class PedidoServiceImpl
             Integer idEmprendimiento) {
 
         Emprendimiento emprendimiento =
-                emprendimientoDAO.buscarPorId(
-                        idEmprendimiento
-                ).orElseThrow(
-                        () ->
-                                new IllegalArgumentException(
-                                        "El negocio no existe."
-                                )
-                );
+                emprendimientoDAO
+                        .buscarPorId(
+                                idEmprendimiento
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "El negocio no existe."
+                                        )
+                        );
 
         if (!emprendimiento.isActivo()
-                || emprendimiento.getPropietario()
-                == null
+                || emprendimiento.getPropietario() == null
                 || !emprendimiento
                 .getPropietario()
                 .isActivo()) {
@@ -443,38 +609,83 @@ public class PedidoServiceImpl
     }
 
     private Publicacion obtenerPublicacionDisponible(
+            Integer idPublicacion) {
+
+        Publicacion publicacion =
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Una publicación ya no existe."
+                                        )
+                        );
+
+        if (publicacion.getEmprendimiento()
+                == null
+                || publicacion
+                .getEmprendimiento()
+                .getIdEmprendimiento()
+                == null) {
+
+            throw new IllegalArgumentException(
+                    "Una publicación no pertenece a un negocio válido."
+            );
+        }
+
+        return obtenerPublicacionDisponible(
+                idPublicacion,
+                publicacion
+                        .getEmprendimiento()
+                        .getIdEmprendimiento()
+        );
+    }
+
+    private Publicacion obtenerPublicacionDisponible(
             Integer idPublicacion,
             Integer idEmprendimiento) {
 
         Publicacion publicacion =
-                publicacionDAO.buscarPorId(
-                        idPublicacion
-                ).orElseThrow(
-                        () ->
-                                new IllegalArgumentException(
-                                        "Una publicación no existe."
-                                )
-                );
+                publicacionDAO
+                        .buscarPorId(
+                                idPublicacion
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Una publicación no existe."
+                                        )
+                        );
+
+        Emprendimiento negocio =
+                publicacion.getEmprendimiento();
 
         boolean disponible =
                 publicacion.isActivo()
-                        && publicacion.getEmprendimiento()
+                        && negocio != null
+                        && negocio.isActivo()
+                        && negocio.getPropietario()
                         != null
+                        && negocio
+                        .getPropietario()
+                        .isActivo()
                         && Objects.equals(
-                        publicacion
-                                .getEmprendimiento()
-                                .getIdEmprendimiento(),
+                        negocio.getIdEmprendimiento(),
                         idEmprendimiento
                 )
                         && publicacion.getCategoria()
                         != null
-                        && publicacion.getCategoria()
+                        && publicacion
+                        .getCategoria()
                         .isActivo()
                         && publicacion.getTipo()
                         != null
                         && publicacion.getPrecio()
                         != null
-                        && publicacion.getPrecio()
+                        && publicacion
+                        .getPrecio()
                         .signum() >= 0;
 
         if (!disponible) {
@@ -534,7 +745,9 @@ public class PedidoServiceImpl
                 < cantidad) {
 
             throw new IllegalArgumentException(
-                    "No hay existencias suficientes."
+                    "No hay existencias suficientes para "
+                            + publicacion.getNombre()
+                            + "."
             );
         }
     }
@@ -653,26 +866,66 @@ public class PedidoServiceImpl
         return pedido != null
                 && pedido.getEmprendimiento()
                 != null
-                && pedido.getEmprendimiento()
+                && pedido
+                .getEmprendimiento()
                 .getPropietario()
                 != null
                 && Objects.equals(
-                pedido.getEmprendimiento()
+                pedido
+                        .getEmprendimiento()
                         .getPropietario()
                         .getIdUsuario(),
                 idEmprendedor
         );
     }
 
+    private String normalizarDireccionObligatoria(
+            String direccion) {
+
+        String valor =
+                normalizarOpcional(
+                        direccion
+                );
+
+        if (valor == null) {
+
+            throw new IllegalArgumentException(
+                    "La dirección de entrega es obligatoria."
+            );
+        }
+
+        if (valor.length() > 255) {
+
+            throw new IllegalArgumentException(
+                    "La dirección no puede superar 255 caracteres."
+            );
+        }
+
+        return valor;
+    }
+
     private String normalizarObservaciones(
             String observaciones) {
 
-        if (observaciones == null
-                || observaciones.isBlank()) {
+        return normalizarOpcional(
+                observaciones
+        );
+    }
+
+    private String normalizarOpcional(
+            String valor) {
+
+        if (valor == null
+                || valor.isBlank()) {
 
             return null;
         }
 
-        return observaciones.trim();
+        return valor.trim();
+    }
+
+    private record LineaCarrito(
+            Publicacion publicacion,
+            int cantidad) {
     }
 }

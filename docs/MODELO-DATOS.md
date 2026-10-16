@@ -8,34 +8,41 @@ Base oficial:
 emprendelink_dwf
 ```
 
-Motor utilizado:
+Motor:
 
 ```text
 MySQL 8.x
 ```
 
-La persistencia de la aplicación se realiza mediante JPA utilizando EclipseLink como proveedor y JTA para el manejo de transacciones.
+Persistencia:
+
+```text
+JPA
+EclipseLink
+JTA
+```
+
+Scripts oficiales:
+
+```text
+database/schema.sql
+database/seed.sql
+```
+
+El esquema actual es consolidado; no se mantienen migraciones incrementales de Fase 2.
 
 ---
 
-## 2. Tabla `roles`
+## 2. `roles`
 
-Representa los roles disponibles dentro de la aplicación.
-
-### Columnas
+Columnas:
 
 ```text
 id_rol
 nombre
 ```
 
-### Llave primaria
-
-```text
-id_rol
-```
-
-### Valores oficiales
+Valores oficiales:
 
 ```text
 ROLE_ADMIN
@@ -43,18 +50,17 @@ ROLE_EMPRENDEDOR
 ROLE_CLIENTE
 ```
 
-### Restricciones
+Restricciones:
 
-- `nombre` es obligatorio;
-- `nombre` es único.
+- `id_rol` PK;
+- `nombre` obligatorio;
+- `nombre` único.
 
 ---
 
-## 3. Tabla `usuarios`
+## 3. `usuarios`
 
-Representa las cuentas registradas en EmprendeLink.
-
-### Columnas
+Columnas:
 
 ```text
 id_usuario
@@ -64,41 +70,47 @@ apellido
 correo
 contrasena_hash
 telefono
+direccion
 activo
 fecha_registro
 ```
 
-### Llave primaria
-
-```text
-id_usuario
-```
-
-### Llave foránea
+Relación:
 
 ```text
 id_rol → roles.id_rol
 ```
 
-### Restricciones principales
+Reglas:
 
-- rol obligatorio;
-- nombre obligatorio;
-- apellido obligatorio;
 - correo obligatorio y único;
-- contraseña almacenada únicamente como hash;
+- contraseña almacenada como hash;
+- teléfono opcional;
+- dirección opcional;
 - estado activo obligatorio;
 - fecha de registro obligatoria.
 
-La contraseña nunca se almacena en texto plano.
+### Registro público
+
+El registro público crea únicamente:
+
+```text
+ROLE_CLIENTE
+```
+
+Las cuentas:
+
+```text
+ROLE_EMPRENDEDOR
+```
+
+son creadas por un administrador.
 
 ---
 
-## 4. Tabla `planes`
+## 4. `planes`
 
-Representa los planes disponibles para los emprendimientos.
-
-### Columnas
+Columnas:
 
 ```text
 id_plan
@@ -108,13 +120,7 @@ tasa_comision
 activo
 ```
 
-### Llave primaria
-
-```text
-id_plan
-```
-
-### Restricciones
+Restricciones:
 
 ```text
 nombre UNIQUE
@@ -122,98 +128,97 @@ max_productos_activos > 0
 0 <= tasa_comision <= 1
 ```
 
-### Planes definidos
+Planes definidos:
 
 ```text
-Básico    → 10 publicaciones activas  → 0.0700 → 7%
-Estándar  → 30 publicaciones activas  → 0.0500 → 5%
-Premium   → 60 publicaciones activas  → 0.0300 → 3%
-Max       → 100 publicaciones activas → 0.0100 → 1%
+Básico    → 10  → 0.0700
+Estándar  → 30  → 0.0500
+Premium   → 60  → 0.0300
+Max       → 100 → 0.0100
 ```
-
-El plan determina:
-
-- cantidad máxima de publicaciones activas;
-- porcentaje de comisión aplicado a ventas completadas.
 
 ---
 
-## 5. Tabla `emprendimientos`
+## 5. `categorias`
 
-Representa los negocios registrados por usuarios emprendedores.
+Columnas:
 
-### Columnas
+```text
+id_categoria
+nombre
+descripcion
+maneja_stock
+activo
+```
+
+`maneja_stock` define el comportamiento de las publicaciones del negocio.
+
+```text
+TRUE
+→ inventario limitado
+→ tipo técnico PRODUCTO
+
+FALSE
+→ sin inventario limitado
+→ tipo técnico SERVICIO
+```
+
+La categoría se asigna al negocio desde administración.
+
+---
+
+## 6. `emprendimientos`
+
+Columnas:
 
 ```text
 id_emprendimiento
 id_propietario
 id_plan
+id_categoria
 nombre
 descripcion
 contacto
+logo_url
 activo
 fecha_registro
 ```
 
-### Llave primaria
-
-```text
-id_emprendimiento
-```
-
-### Llaves foráneas
+Llaves foráneas:
 
 ```text
 id_propietario → usuarios.id_usuario
 id_plan        → planes.id_plan
+id_categoria   → categorias.id_categoria
 ```
 
-### Restricciones principales
+Restricción estructural principal:
 
-- propietario obligatorio;
-- plan obligatorio;
-- nombre obligatorio;
-- estado obligatorio;
-- fecha de registro obligatoria.
+```text
+UNIQUE (id_propietario)
+```
 
-Cada emprendimiento pertenece a un único propietario y utiliza un plan.
+Esto implementa:
+
+```text
+1 emprendedor → máximo 1 negocio
+```
+
+El negocio conserva:
+
+- plan actual;
+- categoría;
+- nombre;
+- descripción;
+- contacto;
+- logo por URL;
+- estado.
 
 ---
 
-## 6. Tabla `categorias`
+## 7. `publicaciones`
 
-Representa la clasificación de las publicaciones.
-
-### Columnas
-
-```text
-id_categoria
-nombre
-descripcion
-activo
-```
-
-### Llave primaria
-
-```text
-id_categoria
-```
-
-### Restricciones
-
-- nombre obligatorio;
-- nombre único;
-- estado obligatorio.
-
-Las categorías utilizan eliminación lógica mediante `activo`.
-
----
-
-## 7. Tabla `publicaciones`
-
-Representa productos y servicios ofrecidos por los emprendimientos.
-
-### Columnas
+Columnas:
 
 ```text
 id_publicacion
@@ -222,89 +227,90 @@ id_categoria
 tipo
 nombre
 descripcion
+imagen_url
 precio
 stock
 activo
 fecha_publicacion
 ```
 
-### Llave primaria
-
-```text
-id_publicacion
-```
-
-### Llaves foráneas
+Llaves foráneas:
 
 ```text
 id_emprendimiento → emprendimientos.id_emprendimiento
 id_categoria      → categorias.id_categoria
 ```
 
-### Valores de `tipo`
+Valores técnicos de `tipo`:
 
 ```text
 PRODUCTO
 SERVICIO
 ```
 
-### Restricciones
+La interfaz del emprendedor no pide manualmente categoría ni tipo.
+
+La lógica resuelve esos valores a partir de:
+
+```text
+emprendimiento.categoria
+```
+
+y:
+
+```text
+categoria.maneja_stock
+```
+
+Restricciones:
 
 ```text
 precio >= 0
 stock >= 0
 ```
 
-Además:
+Además se valida:
 
-- nombre obligatorio;
-- emprendimiento obligatorio;
-- categoría obligatoria;
-- tipo obligatorio;
-- fecha de publicación obligatoria.
-
-Los Services verifican adicionalmente:
-
-- propiedad del emprendimiento;
+- negocio propio;
+- negocio activo;
+- propietario activo;
 - categoría activa;
-- emprendimiento activo;
-- límite de publicaciones activas definido por el plan.
+- plan activo;
+- límite de publicaciones activas;
+- formato de imagen URL;
+- precio válido.
 
 ---
 
-## 8. Tabla `pedidos`
+## 8. `pedidos`
 
-Representa una compra realizada por un cliente a un emprendimiento.
-
-### Columnas
+Columnas:
 
 ```text
 id_pedido
 id_cliente
 id_emprendimiento
+id_plan_aplicado
+nombre_plan_aplicado
 estado
 total
+tasa_comision
+monto_comision
+direccion_entrega
 observaciones
 fecha_pedido
 fecha_completado
-tasa_comision
-monto_comision
 ```
 
-### Llave primaria
+Llaves foráneas:
 
 ```text
-id_pedido
+id_cliente          → usuarios.id_usuario
+id_emprendimiento   → emprendimientos.id_emprendimiento
+id_plan_aplicado    → planes.id_plan
 ```
 
-### Llaves foráneas
-
-```text
-id_cliente        → usuarios.id_usuario
-id_emprendimiento → emprendimientos.id_emprendimiento
-```
-
-### Estados
+Estados:
 
 ```text
 PENDIENTE
@@ -314,65 +320,54 @@ COMPLETADO
 CANCELADO
 ```
 
-### Restricciones
+Restricciones:
 
 ```text
 total >= 0
-
-tasa_comision IS NULL
-o
 0 <= tasa_comision <= 1
-
-monto_comision IS NULL
-o
 monto_comision >= 0
 ```
 
-El estado inicial es:
+### Snapshot del plan
+
+Al crear el pedido se guardan:
 
 ```text
-PENDIENTE
-```
-
-### Comisión
-
-Mientras el pedido no ha sido completado:
-
-```text
-fecha_completado = NULL
-tasa_comision    = NULL
-monto_comision   = NULL
-```
-
-Cuando el pedido pasa a:
-
-```text
-COMPLETADO
-```
-
-se almacenan:
-
-```text
-fecha_completado
+id_plan_aplicado
+nombre_plan_aplicado
 tasa_comision
 monto_comision
 ```
 
-Cálculo:
+Esto evita que cambios futuros del plan modifiquen el historial del pedido.
+
+### Snapshot de dirección
+
+El pedido guarda:
 
 ```text
-monto_comision = total × tasa_comision
+direccion_entrega
 ```
 
-La tasa queda almacenada como información histórica del pedido.
+La dirección se copia al confirmar el checkout.
+
+Si el cliente cambia posteriormente la dirección de su perfil, los pedidos anteriores conservan su valor histórico.
+
+### Fecha completado
+
+Al completar:
+
+```text
+fecha_completado
+```
+
+registra la fecha real de finalización.
 
 ---
 
-## 9. Tabla `detalle_pedido`
+## 9. `detalle_pedido`
 
-Representa cada elemento incluido dentro de un pedido.
-
-### Columnas
+Columnas:
 
 ```text
 id_detalle_pedido
@@ -383,20 +378,14 @@ precio_unitario
 subtotal
 ```
 
-### Llave primaria
-
-```text
-id_detalle_pedido
-```
-
-### Llaves foráneas
+Relaciones:
 
 ```text
 id_pedido      → pedidos.id_pedido
 id_publicacion → publicaciones.id_publicacion
 ```
 
-### Restricciones
+Restricciones:
 
 ```text
 cantidad > 0
@@ -404,13 +393,14 @@ precio_unitario >= 0
 subtotal >= 0
 ```
 
-Al eliminar físicamente un pedido, sus detalles utilizan:
+Al eliminar físicamente un pedido:
 
 ```text
+detalle_pedido
 ON DELETE CASCADE
 ```
 
-La aplicación normalmente conserva los pedidos como información histórica.
+La aplicación normalmente conserva los pedidos como historial.
 
 ---
 
@@ -419,15 +409,17 @@ La aplicación normalmente conserva los pedidos como información histórica.
 ```text
 Rol 1:N Usuario
 
-Usuario 1:N Emprendimiento
+Usuario emprendedor 1:0..1 Emprendimiento
 
 Plan 1:N Emprendimiento
+
+Categoria 1:N Emprendimiento
 
 Emprendimiento 1:N Publicacion
 
 Categoria 1:N Publicacion
 
-Usuario 1:N Pedido
+Usuario cliente 1:N Pedido
 
 Emprendimiento 1:N Pedido
 
@@ -445,97 +437,128 @@ roles
         │
         ├── emprendimientos ─── planes
         │       │
-        │       ├── publicaciones ─── categorias
-        │       │         │
-        │       │         └── detalle_pedido
+        │       ├── categorias
+        │       │
+        │       ├── publicaciones
+        │       │       │
+        │       │       └── detalle_pedido
         │       │
         │       └── pedidos
-        │             │
-        │             └── detalle_pedido
+        │               │
+        │               └── detalle_pedido
         │
         └── pedidos
 ```
 
 ---
 
-## 11. Inventario
+## 11. Carrito multi-negocio y persistencia
 
-Las publicaciones de tipo:
+El carrito no se persiste como tabla en Fase 2.
+
+Se mantiene en sesión mediante:
 
 ```text
-PRODUCTO
+CarritoBean
 ```
 
-utilizan `stock`.
+Al confirmar:
 
-Al crear un pedido válido:
+```text
+publicaciones
+      ↓
+agrupadas por id_emprendimiento
+      ↓
+un registro pedidos por negocio
+      ↓
+múltiples detalle_pedido
+```
+
+Por tanto, la base conserva la regla:
+
+```text
+un pedido pertenece a un único emprendimiento
+```
+
+aunque el cliente perciba una sola experiencia de carrito.
+
+---
+
+## 12. Inventario
+
+Cuando la categoría del negocio maneja stock:
+
+```text
+tipo = PRODUCTO
+```
+
+Al confirmar:
 
 ```text
 stock -= cantidad
 ```
 
-Al cancelar un pedido cuando corresponde:
+Al cancelar:
 
 ```text
 stock += cantidad
 ```
 
-Las publicaciones de tipo:
+Cuando la categoría no maneja stock:
 
 ```text
-SERVICIO
+tipo = SERVICIO
+stock = 0
 ```
-
-no utilizan el stock como restricción de inventario.
 
 ---
 
-## 12. Límites de planes
+## 13. Límites de plan
 
-El límite se aplica sobre publicaciones con:
+El máximo se aplica a publicaciones con:
 
 ```text
 activo = TRUE
 ```
 
-La aplicación verifica el límite:
+Se valida al:
 
 ```text
-al crear una publicación
-al reactivar una publicación
-al asignar un plan a un emprendimiento
-```
-
-No se permite que el número de publicaciones activas sea superior a:
-
-```text
-planes.max_productos_activos
+crear
+reactivar
+asignar/cambiar plan
 ```
 
 ---
 
-## 13. Eliminación lógica
+## 14. Eliminación lógica
 
-Utilizan eliminación lógica mediante `activo`:
+Utilizan:
+
+```text
+activo
+```
+
+las tablas:
 
 ```text
 usuarios
 planes
-emprendimientos
 categorias
+emprendimientos
 publicaciones
 ```
 
-Esto permite conservar:
+Esto preserva:
 
 - historial;
+- pedidos;
 - relaciones;
-- pedidos anteriores;
-- integridad referencial.
+- trazabilidad.
 
 ---
 
-## 14. Integridad
+## 15. Integridad
 
 La integridad se controla mediante:
 
@@ -545,72 +568,8 @@ UNIQUE
 NOT NULL
 CHECK
 Bean Validation
-reglas de Service
+Services
 JTA
 ```
 
-Las reglas que dependen del usuario, rol, propiedad o estado se validan en la capa Service.
-
----
-
-## 15. Scripts
-
-Esquema completo:
-
-```text
-database/schema.sql
-```
-
-Datos iniciales:
-
-```text
-database/seed.sql
-```
-
-Migraciones adicionales:
-
-```text
-database/migrations/002_planes_comisiones.sql
-database/migrations/003_fecha_completado.sql
-```
-
----
-
-## 16. Persistencia Java
-
-Las tablas se representan mediante entidades JPA ubicadas en:
-
-```text
-src/main/java/emprendelink/persistence/jpa/entity/
-```
-
-Entidades:
-
-```text
-RolEntity
-UsuarioEntity
-CategoriaEntity
-PlanEntity
-EmprendimientoEntity
-PublicacionEntity
-PedidoEntity
-DetallePedidoEntity
-```
-
-Persistence Unit:
-
-```text
-emprendelinkPU
-```
-
-DataSource:
-
-```text
-jdbc/EmprendeLinkDS
-```
-
-Proveedor:
-
-```text
-EclipseLink
-```
+Las reglas dependientes de rol, propiedad, estado, límites e inventario se validan en la capa Service.

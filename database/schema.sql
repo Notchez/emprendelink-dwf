@@ -27,6 +27,7 @@ CREATE TABLE usuarios (
                           correo VARCHAR(120) NOT NULL UNIQUE,
                           contrasena_hash VARCHAR(255) NOT NULL,
                           telefono VARCHAR(20),
+                          direccion VARCHAR(255),
                           activo BOOLEAN NOT NULL DEFAULT TRUE,
                           fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -162,7 +163,9 @@ CREATE TABLE pedidos (
                          tasa_comision DECIMAL(5,4) NOT NULL,
                          monto_comision DECIMAL(10,2) NOT NULL,
 
+                         direccion_entrega VARCHAR(255),
                          observaciones TEXT,
+
                          fecha_pedido DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          fecha_completado DATETIME NULL,
 

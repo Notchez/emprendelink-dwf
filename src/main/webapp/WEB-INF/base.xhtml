@@ -26,6 +26,9 @@
     <link rel="stylesheet"
           href="#{request.contextPath}/css/emprendedor-panel.css"/>
 
+    <link rel="stylesheet"
+          href="#{request.contextPath}/css/cliente.css"/>
+
 </h:head>
 
 <h:body>
@@ -72,6 +75,10 @@
 
                     <a href="#{request.contextPath}/pedidos/mis-pedidos.xhtml">
                         Mis pedidos
+                    </a>
+
+                    <a href="#{request.contextPath}/perfil/index.xhtml">
+                        Mi perfil
                     </a>
 
                 </ui:fragment>
@@ -129,23 +136,55 @@
 
                 </span>
 
-                    <!--
-                        El emprendedor cierra sesión desde Mi negocio
-                        para liberar espacio en navegación móvil.
-                    -->
-
-                    <h:form
-                            rendered="#{not authBean.emprendedor}"
-                            styleClass="inline-form">
-
-                        <h:commandButton
-                                value="Salir"
-                                styleClass="marketplace-logout"
-                                action="#{authBean.cerrarSesion}"/>
-
-                    </h:form>
-
                 </ui:fragment>
+
+                <h:panelGroup
+                        id="carritoHeader"
+                        layout="block"
+                        rendered="#{authBean.cliente}"
+                        styleClass="client-cart-header-wrap">
+
+                    <a href="#{request.contextPath}/carrito/index.xhtml"
+                       class="client-cart-header">
+
+                    <span class="client-cart-icon">
+                        🛒
+                    </span>
+
+                        <span class="client-cart-label">
+                        Carrito
+                    </span>
+
+                        <ui:fragment
+                                rendered="#{carritoBean.cantidadTotal gt 0}">
+
+                        <span class="client-cart-badge">
+                            #{carritoBean.cantidadTotal}
+                        </span>
+
+                        </ui:fragment>
+
+                    </a>
+
+                </h:panelGroup>
+
+                <!--
+                    Cliente: logout dentro de Mi perfil.
+                    Emprendedor: logout dentro de Mi negocio.
+                -->
+
+                <h:form
+                        rendered="#{authBean.autenticado
+                    and not authBean.cliente
+                    and not authBean.emprendedor}"
+                        styleClass="inline-form">
+
+                    <h:commandButton
+                            value="Salir"
+                            styleClass="marketplace-logout"
+                            action="#{authBean.cerrarSesion}"/>
+
+                </h:form>
 
                 <ui:fragment
                         rendered="#{not authBean.autenticado}">

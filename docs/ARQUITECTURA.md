@@ -2,10 +2,11 @@
 
 ## 1. Estado
 
-EmprendeLink completa la arquitectura correspondiente a la Fase 2:
+EmprendeLink completa la arquitectura correspondiente a:
 
 ```text
-Persistencia Empresarial e Integración JSF
+Fase 2 — Persistencia Empresarial e Integración JSF
+Sprint II
 ```
 
 Arquitectura activa:
@@ -32,13 +33,15 @@ GlassFish DataSource
 MySQL
 ```
 
-La arquitectura JDBC/Servlet/JSP utilizada durante el incremento anterior fue retirada del runtime.
+La arquitectura JDBC/Servlet/JSP utilizada en Fase 1 fue retirada del runtime.
 
 ---
 
 ## 2. Separación de responsabilidades
 
 ### Presentación
+
+Ubicación:
 
 ```text
 src/main/webapp/
@@ -52,11 +55,14 @@ Responsabilidades:
 - navegación;
 - AJAX;
 - mensajes JSF;
+- mantener estado de vista o sesión cuando corresponde;
 - invocar Services.
 
-Los Managed Beans no ejecutan consultas JPA.
+Los Managed Beans no ejecutan consultas JPA directamente.
 
 ### Negocio
+
+Ubicación:
 
 ```text
 src/main/java/emprendelink/service/
@@ -65,18 +71,20 @@ src/main/java/emprendelink/service/impl/
 
 Responsabilidades:
 
-- reglas de negocio;
-- validación;
-- roles;
+- validaciones;
+- autorización funcional;
 - propiedad de recursos;
-- transiciones de estado;
-- inventario;
+- reglas de inventario;
 - planes;
 - límites;
-- coordinación entre DAO;
-- límites transaccionales.
+- comisiones;
+- agrupación de pedidos;
+- transiciones de estado;
+- coordinación transaccional.
 
 ### Persistencia
+
+Ubicación:
 
 ```text
 src/main/java/emprendelink/dao/
@@ -86,10 +94,10 @@ src/main/java/emprendelink/persistence/jpa/
 
 Responsabilidades:
 
-- operaciones CRUD;
+- CRUD;
 - consultas;
-- relaciones;
 - persistencia;
+- relaciones;
 - transformación dominio ↔ entidad.
 
 ---
@@ -117,7 +125,16 @@ TipoPublicacion
 EstadoPedido
 ```
 
-El modelo de dominio no depende directamente de JSF ni de las entidades JPA.
+El modelo no depende directamente de:
+
+```text
+JSF
+XHTML
+EntityManager
+JPA Entity
+REST
+Spring
+```
 
 ---
 
@@ -136,15 +153,6 @@ PedidoEntity
 DetallePedidoEntity
 ```
 
-Las entidades representan:
-
-- tablas;
-- columnas;
-- claves;
-- relaciones;
-- restricciones;
-- enumeraciones.
-
 ---
 
 ## 5. Relaciones principales
@@ -152,15 +160,17 @@ Las entidades representan:
 ```text
 Rol 1:N Usuario
 
-Usuario 1:N Emprendimiento
+Usuario emprendedor 1:0..1 Emprendimiento
 
 Plan 1:N Emprendimiento
+
+Categoria 1:N Emprendimiento
 
 Emprendimiento 1:N Publicacion
 
 Categoria 1:N Publicacion
 
-Usuario 1:N Pedido
+Usuario cliente 1:N Pedido
 
 Emprendimiento 1:N Pedido
 
@@ -169,21 +179,13 @@ Pedido 1:N DetallePedido
 Publicacion 1:N DetallePedido
 ```
 
-Representación simplificada:
+La restricción:
 
 ```text
-Rol
-└── Usuario
-    ├── Emprendimiento
-    │   ├── Plan
-    │   ├── Publicacion
-    │   │   └── DetallePedido
-    │   └── Pedido
-    └── Pedido
-
-Categoria
-└── Publicacion
+UNIQUE (emprendimientos.id_propietario)
 ```
+
+garantiza que un emprendedor no tenga más de un negocio.
 
 ---
 
@@ -219,7 +221,7 @@ Implementaciones:
 emprendelink.dao.jpa
 ```
 
-Principales DAO JPA:
+DAO JPA principales:
 
 ```text
 JpaRolDAO
@@ -231,7 +233,7 @@ JpaPublicacionDAO
 JpaPedidoDAO
 ```
 
-Los Services dependen de interfaces DAO y no directamente de `EntityManager`.
+Los Services dependen de interfaces DAO.
 
 ---
 
@@ -267,73 +269,47 @@ DataSource:
 jdbc/EmprendeLinkDS
 ```
 
-Entidades declaradas:
-
-```text
-RolEntity
-UsuarioEntity
-CategoriaEntity
-PlanEntity
-EmprendimientoEntity
-PublicacionEntity
-PedidoEntity
-DetallePedidoEntity
-```
-
 ---
 
-## 9. EntityManager
+## 9. Transacciones
 
-Los DAO utilizan:
-
-```java
-@PersistenceContext(unitName = "emprendelinkPU")
-private EntityManager entityManager;
-```
-
-No se utiliza:
-
-```text
-EntityManagerFactory manual
-EntityTransaction manual
-RESOURCE_LOCAL
-```
-
----
-
-## 10. Transacciones
-
-Los Services utilizan Jakarta Transactions mediante:
+Los Services utilizan:
 
 ```java
 @Transactional
 ```
 
-Ejemplo de creación de pedido:
+Flujo general de checkout:
 
 ```text
 validar cliente
-    ↓
-validar negocio
-    ↓
-validar publicaciones
-    ↓
-validar stock
-    ↓
-crear pedido
-    ↓
+      ↓
+validar carrito
+      ↓
+resolver publicaciones
+      ↓
+validar negocio / categoría / stock
+      ↓
+agrupar por emprendimiento
+      ↓
+crear un Pedido por negocio
+      ↓
+congelar plan y comisión
+      ↓
+copiar dirección de entrega
+      ↓
 crear detalles
-    ↓
+      ↓
 descontar stock
-    ↓
+      ↓
 commit
 ```
 
-Ante una excepción dentro de la operación transaccional, JTA puede revertir los cambios.
+Si una operación transaccional falla, JTA permite revertir el conjunto de cambios.
 
 ---
 
-## 11. Managed Beans
+## 10. Managed Beans
 
 Beans principales:
 
@@ -347,20 +323,148 @@ PedidoBean
 PlanBean
 AdminNegocioBean
 AdminComisionBean
+AdminEmprendedorBean
+CatalogoBean
+ClientePerfilBean
+CarritoBean
+```
+
+### `CarritoBean`
+
+Alcance:
+
+```text
+@SessionScoped
+```
+
+Motivo:
+
+El carrito debe mantenerse mientras el cliente navega entre catálogo, detalle, carrito y checkout.
+
+Responsabilidades:
+
+- cantidades;
+- grupos por negocio;
+- total;
+- subtotales;
+- validación de stock visible;
+- datos temporales del checkout;
+- confirmación del pedido.
+
+### `ClientePerfilBean`
+
+Alcance:
+
+```text
+@ViewScoped
 ```
 
 Responsabilidades:
 
-- recibir interacción JSF;
-- preparar datos;
-- mostrar mensajes;
-- realizar navegación;
-- coordinar AJAX;
-- invocar Services.
+- cargar perfil;
+- editar teléfono;
+- editar dirección;
+- refrescar el usuario almacenado en sesión.
+
+### `AdminEmprendedorBean`
+
+Responsabilidad:
+
+```text
+crear ROLE_EMPRENDEDOR
++
+crear su único Emprendimiento
+```
+
+La operación se delega a `AdminEmprendedorService`.
 
 ---
 
-## 12. AJAX
+## 11. Perfiles y navegación
+
+### Admin
+
+Landing:
+
+```text
+/admin/inicio.xhtml
+```
+
+### Emprendedor
+
+Landing:
+
+```text
+/pedidos/recibidos.xhtml
+```
+
+Navegación:
+
+```text
+Pedidos
+Mi negocio
+Catálogo
+Ventas
+Comisiones
+```
+
+### Cliente
+
+Landing:
+
+```text
+/catalogo/index.xhtml
+```
+
+Navegación:
+
+```text
+Explorar
+Mis pedidos
+Mi perfil
+Carrito
+```
+
+---
+
+## 12. Catálogo y publicaciones
+
+El negocio tiene una categoría administrativa.
+
+La categoría define:
+
+```text
+manejaStock
+```
+
+La publicación continúa conservando técnicamente:
+
+```text
+Categoria
+TipoPublicacion
+```
+
+pero el emprendedor no los selecciona manualmente.
+
+Resolución:
+
+```text
+categoria del negocio
+      ↓
+manejaStock = true
+      → PRODUCTO
+      → stock
+
+manejaStock = false
+      → SERVICIO
+      → stock = 0
+```
+
+Esto mantiene compatibilidad con el dominio actual y simplifica la interfaz.
+
+---
+
+## 13. AJAX
 
 Se utiliza:
 
@@ -368,28 +472,29 @@ Se utiliza:
 <f:ajax>
 ```
 
-en flujos de:
+en flujos como:
 
-- login;
-- registro;
-- usuarios;
 - categorías;
-- emprendimientos;
 - publicaciones;
-- catálogo;
-- pedidos;
-- planes;
-- comisiones.
+- búsqueda de catálogo;
+- activación/desactivación;
+- contador de plan;
+- carrito;
+- cambios de cantidades;
+- actualización de totales;
+- estados y formularios.
+
+El objetivo es mantener el estado de interacción sin recargar completamente la vista.
 
 ---
 
-## 13. Validación
+## 14. Validación
 
-La aplicación utiliza varias capas de validación.
+La aplicación utiliza varias capas:
 
 ### JSF
 
-- campos obligatorios;
+- required;
 - mensajes;
 - conversión;
 - AJAX.
@@ -413,30 +518,45 @@ Validan:
 
 - roles;
 - propiedad;
-- estados;
+- usuarios activos;
+- negocio;
+- categoría;
+- plan;
+- límite de publicaciones;
 - stock;
-- categorías;
-- negocios;
-- planes;
-- límites;
+- transiciones de pedido;
+- dirección;
+- precios;
 - datos requeridos.
 
 ### Bean Validation
 
-Las entidades utilizan restricciones como:
+Las entidades utilizan anotaciones como:
 
 ```text
 @NotNull
 @NotBlank
 @Size
-@Min
 @DecimalMin
+@DecimalMax
 @Digits
+```
+
+### Base de datos
+
+La base utiliza:
+
+```text
+PRIMARY KEY
+FOREIGN KEY
+UNIQUE
+NOT NULL
+CHECK
 ```
 
 ---
 
-## 14. Seguridad
+## 15. Seguridad
 
 Roles:
 
@@ -451,84 +571,104 @@ Filtros:
 ```text
 AutenticacionFilter
 AdminFilter
+CatalogoFilter
+ClienteFilter
 EmprendedorFilter
 PedidosFilter
 PublicacionFilter
 ```
 
-La autorización también se valida dentro de los Services.
+La autorización no depende únicamente de ocultar opciones en la interfaz.
 
----
-
-## 15. Eliminación lógica
-
-Utilizan estado `activo`:
+Modelo:
 
 ```text
-Usuario
-Categoria
-Plan
-Emprendimiento
-Publicacion
+Request
+  ↓
+Filter
+  ↓
+Managed Bean
+  ↓
+Service
+  ↓
+rol + propiedad + estado
+  ↓
+DAO
 ```
-
-Esto permite preservar:
-
-- relaciones;
-- integridad;
-- historial;
-- pedidos existentes.
 
 ---
 
-## 16. Planes
+## 16. Administración de emprendedores
 
-Cada emprendimiento puede tener un plan.
+La creación de emprendedores es responsabilidad exclusiva del administrador.
+
+Flujo:
+
+```text
+ROLE_ADMIN
+   ↓
+AdminEmprendedorBean
+   ↓
+AdminEmprendedorService
+   ↓
+crear Usuario ROLE_EMPRENDEDOR
+   ↓
+crear Emprendimiento
+      ├── propietario
+      ├── plan
+      ├── categoría
+      ├── nombre
+      ├── contacto
+      └── logo
+```
+
+El registro público únicamente crea clientes.
+
+---
+
+## 17. Negocio del emprendedor
+
+El emprendedor puede modificar:
+
+```text
+descripcion
+contacto
+logoUrl
+```
+
+Los datos administrativos permanecen fuera de su edición normal:
+
+```text
+nombre
+categoria
+plan
+estado
+```
+
+---
+
+## 18. Planes y límites
 
 Planes:
 
 ```text
-Básico
-Estándar
-Premium
-Max
-```
-
-Límites de publicaciones activas:
-
-```text
-Básico    → 10
-Estándar  → 30
-Premium   → 60
-Max       → 100
-```
-
-Tasas de comisión:
-
-```text
-Básico    → 7%
-Estándar  → 5%
-Premium   → 3%
-Max       → 1%
+Básico    → 10 publicaciones activas → 7%
+Estándar  → 30 publicaciones activas → 5%
+Premium   → 60 publicaciones activas → 3%
+Max       → 100 publicaciones activas → 1%
 ```
 
 El límite se valida:
 
 ```text
-al crear una publicación
-al reactivar una publicación
-al asignar un plan
-```
-
-No se permite superar:
-
-```text
-Plan.maxProductosActivos
+al crear publicación
+al reactivar publicación
+al asignar/cambiar plan
 ```
 
 ---
 
-## 17. Pedidos
+## 19. Pedido y snapshot comercial
 
 Un pedido contiene:
 
@@ -538,122 +678,89 @@ Pedido
 ├── Emprendimiento
 ├── Estado
 ├── Total
-├── Fecha pedido
-├── Fecha completado
+├── Id plan aplicado
+├── Nombre plan aplicado
 ├── Tasa comisión
 ├── Monto comisión
+├── Dirección entrega
+├── Observaciones
+├── Fecha pedido
+├── Fecha completado
 └── Detalles
-    ├── Publicacion
-    ├── Cantidad
-    ├── Precio unitario
-    └── Subtotal
 ```
 
----
-
-## 18. Estados del pedido
-
-Estados internos:
+Al crear el pedido se congelan:
 
 ```text
-PENDIENTE
-CONFIRMADO
-EN_PROCESO
-COMPLETADO
-CANCELADO
-```
-
-Transiciones:
-
-```text
-PENDIENTE
-├── CONFIRMADO
-└── CANCELADO
-
-CONFIRMADO
-├── EN_PROCESO
-└── CANCELADO
-
-EN_PROCESO
-├── COMPLETADO
-└── CANCELADO
-```
-
-Estados terminales:
-
-```text
-COMPLETADO
-CANCELADO
-```
-
-Presentación:
-
-```text
-EN_PROCESO → En camino
-COMPLETADO → Entregado
-```
-
----
-
-## 19. Inventario
-
-Para publicaciones:
-
-```text
-PRODUCTO
-```
-
-al crear un pedido:
-
-```text
-stock -= cantidad
-```
-
-Al cancelar:
-
-```text
-stock += cantidad
-```
-
-Las publicaciones:
-
-```text
-SERVICIO
-```
-
-no utilizan inventario como restricción.
-
----
-
-## 20. Comisiones
-
-Cuando un pedido cambia por primera vez a:
-
-```text
-COMPLETADO
-```
-
-se obtiene la tasa del plan asociado al emprendimiento.
-
-Se persisten:
-
-```text
+idPlanAplicado
+nombrePlanAplicado
 tasaComision
 montoComision
+direccionEntrega
+```
+
+Al completar se registra:
+
+```text
 fechaCompletado
 ```
 
-Cálculo:
+---
+
+## 20. Carrito multi-negocio
+
+La interfaz presenta un solo carrito.
+
+Internamente:
 
 ```text
-montoComision = totalPedido × tasaComision
+Carrito
+├── Negocio A
+│   ├── publicación 1
+│   └── publicación 2
+└── Negocio B
+    └── publicación 3
 ```
 
-La tasa queda almacenada en el pedido para conservar el valor histórico aunque posteriormente cambie el plan.
+Durante checkout:
+
+```text
+Grupo A → Pedido A
+Grupo B → Pedido B
+```
+
+Esto conserva la relación:
+
+```text
+Pedido N:1 Emprendimiento
+```
+
+y permite aplicar correctamente el plan y comisión de cada negocio.
 
 ---
 
-## 21. Base de datos
+## 21. Inventario
+
+Para publicaciones técnicas `PRODUCTO`:
+
+```text
+crear pedido:
+stock -= cantidad
+
+cancelar pedido:
+stock += cantidad
+```
+
+Para `SERVICIO`:
+
+```text
+stock = 0
+sin restricción de cantidad física
+```
+
+---
+
+## 22. Base de datos
 
 Base:
 
@@ -661,37 +768,26 @@ Base:
 emprendelink_dwf
 ```
 
-Scripts:
+Scripts oficiales:
 
 ```text
 database/schema.sql
 database/seed.sql
-database/migrations/002_planes_comisiones.sql
-database/migrations/003_fecha_completado.sql
 ```
+
+No se mantienen migraciones incrementales de Fase 2 en el estado actual del proyecto.
 
 ---
 
-## 22. Calidad
+## 23. Calidad
 
-Pruebas automatizadas:
-
-```text
-41
-```
-
-Resultado:
+Última regresión ejecutada:
 
 ```text
-Failures: 0
-Errors: 0
+41 tests
+0 failures
+0 errors
 BUILD SUCCESS
-```
-
-Build:
-
-```text
-target/emprendelink.war
 ```
 
 CI:
@@ -703,14 +799,25 @@ mvn -B clean test
 
 ---
 
-## 23. Preparación para Fase 3
+## 24. Preparación para Fase 3
 
-La API REST reutilizará:
+Existen clases preparatorias vacías en:
+
+```text
+emprendelink.web.rest
+emprendelink.dto
+```
+
+Estas clases **no representan una API REST funcional todavía**.
+
+Arquitectura prevista:
 
 ```text
 REST
  ↓
-Services
+DTO
+ ↓
+Services existentes
  ↓
 DAO
  ↓
@@ -719,17 +826,11 @@ JPA
 MySQL
 ```
 
-Ruta prevista:
-
-```text
-/api/v1
-```
-
-Los endpoints no deberán duplicar reglas de negocio.
+La implementación formal de endpoints pertenece a Fase 3.
 
 ---
 
-## 24. Preparación para Fase 4
+## 25. Preparación para Fase 4
 
 El paquete:
 
@@ -743,6 +844,7 @@ La arquitectura permite reutilizar:
 
 - dominio;
 - Services;
-- reglas;
 - DAO;
-- persistencia.
+- persistencia;
+- reglas de negocio;
+- pruebas.

@@ -15,60 +15,67 @@
 
     <ui:define name="content">
 
-        <div class="page-header">
+        <section class="client-page-header">
 
             <div>
 
-                <div class="eyebrow">
+                <span class="market-kicker">
                     Tus compras
-                </div>
+                </span>
 
-                <h1>Mis pedidos</h1>
+                <h1>
+                    Mis pedidos
+                </h1>
 
                 <p>
-                    Revisa el estado de tus pedidos.
+                    Consulta el estado y detalle de tus compras.
                 </p>
 
             </div>
 
-            <a class="btn btn-primary"
-               href="#{request.contextPath}/catalogo/index.xhtml">
-                Explorar
+            <a href="#{request.contextPath}/catalogo/index.xhtml"
+               class="market-primary-link">
+                Seguir comprando
             </a>
 
-        </div>
+        </section>
 
-        <h:messages styleClass="messages"/>
+        <h:messages
+                globalOnly="true"
+                styleClass="market-messages"/>
 
-        <div class="order-list">
+        <h:panelGroup
+                rendered="#{not empty pedidoBean.misPedidos}"
+                layout="block"
+                styleClass="client-orders">
 
             <ui:repeat
                     value="#{pedidoBean.misPedidos}"
                     var="p">
 
-                <article class="order-card">
+                <article class="client-order-card">
 
-                    <div class="order-top">
+                    <div class="client-order-main">
 
-                        <div>
+                        <div class="client-order-business">
 
-                            <h3>
-                                #{p.emprendimiento.nombre}
-                            </h3>
-
-                            <div class="order-meta">
+                            <span>
                                 Pedido ##{p.idPedido}
-                            </div>
+                            </span>
+
+                            <h2>
+                                #{p.emprendimiento.nombre}
+                            </h2>
 
                         </div>
 
-                        <span class="#{p.estado eq 'CANCELADO'
-                        ? 'status status-danger'
-                        : p.estado eq 'COMPLETADO'
-                        ? 'status status-success'
-                        : p.estado eq 'PENDIENTE'
-                        ? 'status status-pending'
-                        : 'status status-neutral'}">
+                        <span class="client-order-status #{p.estado eq 'CANCELADO'
+                                ? 'is-cancelled'
+                                : p.estado eq 'COMPLETADO'
+                                ? 'is-completed'
+                                : p.estado eq 'PENDIENTE'
+                                ? 'is-pending'
+                                : 'is-progress'}">
 
                             #{pedidoBean.etiquetaEstado(p.estado)}
 
@@ -76,11 +83,27 @@
 
                     </div>
 
-                    <div class="order-footer">
+                    <div class="client-order-items">
+
+                        <ui:repeat
+                                value="#{p.detalles}"
+                                var="d">
+
+                            <span>
+                                #{d.cantidad}
+                                ×
+                                #{d.publicacion.nombre}
+                            </span>
+
+                        </ui:repeat>
+
+                    </div>
+
+                    <footer class="client-order-footer">
 
                         <h:outputText
                                 value="#{p.total}"
-                                styleClass="price">
+                                styleClass="client-order-total">
 
                             <f:convertNumber
                                     type="currency"
@@ -91,7 +114,7 @@
                         <h:link
                                 outcome="/pedidos/detalle.xhtml"
                                 value="Ver detalle"
-                                styleClass="btn btn-secondary btn-small">
+                                styleClass="market-secondary-link">
 
                             <f:param
                                     name="id"
@@ -99,13 +122,32 @@
 
                         </h:link>
 
-                    </div>
+                    </footer>
 
                 </article>
 
             </ui:repeat>
 
-        </div>
+        </h:panelGroup>
+
+        <h:panelGroup
+                rendered="#{empty pedidoBean.misPedidos}"
+                layout="block"
+                styleClass="market-empty-state">
+
+            <div class="market-empty-icon">
+                ◫
+            </div>
+
+            <h2>
+                Todavía no tienes pedidos
+            </h2>
+
+            <p>
+                Explora negocios y realiza tu primera compra.
+            </p>
+
+        </h:panelGroup>
 
     </ui:define>
 

@@ -31,32 +31,33 @@
                 rendered="#{not empty pedidoBean.detalle}"
                 layout="block">
 
-            <div class="page-header">
+            <section class="client-page-header">
 
                 <div>
 
-                    <div class="eyebrow">
+                    <span class="market-kicker">
                         Pedido ##{pedidoBean.detalle.idPedido}
-                    </div>
+                    </span>
 
                     <h1>
                         #{pedidoBean.detalle.emprendimiento.nombre}
                     </h1>
 
                     <p>
-                        #{pedidoBean.detalle.cliente.nombre}
-                        #{pedidoBean.detalle.cliente.apellido}
+                        #{pedidoBean.formatearFecha(
+                                pedidoBean.detalle.fechaPedido
+                                )}
                     </p>
 
                 </div>
 
-                <span class="#{pedidoBean.detalle.estado eq 'CANCELADO'
-                ? 'status status-danger'
-                : pedidoBean.detalle.estado eq 'COMPLETADO'
-                ? 'status status-success'
-                : pedidoBean.detalle.estado eq 'PENDIENTE'
-                ? 'status status-pending'
-                : 'status status-neutral'}">
+                <span class="client-order-status #{pedidoBean.detalle.estado eq 'CANCELADO'
+                        ? 'is-cancelled'
+                        : pedidoBean.detalle.estado eq 'COMPLETADO'
+                        ? 'is-completed'
+                        : pedidoBean.detalle.estado eq 'PENDIENTE'
+                        ? 'is-pending'
+                        : 'is-progress'}">
 
                     #{pedidoBean.etiquetaEstado(
                             pedidoBean.detalle.estado
@@ -64,60 +65,47 @@
 
                 </span>
 
-            </div>
+            </section>
 
-            <section class="table-panel">
+            <section class="client-order-detail">
 
-                <div class="table-wrap">
+                <div class="client-order-detail-items">
 
-                    <h:dataTable
+                    <h2>
+                        Detalle
+                    </h2>
+
+                    <ui:repeat
                             value="#{pedidoBean.detalle.detalles}"
-                            var="d"
-                            styleClass="data-table">
+                            var="d">
 
-                        <h:column>
+                        <div class="client-checkout-line">
 
-                            <f:facet name="header">
-                                Producto / servicio
-                            </f:facet>
+                            <div>
 
-                            #{d.publicacion.nombre}
+                                <strong>
+                                    #{d.publicacion.nombre}
+                                </strong>
 
-                        </h:column>
+                                <span>
+                                    #{d.cantidad}
+                                    ×
 
-                        <h:column>
+                                    <h:outputText
+                                            value="#{d.precioUnitario}">
 
-                            <f:facet name="header">
-                                Cantidad
-                            </f:facet>
+                                        <f:convertNumber
+                                                type="currency"
+                                                currencySymbol="$"/>
 
-                            #{d.cantidad}
+                                    </h:outputText>
 
-                        </h:column>
+                                </span>
 
-                        <h:column>
+                            </div>
 
-                            <f:facet name="header">
-                                Precio
-                            </f:facet>
-
-                            <h:outputText value="#{d.precioUnitario}">
-
-                                <f:convertNumber
-                                        type="currency"
-                                        currencySymbol="$"/>
-
-                            </h:outputText>
-
-                        </h:column>
-
-                        <h:column>
-
-                            <f:facet name="header">
-                                Subtotal
-                            </f:facet>
-
-                            <h:outputText value="#{d.subtotal}">
+                            <h:outputText
+                                    value="#{d.subtotal}">
 
                                 <f:convertNumber
                                         type="currency"
@@ -125,41 +113,60 @@
 
                             </h:outputText>
 
-                        </h:column>
+                        </div>
 
-                    </h:dataTable>
+                    </ui:repeat>
+
+                    <div class="client-summary-total">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <h:outputText
+                                value="#{pedidoBean.detalle.total}">
+
+                            <f:convertNumber
+                                    type="currency"
+                                    currencySymbol="$"/>
+
+                        </h:outputText>
+
+                    </div>
 
                 </div>
 
-            </section>
+                <aside class="client-order-detail-info">
 
-            <section class="panel section">
+                    <div>
 
-                <p class="muted">
-                    Indicaciones
-                </p>
+                        <span>
+                            Dirección de entrega
+                        </span>
 
-                <p>
-                    #{empty pedidoBean.detalle.observaciones
-                            ? 'Sin indicaciones adicionales.'
-                            : pedidoBean.detalle.observaciones}
-                </p>
+                        <strong>
+                            #{empty pedidoBean.detalle.direccionEntrega
+                                    ? 'No especificada'
+                                    : pedidoBean.detalle.direccionEntrega}
+                        </strong>
 
-                <hr/>
+                    </div>
 
-                <p>
-                    <strong>Total</strong>
-                </p>
+                    <div>
 
-                <h:outputText
-                        value="#{pedidoBean.detalle.total}"
-                        styleClass="detail-price">
+                        <span>
+                            Indicaciones
+                        </span>
 
-                    <f:convertNumber
-                            type="currency"
-                            currencySymbol="$"/>
+                        <strong>
+                            #{empty pedidoBean.detalle.observaciones
+                                    ? 'Sin indicaciones adicionales'
+                                    : pedidoBean.detalle.observaciones}
+                        </strong>
 
-                </h:outputText>
+                    </div>
+
+                </aside>
 
             </section>
 

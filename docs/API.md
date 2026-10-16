@@ -1,371 +1,401 @@
 # API REST — EmprendeLink DWF
 
-Este documento define el contrato inicial de la API REST de EmprendeLink.
+## Estado
 
-La API será implementada formalmente durante la Fase 3 del proyecto.
+Este documento define el **contrato preliminar** para la Fase 3.
 
-Su diseño inicial se establece desde ahora para mantener consistencia entre:
+En el estado actual de Fase 2:
 
-- backend;
-- cliente externo;
-- DTO;
-- pruebas;
-- seguridad;
-- documentación.
+```text
+NO existe todavía una API REST funcional.
+```
+
+Existen clases preparatorias en:
+
+```text
+src/main/java/emprendelink/web/rest/
+src/main/java/emprendelink/dto/
+```
+
+por ejemplo:
+
+```text
+EmprendimientoResource
+PublicacionResource
+PedidoResource
+
+EmprendimientoDTO
+PublicacionDTO
+CrearPedidoDTO
+PedidoDTO
+DetallePedidoDTO
+ApiErrorDTO
+```
+
+pero actualmente son scaffolding y no deben presentarse como endpoints implementados.
 
 ---
 
-## 1. Ruta base
+## 1. Objetivo de Fase 3
 
-La API utilizará:
+La API deberá:
 
-`/api/v1`
+- reutilizar Services existentes;
+- exponer operaciones controladas;
+- intercambiar JSON;
+- usar códigos HTTP correctos;
+- validar entradas;
+- mantener autorización por rol y propiedad;
+- documentar errores;
+- ser consumida por un cliente externo.
+
+Arquitectura prevista:
+
+```text
+Cliente externo
+      ↓ HTTP / JSON
+REST Resource
+      ↓
+DTO
+      ↓
+Service
+      ↓
+DAO
+      ↓
+JPA
+      ↓
+MySQL
+```
+
+---
+
+## 2. Ruta base prevista
+
+```text
+/api/v1
+```
 
 Ejemplo local:
 
-`http://localhost:8080/emprendelink/api/v1`
+```text
+http://localhost:8080/emprendelink/api/v1
+```
 
 ---
 
-## 2. Formato de intercambio
+## 3. Formato
 
-El formato principal será:
+```text
+application/json
+```
 
-`application/json`
+Convención:
 
-Las solicitudes y respuestas deberán utilizar JSON cuando corresponda.
-
----
-
-## 3. Recursos principales
-
-Los recursos REST iniciales serán:
-
-- emprendimientos;
-- publicaciones;
-- pedidos.
-
-Podrán agregarse otros recursos posteriormente según los requisitos funcionales.
-
----
-
-## 4. Emprendimientos
-
-### Listar emprendimientos
-
-`GET /api/v1/emprendimientos`
-
-Respuesta esperada:
-
-- colección de emprendimientos visibles;
-- código HTTP `200 OK`.
-
-### Obtener emprendimiento por ID
-
-`GET /api/v1/emprendimientos/{id}`
-
-Posibles respuestas:
-
-- `200 OK`
-- `404 Not Found`
-
-### Listar publicaciones de un emprendimiento
-
-`GET /api/v1/emprendimientos/{id}/publicaciones`
-
-Posibles respuestas:
-
-- `200 OK`
-- `404 Not Found`
-
----
-
-## 5. Publicaciones
-
-### Listar publicaciones
-
-`GET /api/v1/publicaciones`
-
-Podrá permitir filtros mediante query parameters.
+```text
+camelCase
+```
 
 Ejemplos:
 
-`GET /api/v1/publicaciones?tipo=PRODUCTO`
-
-`GET /api/v1/publicaciones?tipo=SERVICIO`
-
-### Obtener publicación por ID
-
-`GET /api/v1/publicaciones/{id}`
-
-Posibles respuestas:
-
-- `200 OK`
-- `404 Not Found`
+```text
+idUsuario
+idEmprendimiento
+idPublicacion
+idPedido
+fechaPedido
+precioUnitario
+direccionEntrega
+```
 
 ---
 
-## 6. Pedidos
+## 4. Recursos candidatos
 
-### Crear pedido
+Los recursos iniciales previstos son:
 
-`POST /api/v1/pedidos`
+```text
+emprendimientos
+publicaciones
+pedidos
+```
 
-Responsabilidad:
+La definición definitiva debe validarse al iniciar Fase 3.
 
-- recibir datos del pedido;
+---
+
+## 5. Emprendimientos — contrato preliminar
+
+### Listar negocios visibles
+
+```http
+GET /api/v1/emprendimientos
+```
+
+Respuesta esperada:
+
+```text
+200 OK
+```
+
+### Obtener negocio
+
+```http
+GET /api/v1/emprendimientos/{id}
+```
+
+Respuestas esperadas:
+
+```text
+200 OK
+404 Not Found
+```
+
+### Publicaciones del negocio
+
+```http
+GET /api/v1/emprendimientos/{id}/publicaciones
+```
+
+Respuestas esperadas:
+
+```text
+200 OK
+404 Not Found
+```
+
+---
+
+## 6. Publicaciones — contrato preliminar
+
+### Listar publicaciones visibles
+
+```http
+GET /api/v1/publicaciones
+```
+
+Filtros candidatos:
+
+```text
+texto
+categoria
+emprendimiento
+```
+
+La interfaz JSF de Fase 2 ya no expone un filtro manual por tipo.
+
+El campo técnico `tipo` puede seguir formando parte del DTO si resulta necesario para el contrato final.
+
+### Obtener publicación
+
+```http
+GET /api/v1/publicaciones/{id}
+```
+
+Respuestas esperadas:
+
+```text
+200 OK
+404 Not Found
+```
+
+---
+
+## 7. Pedidos — contrato preliminar
+
+El modelo actual permite un carrito visual con varios negocios, pero persiste:
+
+```text
+1 Pedido → 1 Emprendimiento
+```
+
+La API de Fase 3 deberá decidir si expone:
+
+```text
+A) creación de un pedido por negocio
+```
+
+o:
+
+```text
+B) endpoint de checkout que reciba varias publicaciones
+   y delegue en PedidoService.crearDesdeCarrito(...)
+```
+
+La opción B reutiliza mejor el comportamiento de Fase 2.
+
+### Checkout candidato
+
+```http
+POST /api/v1/pedidos/checkout
+```
+
+Responsabilidad prevista:
+
 - validar cliente;
 - validar publicaciones;
-- validar cantidades;
-- calcular total;
-- crear pedido y detalles.
+- validar stock;
+- agrupar por negocio;
+- crear un pedido por negocio;
+- congelar plan;
+- calcular comisión;
+- guardar dirección;
+- descontar stock.
 
-Respuesta esperada:
+Respuesta propuesta:
 
-- `201 Created`
+```text
+201 Created
+```
 
-Posibles errores:
+Errores candidatos:
 
-- `400 Bad Request`
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
-- `409 Conflict`
+```text
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+404 Not Found
+409 Conflict
+```
 
-### Obtener pedido por ID
+### Obtener pedido
 
-`GET /api/v1/pedidos/{id}`
+```http
+GET /api/v1/pedidos/{id}
+```
 
-El backend deberá validar que el usuario tenga permiso para consultar el pedido.
+Debe validar propiedad/rol.
 
-Posibles respuestas:
+### Cambiar estado
 
-- `200 OK`
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
+```http
+PUT /api/v1/pedidos/{id}/estado
+```
 
-### Actualizar estado de pedido
+Debe validar:
 
-`PUT /api/v1/pedidos/{id}/estado`
-
-Responsabilidad:
-
-- validar autenticación;
-- validar permisos;
-- validar propiedad del emprendimiento;
-- validar transición de estado.
-
-Posibles respuestas:
-
-- `200 OK`
-- `400 Bad Request`
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
-- `409 Conflict`
+- emprendedor autenticado;
+- propiedad del negocio;
+- transición permitida.
 
 ---
 
-## 7. DTO previstos
+## 8. Snapshot del pedido
 
-La API podrá utilizar los siguientes DTO:
+El DTO final de pedido deberá considerar:
 
-- `EmprendimientoDTO`
-- `PublicacionDTO`
-- `CrearPedidoDTO`
-- `PedidoDTO`
-- `DetallePedidoDTO`
-- `ApiErrorDTO`
+```text
+idPlanAplicado
+nombrePlanAplicado
+tasaComision
+montoComision
+direccionEntrega
+fechaPedido
+fechaCompletado
+```
 
-Los DTO representan contratos de transporte de datos.
-
-No deberán contener lógica de negocio.
-
----
-
-## 8. Convención JSON
-
-Las propiedades JSON utilizarán `camelCase`.
-
-Ejemplos:
-
-- `idUsuario`
-- `idEmprendimiento`
-- `idPublicacion`
-- `fechaPedido`
-- `precioUnitario`
-
-Ejemplo conceptual de publicación:
-
-{
-"idPublicacion": 10,
-"nombre": "Producto de ejemplo",
-"tipo": "PRODUCTO",
-"precio": 25.50,
-"activo": true
-}
+Estos valores forman parte del historial comercial.
 
 ---
 
-## 9. Estados de pedido
-
-Los valores oficiales serán:
-
-- `PENDIENTE`
-- `CONFIRMADO`
-- `EN_PROCESO`
-- `COMPLETADO`
-- `CANCELADO`
-
-La API no deberá aceptar valores alternativos para representar estos estados.
-
----
-
-## 10. Tipo de publicación
-
-Los valores oficiales serán:
-
-- `PRODUCTO`
-- `SERVICIO`
-
----
-
-## 11. Códigos HTTP
-
-La API deberá utilizar códigos HTTP apropiados.
-
-### Éxito
-
-- `200 OK`
-- `201 Created`
-- `204 No Content`
-
-### Error del cliente
-
-- `400 Bad Request`
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
-- `409 Conflict`
-
-### Error del servidor
-
-- `500 Internal Server Error`
-
----
-
-## 12. Errores
-
-Los errores de la API deberán utilizar una estructura consistente.
-
-DTO previsto:
-
-`ApiErrorDTO`
-
-Ejemplo conceptual:
-
-{
-"status": 404,
-"error": "Not Found",
-"message": "Publicación no encontrada"
-}
-
-No deberán devolverse:
-
-- stack traces;
-- consultas SQL;
-- contraseñas;
-- credenciales;
-- detalles internos sensibles.
-
----
-
-## 13. Validación
-
-La API deberá validar como mínimo:
-
-- campos obligatorios;
-- formatos;
-- cantidades;
-- precios;
-- existencia de recursos relacionados;
-- autenticación;
-- autorización;
-- propiedad del recurso;
-- reglas de negocio.
-
-Las validaciones importantes deberán realizarse en el backend.
-
----
-
-## 14. Seguridad
+## 9. Seguridad prevista
 
 Los endpoints protegidos deberán verificar:
 
-- identidad del usuario;
-- rol;
-- permisos;
-- propiedad del recurso cuando corresponda.
+```text
+identidad
+rol
+usuario activo
+propiedad
+estado del recurso
+```
 
-Roles oficiales:
+Roles:
 
-- `ROLE_ADMIN`
-- `ROLE_EMPRENDEDOR`
-- `ROLE_CLIENTE`
+```text
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
 
----
-
-## 15. Cliente externo
-
-Durante la Fase 3 se desarrollará un cliente externo que consumirá esta API.
-
-La tecnología del cliente será definida según los requisitos de la fase.
-
-El cliente deberá demostrar comunicación real con el backend mediante HTTP y JSON.
+La API deberá reutilizar Services y no duplicar reglas en Resources.
 
 ---
 
-## 16. Documentación y pruebas
+## 10. Errores
 
-La API deberá probarse utilizando herramientas apropiadas.
+Contrato previsto:
 
-Las pruebas deberán cubrir como mínimo:
+```json
+{
+  "status": 404,
+  "error": "Not Found",
+  "message": "Recurso no encontrado"
+}
+```
 
-- solicitudes válidas;
-- parámetros inválidos;
-- recursos inexistentes;
+No devolver:
+
+- stack traces;
+- SQL;
+- hashes de contraseña;
+- secretos;
+- información interna innecesaria.
+
+---
+
+## 11. DTO
+
+DTO preparados como scaffolding:
+
+```text
+EmprendimientoDTO
+PublicacionDTO
+CrearPedidoDTO
+PedidoDTO
+DetallePedidoDTO
+ApiErrorDTO
+```
+
+En Fase 3 deberán convertirse en contratos reales.
+
+Los DTO:
+
+- no contienen lógica de negocio;
+- no exponen entidades JPA;
+- no exponen contraseña;
+- deben reflejar únicamente datos necesarios para consumo.
+
+---
+
+## 12. Pruebas de Fase 3
+
+Pendiente:
+
+- herramienta de pruebas de API;
+- casos positivos;
+- casos negativos;
+- límites;
 - autenticación;
 - autorización;
 - códigos HTTP;
-- respuestas JSON.
-
-La documentación final deberá indicar:
-
-- método HTTP;
-- ruta;
-- parámetros;
-- cuerpo esperado;
-- respuesta;
-- códigos HTTP;
-- requisitos de autenticación.
+- JSON;
+- validación;
+- documentación de consumo.
 
 ---
 
-## 17. Evolución
+## 13. Estado de implementación
 
-Este documento representa el contrato inicial previsto para la API.
+```text
+Diseño preliminar        → PREPARADO
+Clases scaffolding       → PREPARADAS
+DTO funcionales          → PENDIENTE
+JAX-RS funcional         → PENDIENTE
+Endpoints                → PENDIENTE
+Seguridad REST           → PENDIENTE
+Cliente consumidor       → PENDIENTE
+Pruebas API              → PENDIENTE
+Documentación definitiva → PENDIENTE
+```
 
-La implementación definitiva será realizada durante la Fase 3.
-
-Si se modifica un endpoint, deberá revisarse también:
-
-- DTO;
-- servicios;
-- seguridad;
-- cliente externo;
-- pruebas;
-- `docs/RUTAS.md`;
-- este documento.
-
-Los cambios deberán mantenerse sincronizados con el código implementado.
+Este documento deberá reemplazarse o ampliarse al implementar Fase 3.

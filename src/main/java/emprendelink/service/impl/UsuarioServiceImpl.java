@@ -24,6 +24,7 @@ public class UsuarioServiceImpl
     private static final int MAX_APELLIDO = 80;
     private static final int MAX_CORREO = 120;
     private static final int MAX_TELEFONO = 20;
+    private static final int MAX_DIRECCION = 255;
     private static final int MAX_CONTRASENA = 128;
 
     private static final Pattern PATRON_CORREO =
@@ -39,11 +40,8 @@ public class UsuarioServiceImpl
             UsuarioDAO usuarioDAO,
             RolDAO rolDAO) {
 
-        this.usuarioDAO =
-                usuarioDAO;
-
-        this.rolDAO =
-                rolDAO;
+        this.usuarioDAO = usuarioDAO;
+        this.rolDAO = rolDAO;
     }
 
     @Override
@@ -57,6 +55,23 @@ public class UsuarioServiceImpl
         }
 
         return usuarios;
+    }
+
+    @Override
+    public Usuario buscarPorId(
+            Integer idUsuario) {
+
+        Usuario usuario =
+                usuarioDAO.buscarPorId(
+                                idUsuario
+                        )
+                        .orElse(null);
+
+        if (usuario != null) {
+            usuario.setContrasenaHash(null);
+        }
+
+        return usuario;
     }
 
     @Override
@@ -77,22 +92,11 @@ public class UsuarioServiceImpl
                 rol
         );
 
-        String nombreNormalizado =
-                nombre.trim();
-
-        String apellidoNormalizado =
-                apellido.trim();
-
         String correoNormalizado =
                 correo.trim()
                         .toLowerCase(
                                 Locale.ROOT
                         );
-
-        String telefonoNormalizado =
-                normalizarOpcional(
-                        telefono
-                );
 
         if (usuarioDAO
                 .buscarPorCorreo(
@@ -111,31 +115,122 @@ public class UsuarioServiceImpl
                         .filter(
                                 item ->
                                         item.getNombre()
-                                                == TipoRol.ROLE_CLIENTE
+                                                == rol
                         )
                         .findFirst()
                         .orElseThrow(
                                 () ->
                                         new IllegalStateException(
-                                                "El rol de cliente no existe en la base de datos."
+                                                "El rol no existe en la base de datos."
                                         )
                         );
 
         Usuario usuario =
                 new Usuario(
                         rolEncontrado,
-                        nombreNormalizado,
-                        apellidoNormalizado,
+                        nombre.trim(),
+                        apellido.trim(),
                         correoNormalizado,
                         Contrasenas.generarHash(
                                 contrasena
                         ),
-                        telefonoNormalizado
+                        normalizarOpcional(
+                                telefono
+                        )
                 );
 
         usuarioDAO.crear(
                 usuario
         );
+    }
+
+    @Override
+    public Usuario actualizarPerfilCliente(
+            Integer idUsuario,
+            String telefono,
+            String direccion) {
+
+        Usuario usuario =
+                usuarioDAO
+                        .buscarPorId(
+                                idUsuario
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "El usuario no existe."
+                                        )
+                        );
+
+        if (!usuario.isActivo()
+                || usuario.getRol() == null
+                || usuario
+                .getRol()
+                .getNombre()
+                != TipoRol.ROLE_CLIENTE) {
+
+            throw new IllegalArgumentException(
+                    "Se requiere una cuenta de cliente activa."
+            );
+        }
+
+        String telefonoNormalizado =
+                normalizarOpcional(
+                        telefono
+                );
+
+        String direccionNormalizada =
+                normalizarOpcional(
+                        direccion
+                );
+
+        if (telefonoNormalizado != null
+                && telefonoNormalizado.length()
+                > MAX_TELEFONO) {
+
+            throw new IllegalArgumentException(
+                    "El teléfono no puede superar 20 caracteres."
+            );
+        }
+
+        if (direccionNormalizada != null
+                && direccionNormalizada.length()
+                > MAX_DIRECCION) {
+
+            throw new IllegalArgumentException(
+                    "La dirección no puede superar 255 caracteres."
+            );
+        }
+
+        usuario.setTelefono(
+                telefonoNormalizado
+        );
+
+        usuario.setDireccion(
+                direccionNormalizada
+        );
+
+        if (!usuarioDAO.actualizar(
+                usuario
+        )) {
+
+            throw new IllegalStateException(
+                    "No se pudo actualizar el perfil."
+            );
+        }
+
+        Usuario actualizado =
+                usuarioDAO
+                        .buscarPorId(
+                                idUsuario
+                        )
+                        .orElseThrow();
+
+        actualizado.setContrasenaHash(
+                null
+        );
+
+        return actualizado;
     }
 
     @Override
@@ -151,7 +246,8 @@ public class UsuarioServiceImpl
         }
 
         Usuario usuario =
-                usuarioDAO.buscarPorId(
+                usuarioDAO
+                        .buscarPorId(
                                 idUsuario
                         )
                         .orElseThrow(
@@ -182,13 +278,6 @@ public class UsuarioServiceImpl
             String contrasena,
             String telefono,
             TipoRol rol) {
-
-        if (rol != TipoRol.ROLE_CLIENTE) {
-
-            throw new IllegalArgumentException(
-                    "El registro público solo permite crear cuentas de cliente."
-            );
-        }
 
         validarTextoObligatorio(
                 nombre,
@@ -244,6 +333,13 @@ public class UsuarioServiceImpl
 
             throw new IllegalArgumentException(
                     "El teléfono no puede superar 20 caracteres."
+            );
+        }
+
+        if (rol != TipoRol.ROLE_CLIENTE) {
+
+            throw new IllegalArgumentException(
+                    "El registro público solo permite cuentas de cliente."
             );
         }
     }

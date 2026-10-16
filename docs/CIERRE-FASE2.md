@@ -2,7 +2,17 @@
 
 ## Sprint II — Persistencia Empresarial e Integración JSF
 
-EmprendeLink completa el incremento técnico correspondiente a la Fase 2 mediante Jakarta Faces, CDI, JPA, JTA, EclipseLink, GlassFish y MySQL.
+EmprendeLink completa el incremento técnico y funcional de Fase 2 mediante:
+
+```text
+Jakarta Faces
+CDI
+JPA
+JTA
+EclipseLink
+GlassFish
+MySQL
+```
 
 ---
 
@@ -28,7 +38,7 @@ GlassFish
 MySQL
 ```
 
-La aplicación mantiene separadas:
+Se mantienen separadas:
 
 ```text
 Presentación
@@ -36,99 +46,9 @@ Negocio
 Persistencia
 ```
 
-La arquitectura JDBC/Servlet/JSP anterior fue retirada del runtime.
-
 ---
 
-## 2. Módulos entregados
-
-### Autenticación
-
-- login;
-- logout;
-- registro;
-- sesión;
-- roles;
-- contraseña segura.
-
-### Usuarios
-
-- listado;
-- roles;
-- activación/desactivación;
-- validaciones;
-- AJAX.
-
-### Categorías
-
-- crear;
-- listar;
-- editar;
-- activar/desactivar;
-- AJAX.
-
-### Emprendimientos
-
-- crear;
-- listar propios;
-- editar;
-- propiedad;
-- estado administrativo;
-- plan.
-
-### Publicaciones
-
-- productos;
-- servicios;
-- categorías;
-- negocio;
-- precio;
-- stock;
-- creación;
-- edición;
-- estado;
-- límite de publicaciones por plan.
-
-### Catálogo
-
-- publicaciones activas;
-- búsqueda;
-- filtros;
-- detalle.
-
-### Pedidos
-
-- creación;
-- detalles;
-- total;
-- inventario;
-- pedidos propios;
-- pedidos recibidos;
-- estados;
-- cancelación.
-
-### Planes
-
-```text
-Básico    → 10  → 7%
-Estándar  → 30  → 5%
-Premium   → 60  → 3%
-Max       → 100 → 1%
-```
-
-### Comisiones
-
-Al completar un pedido se conserva:
-
-```text
-fechaCompletado
-tasaComision
-montoComision
-```
-
----
-
-## 3. Persistencia JPA
+## 2. Persistencia
 
 Entidades:
 
@@ -169,74 +89,287 @@ JTA
 
 ---
 
-## 4. Relaciones
+## 3. Roles
 
 ```text
-Rol 1:N Usuario
+ROLE_ADMIN
+ROLE_EMPRENDEDOR
+ROLE_CLIENTE
+```
 
-Usuario 1:N Emprendimiento
+La navegación y las operaciones se separan por perfil.
 
-Plan 1:N Emprendimiento
+### Admin
 
-Emprendimiento 1:N Publicacion
+- backoffice;
+- usuarios;
+- emprendedores;
+- categorías;
+- planes;
+- negocios;
+- comisiones.
 
-Categoria 1:N Publicacion
+### Emprendedor
 
-Usuario 1:N Pedido
+- Pedidos;
+- Mi negocio;
+- Catálogo;
+- Ventas;
+- Comisiones.
 
-Emprendimiento 1:N Pedido
+### Cliente
 
-Pedido 1:N DetallePedido
+- Explorar;
+- Mis pedidos;
+- Mi perfil;
+- Carrito.
 
-Publicacion 1:N DetallePedido
+---
+
+## 4. Creación de cuentas
+
+El registro público crea únicamente:
+
+```text
+ROLE_CLIENTE
+```
+
+Un emprendedor se crea desde administración.
+
+La operación crea:
+
+```text
+Usuario emprendedor
++
+Negocio asociado
+```
+
+con plan y categoría.
+
+---
+
+## 5. Un negocio por emprendedor
+
+La base aplica:
+
+```text
+UNIQUE(id_propietario)
+```
+
+Por tanto:
+
+```text
+Usuario emprendedor 1:0..1 Emprendimiento
+```
+
+La interfaz utiliza:
+
+```text
+Mi negocio
 ```
 
 ---
 
-## 5. Reglas de negocio
+## 6. Categoría del negocio
 
-### Usuarios
-
-Un usuario inactivo no puede operar normalmente en rutas protegidas.
-
-### Emprendimientos
-
-Solo el propietario puede modificar sus emprendimientos.
-
-El administrador gestiona su estado y plan.
-
-### Publicaciones
-
-Una publicación debe:
-
-- pertenecer a un emprendimiento válido;
-- utilizar una categoría activa;
-- tener precio válido;
-- respetar stock;
-- respetar el límite de publicaciones activas del plan.
-
-El límite se valida:
+Cada negocio posee:
 
 ```text
-al crear
-al reactivar
-al asignar plan
+Categoria
 ```
+
+La categoría define:
+
+```text
+manejaStock
+```
+
+Esto determina el comportamiento técnico de sus publicaciones.
+
+---
+
+## 7. Publicaciones
+
+Implementado:
+
+- creación;
+- edición;
+- activación/desactivación;
+- imagen URL;
+- precio;
+- stock;
+- propiedad;
+- límite de plan;
+- AJAX.
+
+La categoría y el tipo se derivan del negocio.
+
+No existe selector visual de:
+
+```text
+Producto / Servicio
+```
+
+para el emprendedor.
+
+---
+
+## 8. Catálogo cliente
+
+Implementado:
+
+- agrupación por negocio;
+- búsqueda;
+- filtro por categoría;
+- detalle;
+- imágenes;
+- acceso a carrito.
+
+El filtro visual de tipo fue retirado.
+
+---
+
+## 9. Carrito
+
+Implementado mediante:
+
+```text
+CarritoBean
+@SessionScoped
+```
+
+Permite:
+
+```text
+Agregar
++
+-
+Papelera
+```
+
+y actualiza mediante AJAX:
+
+- cantidad;
+- badge;
+- subtotal;
+- total;
+- estado visual.
+
+Puede contener artículos de distintos negocios.
+
+---
+
+## 10. Checkout multi-negocio
+
+El cliente percibe un único carrito.
+
+Internamente:
+
+```text
+Carrito
+   ↓
+agrupar por negocio
+   ↓
+Pedido A
+Pedido B
+...
+```
+
+Cada pedido pertenece a un solo emprendimiento.
+
+---
+
+## 11. Snapshot de pedido
+
+Al crear se conservan:
+
+```text
+idPlanAplicado
+nombrePlanAplicado
+tasaComision
+montoComision
+direccionEntrega
+```
+
+Esto protege el historial frente a cambios posteriores de:
+
+- plan;
+- tasa;
+- dirección del perfil.
+
+Al completar:
+
+```text
+fechaCompletado
+```
+
+---
+
+## 12. Perfil cliente
+
+Nueva ruta:
+
+```text
+/perfil/index.xhtml
+```
+
+Editable:
+
+```text
+telefono
+direccion
+```
+
+Solo lectura:
+
+```text
+nombre
+correo
+```
+
+El logout del cliente se encuentra en Mi perfil.
+
+---
+
+## 13. Panel emprendedor
 
 ### Pedidos
 
-Un pedido debe:
+Landing del perfil.
 
-- pertenecer a un cliente;
-- dirigirse a un emprendimiento;
-- contener publicaciones válidas;
-- utilizar cantidades válidas;
-- respetar stock;
-- calcular su total.
+### Mi negocio
+
+Muestra:
+
+- plan;
+- comisión;
+- límite de publicaciones;
+- espacios disponibles;
+- datos de negocio.
+
+Editable por emprendedor:
+
+```text
+descripcion
+contacto
+logoUrl
+```
+
+### Ventas
+
+Muestra:
+
+- ventas totales;
+- filtro por mes/año;
+- detalle de pedidos completados.
+
+### Comisiones
+
+Muestra comisión histórica asociada a ventas.
 
 ---
 
-## 6. Estados de pedido
+## 14. Estados de pedido
 
 ```text
 PENDIENTE
@@ -259,164 +392,84 @@ EN_PROCESO → COMPLETADO
 EN_PROCESO → CANCELADO
 ```
 
-Estados terminales:
-
-```text
-COMPLETADO
-CANCELADO
-```
-
-Presentación:
-
-```text
-EN_PROCESO = En camino
-COMPLETADO = Entregado
-```
-
 ---
 
-## 7. Inventario
+## 15. Inventario
 
-Al realizar un pedido de producto:
+Para publicaciones con inventario:
 
 ```text
+crear pedido:
 stock -= cantidad
-```
 
-Al cancelar:
-
-```text
+cancelar:
 stock += cantidad
 ```
 
-Las publicaciones de tipo servicio no utilizan stock como restricción de inventario.
+La interfaz evita aumentar el carrito por encima del stock conocido y el Service vuelve a validar al confirmar.
 
 ---
 
-## 8. Planes
+## 16. Seguridad
 
-Cada emprendimiento puede tener un plan.
-
-Planes:
+Filtros activos:
 
 ```text
-Básico
-Estándar
-Premium
-Max
+AutenticacionFilter
+AdminFilter
+CatalogoFilter
+ClienteFilter
+EmprendedorFilter
+PedidosFilter
+PublicacionFilter
 ```
 
-El plan define:
+Los Services también aplican:
 
-```text
-maxProductosActivos
-tasaComision
-```
-
-Configuración:
-
-```text
-Básico    → 10 publicaciones  → 7%
-Estándar  → 30 publicaciones  → 5%
-Premium   → 60 publicaciones  → 3%
-Max       → 100 publicaciones → 1%
-```
-
-La aplicación impide superar el máximo de publicaciones activas.
+- roles;
+- propiedad;
+- estado;
+- disponibilidad;
+- integridad.
 
 ---
 
-## 9. Comisiones
+## 17. AJAX
 
-Cuando un pedido pasa a:
+Operaciones AJAX relevantes:
 
-```text
-COMPLETADO
-```
-
-se toma la tasa del plan del emprendimiento.
-
-Cálculo:
-
-```text
-montoComision = total × tasaComision
-```
-
-Se persisten:
-
-```text
-tasaComision
-montoComision
-fechaCompletado
-```
-
-Esto conserva la información histórica aunque el plan sea modificado posteriormente.
+- filtros del catálogo;
+- edición y estados;
+- contador de publicaciones;
+- carrito;
+- cantidades;
+- subtotales;
+- total;
+- formularios administrativos.
 
 ---
 
-## 10. Eliminación lógica
+## 18. Validaciones
 
-Utilizan estado:
-
-```text
-activo
-```
-
-los módulos:
-
-```text
-Usuario
-Categoria
-Plan
-Emprendimiento
-Publicacion
-```
-
-La eliminación lógica preserva relaciones e historial.
-
----
-
-## 11. AJAX
-
-Se utiliza:
-
-```xml
-<f:ajax>
-```
-
-en operaciones de:
-
-- validación;
-- formularios;
-- edición;
-- filtros;
-- activación/desactivación;
-- estados;
-- administración.
-
----
-
-## 12. Validaciones
-
-La solución utiliza:
+Capas:
 
 ```text
 JSF
 Validadores personalizados
-Converters
+Converter
 Services
 Bean Validation
 Base de datos
 ```
 
-Validadores activos:
+Validadores:
 
 ```text
 CorreoValidator
 ContrasenaValidator
 ```
 
-Converter activo:
+Converter:
 
 ```text
 TipoRolConverter
@@ -424,36 +477,31 @@ TipoRolConverter
 
 ---
 
-## 13. Seguridad
+## 19. Base de datos
 
-Roles:
-
-```text
-ROLE_ADMIN
-ROLE_EMPRENDEDOR
-ROLE_CLIENTE
-```
-
-Filtros:
+Base:
 
 ```text
-AutenticacionFilter
-AdminFilter
-EmprendedorFilter
-PedidosFilter
-PublicacionFilter
+emprendelink_dwf
 ```
 
-Los Services también aplican autorización funcional.
+Scripts actuales:
+
+```text
+database/schema.sql
+database/seed.sql
+```
+
+El esquema fue consolidado y las migraciones incrementales anteriores fueron retiradas.
 
 ---
 
-## 14. Pruebas automatizadas
+## 20. Pruebas automatizadas
 
-Regresión:
+Última regresión:
 
 ```text
-41 pruebas
+41 tests
 0 failures
 0 errors
 0 skipped
@@ -462,132 +510,89 @@ BUILD SUCCESS
 
 Comando:
 
-```bash
+```powershell
 mvn clean test
 ```
 
-Build:
+Antes del PR final se recomienda:
 
-```bash
+```powershell
 mvn clean package
 ```
 
-Resultado:
-
-```text
-BUILD SUCCESS
-```
-
-Artefacto:
-
-```text
-target/emprendelink.war
-```
-
 ---
 
-## 15. Integración continua
+## 21. Cumplimiento funcional de Fase 2
 
-GitHub Actions ejecuta:
-
-```text
-mvn -B clean test
-```
-
-El Pull Request utilizado para integrar el incremento completo de Fase 2 pasó correctamente el pipeline.
-
----
-
-## 16. Base de datos
-
-Base:
+La solución incluye:
 
 ```text
-emprendelink_dwf
-```
-
-Scripts:
-
-```text
-database/schema.sql
-database/seed.sql
-database/migrations/002_planes_comisiones.sql
-database/migrations/003_fecha_completado.sql
-```
-
----
-
-## 17. Deploy
-
-Servidor:
-
-```text
-GlassFish 8.0.4
-```
-
-Context path:
-
-```text
-/emprendelink
-```
-
-Aplicación:
-
-```text
-http://localhost:8080/emprendelink/login.xhtml
-```
-
----
-
-## 18. Estado del cierre
-
-Completado:
-
-```text
-Arquitectura
-JPA
-JTA
 JSF
-CDI
+Managed Beans
+JPA
+relaciones
 CRUD
 AJAX
-Validaciones
-Roles
-Pedidos
-Inventario
-Planes
-Comisiones
-41 pruebas automatizadas
-Build WAR
-CI
-Documentación técnica
-```
-
-Pendiente antes de generar el documento final:
-
-```text
-Smoke test manual final
-Actualización definitiva de MATRIZ-PRUEBAS.md
-Capturas de evidencias
-PDF de Sprint Review
+validaciones
+navegación por perfil
+reglas de negocio
+persistencia
+seguridad
+pruebas
+versionamiento
+documentación
 ```
 
 ---
 
-## 19. Preparación para Fase 3
+## 22. Pendiente para evidencia final
 
-La siguiente fase podrá reutilizar:
+El código funcional de Fase 2 se considera cerrado.
+
+Pendiente de cierre académico:
+
+```text
+ejecutar smoke test manual documentado
+cerrar estados pendientes de MATRIZ-PRUEBAS.md
+capturar evidencias
+generar PDF de Sprint Review
+confirmar mvn clean package
+integrar PR a develop
+```
+
+---
+
+## 23. Preparación para Fase 3
+
+Existen scaffolds en:
+
+```text
+emprendelink.web.rest
+emprendelink.dto
+```
+
+pero no constituyen una API funcional.
+
+Fase 3 deberá implementar:
 
 ```text
 REST
- ↓
+JSON
+DTO reales
+códigos HTTP
+manejo de errores
+seguridad REST
+cliente consumidor
+pruebas de API
+documentación de endpoints
+```
+
+reutilizando:
+
+```text
 Services
  ↓
 DAO
  ↓
 JPA
- ↓
-MySQL
 ```
-
-Sin duplicar reglas de negocio ni persistencia.
