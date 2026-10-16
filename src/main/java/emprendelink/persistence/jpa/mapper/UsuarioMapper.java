@@ -25,6 +25,7 @@ public final class UsuarioMapper {
                 entidad.getCorreo(),
                 entidad.getContrasenaHash(),
                 entidad.getTelefono(),
+                entidad.getDireccion(),
                 entidad.isActivo(),
                 entidad.getFechaRegistro()
         );
@@ -68,6 +69,10 @@ public final class UsuarioMapper {
 
         entidad.setTelefono(
                 dominio.getTelefono()
+        );
+
+        entidad.setDireccion(
+                dominio.getDireccion()
         );
 
         entidad.setActivo(

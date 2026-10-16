@@ -5,7 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough">
 
 <ui:composition template="/WEB-INF/base.xhtml">
 
@@ -39,6 +40,7 @@
             <div class="market-hero-decoration">
 
                 <div class="market-hero-badge">
+
                     <span>✦</span>
 
                     <strong>
@@ -48,6 +50,7 @@
                     <small>
                         Compra. Apoya. Conecta.
                     </small>
+
                 </div>
 
             </div>
@@ -58,7 +61,12 @@
                 id="catalogoForm"
                 styleClass="market-filter-form">
 
-            <section class="market-search-panel">
+            <h:messages
+                    id="mensajesCarrito"
+                    globalOnly="true"
+                    styleClass="market-messages"/>
+
+            <section class="market-search-panel client-search-panel">
 
                 <div class="market-search-main">
 
@@ -70,8 +78,7 @@
                             id="texto"
                             value="#{publicacionBean.filtroTexto}"
                             styleClass="market-search-input"
-                            pt:placeholder="Buscar productos, servicios o negocios..."
-                            xmlns:pt="jakarta.faces.passthrough">
+                            pt:placeholder="Buscar productos, servicios o negocios...">
 
                         <f:ajax
                                 event="keyup"
@@ -79,36 +86,6 @@
                                 render="resultados"/>
 
                     </h:inputText>
-
-                </div>
-
-                <div class="market-filter-control">
-
-                    <h:outputLabel
-                            for="tipo"
-                            value="Tipo"/>
-
-                    <h:selectOneMenu
-                            id="tipo"
-                            value="#{publicacionBean.filtroTipo}">
-
-                        <f:selectItem
-                                itemLabel="Todo"
-                                itemValue="#{null}"/>
-
-                        <f:selectItems
-                                value="#{publicacionBean.tipos}"
-                                var="tipo"
-                                itemValue="#{tipo}"
-                                itemLabel="#{tipo eq 'PRODUCTO'
-                                        ? 'Productos'
-                                        : 'Servicios'}"/>
-
-                        <f:ajax
-                                execute="@this"
-                                render="resultados"/>
-
-                    </h:selectOneMenu>
 
                 </div>
 
@@ -193,13 +170,29 @@
                             <div class="business-section-header">
 
                                 <div class="business-avatar">
-                                    #{seccion.emprendimiento.nombre.substring(0, 1)}
+
+                                    <ui:fragment
+                                            rendered="#{empty seccion.emprendimiento.logoUrl}">
+
+                                        #{seccion.emprendimiento.nombre.substring(0, 1)}
+
+                                    </ui:fragment>
+
+                                    <ui:fragment
+                                            rendered="#{not empty seccion.emprendimiento.logoUrl}">
+
+                                        <img src="#{seccion.emprendimiento.logoUrl}"
+                                             alt="#{seccion.emprendimiento.nombre}"
+                                             class="client-business-logo"/>
+
+                                    </ui:fragment>
+
                                 </div>
 
                                 <div class="business-heading-copy">
 
                                     <span class="business-label">
-                                        Negocio local
+                                        #{seccion.emprendimiento.categoria.nombre}
                                     </span>
 
                                     <h2>
@@ -252,26 +245,12 @@
                                                     <div class="market-image-placeholder">
 
                                                         <span>
-                                                            #{p.tipo eq 'PRODUCTO'
-                                                                    ? '◫'
-                                                                    : '✦'}
+                                                            ◫
                                                         </span>
-
-                                                        <small>
-                                                            #{p.tipo eq 'PRODUCTO'
-                                                                    ? 'Producto'
-                                                                    : 'Servicio'}
-                                                        </small>
 
                                                     </div>
 
                                                 </ui:fragment>
-
-                                                <span class="market-product-type">
-                                                    #{p.tipo eq 'PRODUCTO'
-                                                            ? 'Producto'
-                                                            : 'Servicio'}
-                                                </span>
 
                                             </div>
 
@@ -296,12 +275,12 @@
 
                                             </h:panelGroup>
 
-                                            <div class="market-product-bottom">
+                                            <div class="market-product-bottom client-product-bottom">
 
                                                 <div class="market-price-stack">
 
                                                     <span class="market-price-label">
-                                                        Desde
+                                                        Precio
                                                     </span>
 
                                                     <h:outputText
@@ -316,16 +295,82 @@
 
                                                 </div>
 
-                                                <h:link
-                                                        outcome="/catalogo/detalle.xhtml"
-                                                        value="Ver detalle"
-                                                        styleClass="market-card-action">
+                                                <div class="client-card-actions">
 
-                                                    <f:param
-                                                            name="id"
-                                                            value="#{p.idPublicacion}"/>
+                                                    <h:link
+                                                            outcome="/catalogo/detalle.xhtml"
+                                                            value="Detalle"
+                                                            styleClass="market-card-action">
 
-                                                </h:link>
+                                                        <f:param
+                                                                name="id"
+                                                                value="#{p.idPublicacion}"/>
+
+                                                    </h:link>
+
+                                                    <h:panelGroup
+                                                            rendered="#{authBean.cliente}"
+                                                            layout="block"
+                                                            styleClass="client-cart-control">
+
+                                                        <ui:fragment
+                                                                rendered="#{carritoBean.cantidadDe(p.idPublicacion) eq 0}">
+
+                                                            <h:commandButton
+                                                                    value="Agregar"
+                                                                    action="#{carritoBean.agregar(p.idPublicacion)}"
+                                                                    disabled="#{not carritoBean.puedeAgregar(p.idPublicacion)}"
+                                                                    styleClass="client-add-cart-button">
+
+                                                                <f:ajax
+                                                                        execute="@this"
+                                                                        render="@form :carritoHeader"/>
+
+                                                            </h:commandButton>
+
+                                                        </ui:fragment>
+
+                                                        <ui:fragment
+                                                                rendered="#{carritoBean.cantidadDe(p.idPublicacion) gt 0}">
+
+                                                            <div class="client-cart-stepper">
+
+                                                                <h:commandButton
+                                                                        value="#{carritoBean.cantidadDe(p.idPublicacion) eq 1
+                                                                                ? '🗑'
+                                                                                : '−'}"
+                                                                        action="#{carritoBean.disminuir(p.idPublicacion)}"
+                                                                        styleClass="client-step-button">
+
+                                                                    <f:ajax
+                                                                            execute="@this"
+                                                                            render="@form :carritoHeader"/>
+
+                                                                </h:commandButton>
+
+                                                                <span>
+                                                                    #{carritoBean.cantidadDe(p.idPublicacion)}
+                                                                </span>
+
+                                                                <h:commandButton
+                                                                        value="+"
+                                                                        action="#{carritoBean.incrementar(p.idPublicacion)}"
+                                                                        disabled="#{not carritoBean.puedeIncrementar(p.idPublicacion)}"
+                                                                        styleClass="client-step-button">
+
+                                                                    <f:ajax
+                                                                            execute="@this"
+                                                                            render="@form :carritoHeader"/>
+
+                                                                </h:commandButton>
+
+                                                            </div>
+
+                                                        </ui:fragment>
+
+                                                    </h:panelGroup>
+
+                                                </div>
 
                                             </div>
 
@@ -357,7 +402,7 @@
                     </h2>
 
                     <p>
-                        Prueba con otro término, tipo o categoría.
+                        Prueba con otro término o categoría.
                     </p>
 
                     <h:commandButton

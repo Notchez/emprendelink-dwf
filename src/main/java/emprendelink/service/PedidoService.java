@@ -36,6 +36,14 @@ public interface PedidoService {
             String observaciones
     );
 
+    void crearDesdeCarrito(
+            Integer idCliente,
+            List<Integer> idsPublicacion,
+            List<Integer> cantidades,
+            String direccionEntrega,
+            String observaciones
+    );
+
     void actualizarEstado(
             Integer idEmprendedor,
             Integer idPedido,

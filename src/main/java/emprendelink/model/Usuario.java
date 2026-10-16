@@ -11,21 +11,28 @@ public class Usuario implements Serializable {
 
     private Integer idUsuario;
     private Rol rol;
+
     private String nombre;
     private String apellido;
     private String correo;
     private String contrasenaHash;
     private String telefono;
+    private String direccion;
+
     private boolean activo;
+
     private LocalDateTime fechaRegistro;
 
     public Usuario() {
 
-        this.activo = true;
-        this.fechaRegistro =
-                LocalDateTime.now();
+        activo = true;
+        fechaRegistro = LocalDateTime.now();
     }
 
+    /*
+     * Constructor histórico para no romper
+     * código y pruebas existentes.
+     */
     public Usuario(
             Integer idUsuario,
             Rol rol,
@@ -37,6 +44,32 @@ public class Usuario implements Serializable {
             boolean activo,
             LocalDateTime fechaRegistro) {
 
+        this(
+                idUsuario,
+                rol,
+                nombre,
+                apellido,
+                correo,
+                contrasenaHash,
+                telefono,
+                null,
+                activo,
+                fechaRegistro
+        );
+    }
+
+    public Usuario(
+            Integer idUsuario,
+            Rol rol,
+            String nombre,
+            String apellido,
+            String correo,
+            String contrasenaHash,
+            String telefono,
+            String direccion,
+            boolean activo,
+            LocalDateTime fechaRegistro) {
+
         this.idUsuario = idUsuario;
         this.rol = rol;
         this.nombre = nombre;
@@ -44,6 +77,7 @@ public class Usuario implements Serializable {
         this.correo = correo;
         this.contrasenaHash = contrasenaHash;
         this.telefono = telefono;
+        this.direccion = direccion;
         this.activo = activo;
         this.fechaRegistro = fechaRegistro;
     }
@@ -70,9 +104,7 @@ public class Usuario implements Serializable {
         return idUsuario;
     }
 
-    public void setIdUsuario(
-            Integer idUsuario) {
-
+    public void setIdUsuario(Integer idUsuario) {
         this.idUsuario = idUsuario;
     }
 
@@ -80,9 +112,7 @@ public class Usuario implements Serializable {
         return rol;
     }
 
-    public void setRol(
-            Rol rol) {
-
+    public void setRol(Rol rol) {
         this.rol = rol;
     }
 
@@ -90,9 +120,7 @@ public class Usuario implements Serializable {
         return nombre;
     }
 
-    public void setNombre(
-            String nombre) {
-
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
@@ -100,9 +128,7 @@ public class Usuario implements Serializable {
         return apellido;
     }
 
-    public void setApellido(
-            String apellido) {
-
+    public void setApellido(String apellido) {
         this.apellido = apellido;
     }
 
@@ -110,9 +136,7 @@ public class Usuario implements Serializable {
         return correo;
     }
 
-    public void setCorreo(
-            String correo) {
-
+    public void setCorreo(String correo) {
         this.correo = correo;
     }
 
@@ -130,19 +154,25 @@ public class Usuario implements Serializable {
         return telefono;
     }
 
-    public void setTelefono(
-            String telefono) {
-
+    public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(
+            String direccion) {
+
+        this.direccion = direccion;
     }
 
     public boolean isActivo() {
         return activo;
     }
 
-    public void setActivo(
-            boolean activo) {
-
+    public void setActivo(boolean activo) {
         this.activo = activo;
     }
 

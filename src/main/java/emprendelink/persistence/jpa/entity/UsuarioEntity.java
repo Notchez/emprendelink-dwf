@@ -21,7 +21,9 @@ import java.time.LocalDateTime;
 public class UsuarioEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.IDENTITY
+    )
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
@@ -81,6 +83,13 @@ public class UsuarioEntity {
     )
     private String telefono;
 
+    @Size(max = 255)
+    @Column(
+            name = "direccion",
+            length = 255
+    )
+    private String direccion;
+
     @Column(
             name = "activo",
             nullable = false
@@ -101,7 +110,9 @@ public class UsuarioEntity {
         return idUsuario;
     }
 
-    public void setIdUsuario(Integer idUsuario) {
+    public void setIdUsuario(
+            Integer idUsuario) {
+
         this.idUsuario = idUsuario;
     }
 
@@ -109,7 +120,9 @@ public class UsuarioEntity {
         return rol;
     }
 
-    public void setRol(RolEntity rol) {
+    public void setRol(
+            RolEntity rol) {
+
         this.rol = rol;
     }
 
@@ -117,7 +130,9 @@ public class UsuarioEntity {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
+    public void setNombre(
+            String nombre) {
+
         this.nombre = nombre;
     }
 
@@ -125,7 +140,9 @@ public class UsuarioEntity {
         return apellido;
     }
 
-    public void setApellido(String apellido) {
+    public void setApellido(
+            String apellido) {
+
         this.apellido = apellido;
     }
 
@@ -133,7 +150,9 @@ public class UsuarioEntity {
         return correo;
     }
 
-    public void setCorreo(String correo) {
+    public void setCorreo(
+            String correo) {
+
         this.correo = correo;
     }
 
@@ -141,23 +160,40 @@ public class UsuarioEntity {
         return contrasenaHash;
     }
 
-    public void setContrasenaHash(String contrasenaHash) {
-        this.contrasenaHash = contrasenaHash;
+    public void setContrasenaHash(
+            String contrasenaHash) {
+
+        this.contrasenaHash =
+                contrasenaHash;
     }
 
     public String getTelefono() {
         return telefono;
     }
 
-    public void setTelefono(String telefono) {
+    public void setTelefono(
+            String telefono) {
+
         this.telefono = telefono;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(
+            String direccion) {
+
+        this.direccion = direccion;
     }
 
     public boolean isActivo() {
         return activo;
     }
 
-    public void setActivo(boolean activo) {
+    public void setActivo(
+            boolean activo) {
+
         this.activo = activo;
     }
 
@@ -168,6 +204,7 @@ public class UsuarioEntity {
     public void setFechaRegistro(
             LocalDateTime fechaRegistro) {
 
-        this.fechaRegistro = fechaRegistro;
+        this.fechaRegistro =
+                fechaRegistro;
     }
 }

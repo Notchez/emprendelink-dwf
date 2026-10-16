@@ -58,16 +58,8 @@
                         <div class="market-detail-placeholder">
 
                             <span>
-                                #{publicacionBean.detalle.tipo eq 'PRODUCTO'
-                                        ? '◫'
-                                        : '✦'}
+                                ◫
                             </span>
-
-                            <strong>
-                                #{publicacionBean.detalle.tipo eq 'PRODUCTO'
-                                        ? 'Producto'
-                                        : 'Servicio'}
-                            </strong>
 
                         </div>
 
@@ -83,19 +75,28 @@
                             #{publicacionBean.detalle.categoria.nombre}
                         </span>
 
-                        <span class="market-pill market-pill-soft">
-                            #{publicacionBean.detalle.tipo eq 'PRODUCTO'
-                                    ? 'Producto'
-                                    : 'Servicio'}
-                        </span>
-
                     </div>
 
-                    <a class="market-detail-business"
-                       href="#{request.contextPath}/catalogo/index.xhtml">
+                    <div class="market-detail-business">
 
                         <span class="business-avatar business-avatar-small">
-                            #{publicacionBean.detalle.emprendimiento.nombre.substring(0, 1)}
+
+                            <ui:fragment
+                                    rendered="#{empty publicacionBean.detalle.emprendimiento.logoUrl}">
+
+                                #{publicacionBean.detalle.emprendimiento.nombre.substring(0, 1)}
+
+                            </ui:fragment>
+
+                            <ui:fragment
+                                    rendered="#{not empty publicacionBean.detalle.emprendimiento.logoUrl}">
+
+                                <img src="#{publicacionBean.detalle.emprendimiento.logoUrl}"
+                                     alt="#{publicacionBean.detalle.emprendimiento.nombre}"
+                                     class="client-business-logo"/>
+
+                            </ui:fragment>
+
                         </span>
 
                         <span>
@@ -110,7 +111,7 @@
 
                         </span>
 
-                    </a>
+                    </div>
 
                     <h1>
                         #{publicacionBean.detalle.nombre}
@@ -137,6 +138,7 @@
                             </span>
 
                             <span>
+
                                 <h:outputText
                                         value="#{publicacionBean.detalle.stock}"
                                         rendered="#{publicacionBean.detalle.stock gt 0}"/>
@@ -148,6 +150,7 @@
                                 <h:outputText
                                         value="Sin existencias"
                                         rendered="#{publicacionBean.detalle.stock le 0}"/>
+
                             </span>
 
                         </div>
@@ -173,37 +176,91 @@
 
                     <div class="market-detail-actions">
 
-                        <h:panelGroup
-                                rendered="#{authBean.autenticado
-                                and authBean.usuario.rol.nombre eq 'ROLE_CLIENTE'}">
+                        <h:form
+                                id="detalleCarritoForm"
+                                rendered="#{authBean.cliente}">
 
-                            <h:link
-                                    outcome="/pedidos/nuevo.xhtml"
-                                    value="Realizar pedido"
-                                    styleClass="market-primary-link">
+                            <h:panelGroup
+                                    id="accionesCarrito"
+                                    layout="block">
 
-                                <f:param
-                                        name="id"
-                                        value="#{publicacionBean.detalle.idPublicacion}"/>
+                                <ui:fragment
+                                        rendered="#{carritoBean.cantidadDe(publicacionBean.detalle.idPublicacion) eq 0}">
 
-                            </h:link>
+                                    <h:commandButton
+                                            value="Agregar al carrito"
+                                            action="#{carritoBean.agregar(publicacionBean.detalle.idPublicacion)}"
+                                            disabled="#{not carritoBean.puedeAgregar(publicacionBean.detalle.idPublicacion)}"
+                                            styleClass="market-primary-button">
 
-                        </h:panelGroup>
+                                        <f:ajax
+                                                execute="@this"
+                                                render="accionesCarrito :carritoHeader"/>
+
+                                    </h:commandButton>
+
+                                </ui:fragment>
+
+                                <ui:fragment
+                                        rendered="#{carritoBean.cantidadDe(publicacionBean.detalle.idPublicacion) gt 0}">
+
+                                    <div class="client-detail-cart-control">
+
+                                        <div class="client-cart-stepper">
+
+                                            <h:commandButton
+                                                    value="#{carritoBean.cantidadDe(publicacionBean.detalle.idPublicacion) eq 1
+                                                            ? '🗑'
+                                                            : '−'}"
+                                                    action="#{carritoBean.disminuir(publicacionBean.detalle.idPublicacion)}"
+                                                    styleClass="client-step-button">
+
+                                                <f:ajax
+                                                        execute="@this"
+                                                        render="accionesCarrito :carritoHeader"/>
+
+                                            </h:commandButton>
+
+                                            <span>
+                                                #{carritoBean.cantidadDe(publicacionBean.detalle.idPublicacion)}
+                                            </span>
+
+                                            <h:commandButton
+                                                    value="+"
+                                                    action="#{carritoBean.incrementar(publicacionBean.detalle.idPublicacion)}"
+                                                    disabled="#{not carritoBean.puedeIncrementar(publicacionBean.detalle.idPublicacion)}"
+                                                    styleClass="client-step-button">
+
+                                                <f:ajax
+                                                        execute="@this"
+                                                        render="accionesCarrito :carritoHeader"/>
+
+                                            </h:commandButton>
+
+                                        </div>
+
+                                        <a href="#{request.contextPath}/carrito/index.xhtml"
+                                           class="market-primary-link">
+                                            Ver carrito
+                                        </a>
+
+                                    </div>
+
+                                </ui:fragment>
+
+                            </h:panelGroup>
+
+                        </h:form>
 
                         <h:panelGroup
                                 rendered="#{not authBean.autenticado}">
 
-                            <a class="market-primary-link"
-                               href="#{request.contextPath}/login.xhtml">
-                                Ingresar para pedir
+                            <a href="#{request.contextPath}/login.xhtml"
+                               class="market-primary-link">
+                                Ingresar para comprar
                             </a>
 
                         </h:panelGroup>
-
-                        <a class="market-secondary-link"
-                           href="#{request.contextPath}/catalogo/index.xhtml">
-                            Seguir explorando
-                        </a>
 
                     </div>
 

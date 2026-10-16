@@ -119,6 +119,13 @@ public class PedidoEntity {
     )
     private BigDecimal montoComision;
 
+    @Size(max = 255)
+    @Column(
+            name = "direccion_entrega",
+            length = 255
+    )
+    private String direccionEntrega;
+
     @Column(
             name = "observaciones",
             columnDefinition = "TEXT"
@@ -151,35 +158,24 @@ public class PedidoEntity {
     public void agregarDetalle(
             DetallePedidoEntity detalle) {
 
-        detalle.setPedido(
-                this
-        );
-
-        detalles.add(
-                detalle
-        );
+        detalle.setPedido(this);
+        detalles.add(detalle);
     }
 
     public Integer getIdPedido() {
         return idPedido;
     }
 
-    public void setIdPedido(
-            Integer idPedido) {
-
-        this.idPedido =
-                idPedido;
+    public void setIdPedido(Integer idPedido) {
+        this.idPedido = idPedido;
     }
 
     public UsuarioEntity getCliente() {
         return cliente;
     }
 
-    public void setCliente(
-            UsuarioEntity cliente) {
-
-        this.cliente =
-                cliente;
+    public void setCliente(UsuarioEntity cliente) {
+        this.cliente = cliente;
     }
 
     public EmprendimientoEntity getEmprendimiento() {
@@ -222,8 +218,7 @@ public class PedidoEntity {
     public void setEstado(
             EstadoPedido estado) {
 
-        this.estado =
-                estado;
+        this.estado = estado;
     }
 
     public BigDecimal getTotal() {
@@ -233,8 +228,7 @@ public class PedidoEntity {
     public void setTotal(
             BigDecimal total) {
 
-        this.total =
-                total;
+        this.total = total;
     }
 
     public BigDecimal getTasaComision() {
@@ -257,6 +251,17 @@ public class PedidoEntity {
 
         this.montoComision =
                 montoComision;
+    }
+
+    public String getDireccionEntrega() {
+        return direccionEntrega;
+    }
+
+    public void setDireccionEntrega(
+            String direccionEntrega) {
+
+        this.direccionEntrega =
+                direccionEntrega;
     }
 
     public String getObservaciones() {

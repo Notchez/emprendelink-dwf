@@ -60,6 +60,10 @@ public final class PedidoMapper {
                 pedido.getMontoComision()
         );
 
+        entidad.setDireccionEntrega(
+                pedido.getDireccionEntrega()
+        );
+
         entidad.setObservaciones(
                 pedido.getObservaciones()
         );
@@ -75,13 +79,10 @@ public final class PedidoMapper {
         for (DetallePedido detalle
                 : pedido.getDetalles()) {
 
-            DetallePedidoEntity detalleEntity =
+            entidad.agregarDetalle(
                     DetallePedidoMapper.aEntidad(
                             detalle
-                    );
-
-            entidad.agregarDetalle(
-                    detalleEntity
+                    )
             );
         }
 
@@ -126,6 +127,10 @@ public final class PedidoMapper {
                 entidad.getMontoComision()
         );
 
+        pedido.setDireccionEntrega(
+                entidad.getDireccionEntrega()
+        );
+
         pedido.setFechaCompletado(
                 entidad.getFechaCompletado()
         );
@@ -133,13 +138,10 @@ public final class PedidoMapper {
         for (DetallePedidoEntity detalleEntity
                 : entidad.getDetalles()) {
 
-            DetallePedido detalle =
+            pedido.agregarDetalle(
                     DetallePedidoMapper.aDominio(
                             detalleEntity
-                    );
-
-            pedido.agregarDetalle(
-                    detalle
+                    )
             );
         }
 

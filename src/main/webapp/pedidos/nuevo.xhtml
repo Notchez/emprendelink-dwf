@@ -7,18 +7,6 @@
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets">
 
-<f:metadata>
-
-    <f:viewParam
-            name="id"
-            value="#{pedidoBean.idPublicacion}"/>
-
-    <f:viewAction
-            action="#{pedidoBean.cargarNuevaOrden}"
-            onPostback="false"/>
-
-</f:metadata>
-
 <ui:composition template="/WEB-INF/base.xhtml">
 
     <ui:define name="title">
@@ -27,135 +15,226 @@
 
     <ui:define name="content">
 
-        <div class="page-header">
+        <section class="client-page-header">
 
             <div>
 
-                <div class="eyebrow">
-                    Pedido
-                </div>
+                <span class="market-kicker">
+                    Último paso
+                </span>
 
-                <h1>Confirma tu pedido</h1>
+                <h1>
+                    Confirmar pedido
+                </h1>
 
                 <p>
-                    Revisa la cantidad antes de continuar.
+                    Revisa tu compra y confirma los datos de entrega.
                 </p>
 
             </div>
 
-        </div>
+        </section>
 
         <h:panelGroup
-                rendered="#{not empty pedidoBean.publicacion}"
-                layout="block"
-                styleClass="split-layout">
+                rendered="#{not carritoBean.vacio}"
+                layout="block">
 
-            <section class="panel">
+            <h:form id="checkoutForm">
 
-                <div class="product-business">
-                    #{pedidoBean.publicacion.emprendimiento.nombre}
-                </div>
+                <h:messages
+                        id="mensajes"
+                        globalOnly="true"
+                        styleClass="market-messages"/>
 
-                <h2>
-                    #{pedidoBean.publicacion.nombre}
-                </h2>
+                <div class="client-checkout-layout">
 
-                <p class="muted">
-                    #{pedidoBean.publicacion.tipo eq 'PRODUCTO'
-                            ? 'Producto'
-                            : 'Servicio'}
-                </p>
+                    <section class="client-checkout-main">
 
-                <h:outputText
-                        value="#{pedidoBean.publicacion.precio}"
-                        styleClass="detail-price">
+                        <article class="client-profile-card">
 
-                    <f:convertNumber
-                            type="currency"
-                            currencySymbol="$"/>
+                            <span class="market-kicker">
+                                Entrega
+                            </span>
 
-                </h:outputText>
+                            <h2>
+                                Dirección
+                            </h2>
 
-                <h:panelGroup
-                        rendered="#{pedidoBean.publicacion.tipo eq 'PRODUCTO'}">
+                            <div class="client-profile-field">
 
-                    <p class="small muted">
-                        Stock disponible:
-                        #{pedidoBean.publicacion.stock}
-                    </p>
+                                <h:outputLabel
+                                        for="direccion"
+                                        value="Dirección de entrega"/>
 
-                </h:panelGroup>
+                                <h:inputTextarea
+                                        id="direccion"
+                                        value="#{carritoBean.direccionEntrega}"
+                                        required="true"
+                                        requiredMessage="La dirección de entrega es obligatoria."
+                                        maxlength="255"
+                                        rows="3"/>
 
-            </section>
+                                <h:message
+                                        for="direccion"
+                                        styleClass="seller-field-error"/>
 
-            <section class="panel">
+                            </div>
 
-                <h:form id="pedidoForm">
+                            <div class="client-profile-field">
 
-                    <h:messages
-                            id="mensajes"
-                            styleClass="messages"/>
+                                <h:outputLabel
+                                        for="observaciones"
+                                        value="Indicaciones adicionales"/>
 
-                    <div class="form-group">
+                                <h:inputTextarea
+                                        id="observaciones"
+                                        value="#{carritoBean.observaciones}"
+                                        rows="3"/>
 
-                        <h:outputLabel
-                                for="cantidad"
-                                value="Cantidad"/>
+                            </div>
 
-                        <h:inputText
-                                id="cantidad"
-                                value="#{pedidoBean.cantidad}"
-                                required="true"
-                                requiredMessage="La cantidad es obligatoria.">
+                        </article>
 
-                            <f:validateLongRange minimum="1"/>
+                        <ui:repeat
+                                value="#{carritoBean.grupos}"
+                                var="grupo">
 
-                            <f:ajax
-                                    event="blur"
-                                    execute="@this"
-                                    render="cantidadMensaje"/>
+                            <article class="client-checkout-business">
 
-                        </h:inputText>
+                                <header>
 
-                        <h:message
-                                id="cantidadMensaje"
-                                styleClass="field-error"
-                                for="cantidad"/>
+                                    <span>
+                                        Pedido para
+                                    </span>
 
-                    </div>
+                                    <strong>
+                                        #{grupo.emprendimiento.nombre}
+                                    </strong>
 
-                    <br/>
+                                </header>
 
-                    <div class="form-group">
+                                <ui:repeat
+                                        value="#{grupo.items}"
+                                        var="item">
 
-                        <h:outputLabel
-                                for="observaciones"
-                                value="Indicaciones"/>
+                                    <div class="client-checkout-line">
 
-                        <h:inputTextarea
-                                id="observaciones"
-                                value="#{pedidoBean.observaciones}"
-                                rows="4"/>
+                                        <div>
 
-                    </div>
+                                            <strong>
+                                                #{item.publicacion.nombre}
+                                            </strong>
 
-                    <div class="button-row">
+                                            <span>
+                                                #{item.cantidad}
+                                                ×
+
+                                                <h:outputText
+                                                        value="#{item.publicacion.precio}">
+
+                                                    <f:convertNumber
+                                                            type="currency"
+                                                            currencySymbol="$"/>
+
+                                                </h:outputText>
+
+                                            </span>
+
+                                        </div>
+
+                                        <h:outputText
+                                                value="#{item.subtotal}">
+
+                                            <f:convertNumber
+                                                    type="currency"
+                                                    currencySymbol="$"/>
+
+                                        </h:outputText>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </article>
+
+                        </ui:repeat>
+
+                    </section>
+
+                    <aside class="client-cart-summary">
+
+                        <span class="market-kicker">
+                            Total
+                        </span>
+
+                        <h2>
+                            Resumen
+                        </h2>
+
+                        <div class="client-summary-row">
+
+                            <span>
+                                Artículos
+                            </span>
+
+                            <strong>
+                                #{carritoBean.cantidadTotal}
+                            </strong>
+
+                        </div>
+
+                        <div class="client-summary-total">
+
+                            <span>
+                                Total
+                            </span>
+
+                            <h:outputText
+                                    value="#{carritoBean.total}">
+
+                                <f:convertNumber
+                                        type="currency"
+                                        currencySymbol="$"/>
+
+                            </h:outputText>
+
+                        </div>
 
                         <h:commandButton
                                 value="Confirmar pedido"
-                                styleClass="btn btn-primary"
-                                action="#{pedidoBean.crear}"/>
+                                action="#{carritoBean.confirmarPedido}"
+                                styleClass="market-primary-button client-checkout-button"/>
 
-                        <a class="btn btn-secondary"
-                           href="#{request.contextPath}/catalogo/index.xhtml">
-                            Cancelar
+                        <a href="#{request.contextPath}/carrito/index.xhtml"
+                           class="client-continue-shopping">
+                            Volver al carrito
                         </a>
 
-                    </div>
+                    </aside>
 
-                </h:form>
+                </div>
 
-            </section>
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:panelGroup
+                rendered="#{carritoBean.vacio}"
+                layout="block"
+                styleClass="market-empty-state">
+
+            <div class="market-empty-icon">
+                🛒
+            </div>
+
+            <h2>
+                Tu carrito está vacío
+            </h2>
+
+            <a href="#{request.contextPath}/catalogo/index.xhtml"
+               class="market-primary-link">
+                Explorar catálogo
+            </a>
 
         </h:panelGroup>
 

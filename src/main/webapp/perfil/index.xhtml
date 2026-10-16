@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/base.xhtml">
+
+    <ui:define name="title">
+        Mi perfil - EmprendeLink
+    </ui:define>
+
+    <ui:define name="content">
+
+        <section class="client-page-header">
+
+            <div>
+
+                <span class="market-kicker">
+                    Tu cuenta
+                </span>
+
+                <h1>
+                    Mi perfil
+                </h1>
+
+                <p>
+                    Mantén actualizados tus datos de contacto
+                    y entrega.
+                </p>
+
+            </div>
+
+        </section>
+
+        <h:panelGroup
+                rendered="#{not empty clientePerfilBean.usuario}"
+                layout="block"
+                styleClass="client-profile-layout">
+
+            <h:form id="perfilForm">
+
+                <h:messages
+                        globalOnly="true"
+                        styleClass="market-messages"/>
+
+                <section class="client-profile-card">
+
+                    <span class="market-kicker">
+                        Información personal
+                    </span>
+
+                    <h2>
+                        Datos de cuenta
+                    </h2>
+
+                    <div class="client-profile-readonly">
+
+                        <span>
+                            Nombre
+                        </span>
+
+                        <strong>
+                            #{clientePerfilBean.usuario.nombre}
+                            #{clientePerfilBean.usuario.apellido}
+                        </strong>
+
+                    </div>
+
+                    <div class="client-profile-readonly">
+
+                        <span>
+                            Correo
+                        </span>
+
+                        <strong>
+                            #{clientePerfilBean.usuario.correo}
+                        </strong>
+
+                    </div>
+
+                    <div class="client-profile-field">
+
+                        <h:outputLabel
+                                for="telefono"
+                                value="Teléfono"/>
+
+                        <h:inputText
+                                id="telefono"
+                                value="#{clientePerfilBean.telefono}"
+                                maxlength="20"/>
+
+                    </div>
+
+                    <div class="client-profile-field">
+
+                        <h:outputLabel
+                                for="direccion"
+                                value="Dirección"/>
+
+                        <h:inputTextarea
+                                id="direccion"
+                                value="#{clientePerfilBean.direccion}"
+                                maxlength="255"
+                                rows="4"/>
+
+                        <small>
+                            Se utilizará como dirección sugerida
+                            al confirmar tus próximos pedidos.
+                        </small>
+
+                    </div>
+
+                    <div class="client-profile-actions">
+
+                        <h:commandButton
+                                value="Guardar cambios"
+                                action="#{clientePerfilBean.guardar}"
+                                styleClass="market-primary-button"/>
+
+                    </div>
+
+                </section>
+
+            </h:form>
+
+            <h:form styleClass="client-profile-logout">
+
+                <h:commandButton
+                        value="Cerrar sesión"
+                        action="#{authBean.cerrarSesion}"
+                        styleClass="client-profile-logout-button"/>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
+
+</html>

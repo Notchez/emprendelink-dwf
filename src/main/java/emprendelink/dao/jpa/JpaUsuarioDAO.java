@@ -14,31 +14,42 @@ import java.util.Locale;
 import java.util.Optional;
 
 @ApplicationScoped
-public class JpaUsuarioDAO implements UsuarioDAO {
+public class JpaUsuarioDAO
+        implements UsuarioDAO {
 
-    @PersistenceContext(unitName = "emprendelinkPU")
+    @PersistenceContext(
+            unitName = "emprendelinkPU"
+    )
     private EntityManager entityManager;
 
     @Override
-    public Usuario crear(Usuario usuario) {
+    public Usuario crear(
+            Usuario usuario) {
 
         validarRol(usuario);
 
         UsuarioEntity entidad =
-                UsuarioMapper.aEntidad(usuario);
-
-        RolEntity rol =
-                entityManager.getReference(
-                        RolEntity.class,
-                        usuario.getRol().getIdRol()
+                UsuarioMapper.aEntidad(
+                        usuario
                 );
 
-        entidad.setRol(rol);
+        entidad.setRol(
+                entityManager.getReference(
+                        RolEntity.class,
+                        usuario.getRol()
+                                .getIdRol()
+                )
+        );
 
-        entityManager.persist(entidad);
+        entityManager.persist(
+                entidad
+        );
+
         entityManager.flush();
 
-        return UsuarioMapper.aDominio(entidad);
+        return UsuarioMapper.aDominio(
+                entidad
+        );
     }
 
     @Override
@@ -49,15 +60,24 @@ public class JpaUsuarioDAO implements UsuarioDAO {
             return Optional.empty();
         }
 
-        UsuarioEntity entidad =
-                entityManager.find(
-                        UsuarioEntity.class,
+        return entityManager.createQuery(
+                        """
+                        SELECT u
+                        FROM UsuarioEntity u
+                        JOIN FETCH u.rol
+                        WHERE u.idUsuario = :id
+                        """,
+                        UsuarioEntity.class
+                )
+                .setParameter(
+                        "id",
                         idUsuario
+                )
+                .getResultStream()
+                .findFirst()
+                .map(
+                        UsuarioMapper::aDominio
                 );
-
-        return Optional.ofNullable(
-                UsuarioMapper.aDominio(entidad)
-        );
     }
 
     @Override
@@ -82,11 +102,15 @@ public class JpaUsuarioDAO implements UsuarioDAO {
                 .setParameter(
                         "correo",
                         correo.trim()
-                                .toLowerCase(Locale.ROOT)
+                                .toLowerCase(
+                                        Locale.ROOT
+                                )
                 )
                 .getResultStream()
                 .findFirst()
-                .map(UsuarioMapper::aDominio);
+                .map(
+                        UsuarioMapper::aDominio
+                );
     }
 
     @Override
@@ -102,7 +126,9 @@ public class JpaUsuarioDAO implements UsuarioDAO {
                         UsuarioEntity.class
                 )
                 .getResultStream()
-                .map(UsuarioMapper::aDominio)
+                .map(
+                        UsuarioMapper::aDominio
+                )
                 .toList();
     }
 
@@ -128,22 +154,46 @@ public class JpaUsuarioDAO implements UsuarioDAO {
             return false;
         }
 
-        RolEntity rol =
+        entidad.setRol(
                 entityManager.getReference(
                         RolEntity.class,
-                        usuario.getRol().getIdRol()
-                );
+                        usuario.getRol()
+                                .getIdRol()
+                )
+        );
 
-        entidad.setRol(rol);
-        entidad.setNombre(usuario.getNombre());
-        entidad.setApellido(usuario.getApellido());
-        entidad.setCorreo(usuario.getCorreo());
-        entidad.setTelefono(usuario.getTelefono());
-        entidad.setActivo(usuario.isActivo());
-        entidad.setFechaRegistro(usuario.getFechaRegistro());
+        entidad.setNombre(
+                usuario.getNombre()
+        );
+
+        entidad.setApellido(
+                usuario.getApellido()
+        );
+
+        entidad.setCorreo(
+                usuario.getCorreo()
+        );
+
+        entidad.setTelefono(
+                usuario.getTelefono()
+        );
+
+        entidad.setDireccion(
+                usuario.getDireccion()
+        );
+
+        entidad.setActivo(
+                usuario.isActivo()
+        );
+
+        entidad.setFechaRegistro(
+                usuario.getFechaRegistro()
+        );
 
         if (usuario.getContrasenaHash() != null
-                && !usuario.getContrasenaHash().isBlank()) {
+                && !usuario
+                .getContrasenaHash()
+                .isBlank()) {
 
             entidad.setContrasenaHash(
                     usuario.getContrasenaHash()
@@ -171,7 +221,9 @@ public class JpaUsuarioDAO implements UsuarioDAO {
             return false;
         }
 
-        entityManager.remove(entidad);
+        entityManager.remove(
+                entidad
+        );
 
         return true;
     }
@@ -181,7 +233,9 @@ public class JpaUsuarioDAO implements UsuarioDAO {
 
         if (usuario == null
                 || usuario.getRol() == null
-                || usuario.getRol().getIdRol() == null) {
+                || usuario
+                .getRol()
+                .getIdRol() == null) {
 
             throw new IllegalArgumentException(
                     "El usuario debe tener un rol válido."

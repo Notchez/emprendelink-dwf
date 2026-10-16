@@ -9,6 +9,10 @@ public interface UsuarioService {
 
     List<Usuario> listarTodos();
 
+    Usuario buscarPorId(
+            Integer idUsuario
+    );
+
     void registrar(
             String nombre,
             String apellido,
@@ -16,6 +20,12 @@ public interface UsuarioService {
             String contrasena,
             String telefono,
             TipoRol rol
+    );
+
+    Usuario actualizarPerfilCliente(
+            Integer idUsuario,
+            String telefono,
+            String direccion
     );
 
     void cambiarEstado(
