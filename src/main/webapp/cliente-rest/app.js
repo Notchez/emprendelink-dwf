@@ -166,11 +166,17 @@ async function cargarPublicaciones() {
 
             const boton = document.createElement("button");
             boton.type = "button";
-            boton.textContent = "Agregar al carrito";
 
-            boton.addEventListener("click", () => {
-                agregarAlCarrito(publicacion);
-            });
+            if (publicacion.stock <= 0) {
+                boton.textContent = "Agotado";
+                boton.disabled = true;
+            } else {
+                boton.textContent = "Agregar al carrito";
+
+                boton.addEventListener("click", () => {
+                    agregarAlCarrito(publicacion);
+                });
+            }
 
             tarjeta.appendChild(boton);
             contenedor.appendChild(tarjeta);
