@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmprendeLink - Cliente REST</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<header>
+    <h1>EmprendeLink</h1>
+    <p>Explora emprendimientos y publicaciones</p>
+    <nav>
+        <a href="#emprendimientos">Emprendimientos</a>
+        <a href="#publicaciones">Publicaciones</a>
+        <a href="#carrito">Mi carrito</a>
+        <a href="#sesion">Mi cuenta</a>
+    </nav>
+</header>
+
+<main>
+    <section id="sesion">
+        <h2>Mi cuenta</h2>
+        <p id="estado-sesion" role="status">No has iniciado sesión.</p>
+
+        <form id="form-login">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" type="email" required autocomplete="username">
+
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" type="password" required autocomplete="current-password">
+
+            <button type="submit">Iniciar sesión</button>
+        </form>
+
+        <button id="btn-logout" type="button" hidden>Cerrar sesión</button>
+    </section>
+
+    <section id="emprendimientos">
+        <h2>Emprendimientos disponibles</h2>
+        <button id="btn-emprendimientos" type="button">Actualizar emprendimientos</button>
+        <p id="estado-emprendimientos" role="status"></p>
+        <div id="lista-emprendimientos" class="tarjetas"></div>
+    </section>
+
+    <section id="publicaciones">
+        <h2>Publicaciones disponibles</h2>
+        <button id="btn-publicaciones" type="button">Actualizar publicaciones</button>
+        <p id="estado-publicaciones" role="status"></p>
+        <div id="lista-publicaciones" class="tarjetas"></div>
+    </section>
+
+    <section id="carrito">
+        <h2>Mi carrito</h2>
+        <div id="lista-carrito"></div>
+        <p id="total-carrito"></p>
+
+        <form id="form-checkout">
+            <label for="direccion">Dirección de entrega</label>
+            <textarea id="direccion" required minlength="5"></textarea>
+
+            <label for="observaciones">Observaciones (opcional)</label>
+            <textarea id="observaciones"></textarea>
+
+            <button type="submit">Realizar pedido</button>
+        </form>
+    </section>
+
+    <section id="pedidos">
+        <h2>Mis pedidos</h2>
+        <button id="btn-pedidos" type="button">Consultar mis pedidos</button>
+        <div id="lista-pedidos"></div>
+    </section>
+
+    <p id="mensaje-general" role="status" aria-live="polite"></p>
+</main>
+
+<footer>
+    <p>EmprendeLink - Cliente consumidor de API REST</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
