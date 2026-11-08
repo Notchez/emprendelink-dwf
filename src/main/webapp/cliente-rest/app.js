@@ -88,6 +88,30 @@ async function solicitarAPI(ruta, opciones = {}) {
     return datos;
 }
 
+async function recuperarSesion() {
+    try {
+        const sesion = await solicitarAPI("/auth/me");
+
+        csrfToken = sesion?.csrfToken || null;
+
+        if (!csrfToken) {
+            return;
+        }
+
+        elemento("estado-sesion").textContent = "Sesión iniciada.";
+        elemento("form-login").hidden = true;
+        elemento("btn-logout").hidden = false;
+
+        await cargarPedidos();
+
+    } catch (error) {
+        csrfToken = null;
+        elemento("estado-sesion").textContent = "No has iniciado sesión.";
+        elemento("form-login").hidden = false;
+        elemento("btn-logout").hidden = true;
+    }
+}
+
 function crearTarjeta(titulo, descripcion) {
     const tarjeta = document.createElement("article");
     tarjeta.className = "tarjeta";
@@ -413,3 +437,4 @@ elemento("btn-pedidos")
 mostrarCarrito();
 cargarEmprendimientos();
 cargarPublicaciones();
+recuperarSesion();
