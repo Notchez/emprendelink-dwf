@@ -4,6 +4,7 @@ Proyecto de cátedra para **DWF — Desarrollo de Aplicaciones con Web Framework
 
 ## Estado actual
 
+**Actualización:** El Sprint III incorpora API REST funcional y evidencia QA del 14/11/2026. Ver la sección Fase 3 para el resultado de pruebas, limitaciones y pendientes.
 La aplicación completa el incremento funcional de:
 
 ```text
@@ -581,35 +582,115 @@ PublicacionFilter
 
 ---
 
-## Fase 3
+## Fase 3 — Servicios REST, integración y pruebas (Sprint III)
 
-Existen paquetes y clases preparatorias:
+**Estado al 14 de noviembre de 2026:** API REST desplegada y sometida a pruebas HTTP locales. El resultado es **parcialmente conforme**, con hallazgos abiertos documentados por QA. Este apartado actualiza el estado preparatorio de Fase 3; los apartados anteriores del README describen la funcionalidad JSF y la arquitectura de Fase 2, que se conservan.
 
-```text
-emprendelink.dto
-emprendelink.web.rest
-```
+### Arquitectura REST
 
-pero las clases REST y DTO actuales son únicamente scaffolding.
-
-La API REST funcional **no forma parte todavía del incremento cerrado de Fase 2**.
-
-El siguiente incremento deberá implementar formalmente:
+La aplicación conserva la lógica de negocio y la persistencia existentes:
 
 ```text
-JAX-RS
-JSON
-endpoints
-códigos HTTP
-DTO reales
-manejo de errores
-seguridad REST
-cliente consumidor externo
-pruebas de API
-documentación de consumo
+Cliente HTTP / interfaz consumidora
+             ↓
+      JAX-RS (/api/v1)
+             ↓
+   Autenticación y DTO
+             ↓
+         Services
+             ↓
+          DAO / JPA
+             ↓
+     EclipseLink / JTA
+             ↓
+ DataSource GlassFish / MySQL
 ```
 
-La API deberá reutilizar los Services existentes para evitar duplicar reglas de negocio.
+No se consulta MySQL directamente desde el cliente consumidor. El contrato oficial de rutas, permisos y cuerpos JSON se mantiene en [`docs/API.md`](docs/API.md), a cargo del integrante 1.
+
+### Requisitos de ejecución local
+
+- Java 25, Maven, Jakarta EE 11 y GlassFish 8.x (pruebas realizadas en GlassFish **8.0.5**).
+- MySQL con el esquema `emprendelink_dwf` y sus tablas, inicializado según `database/schema.sql` y `database/seed.sql` cuando corresponda. No ejecutar el seed sobre una base que contenga datos que deban conservarse sin revisar previamente el script.
+- Pool JDBC en GlassFish: `EmprendeLinkPool`.
+- Recurso JNDI habilitado: `jdbc/EmprendeLinkDS`.
+- Clase del DataSource: `com.mysql.cj.jdbc.MysqlDataSource`; el controlador MySQL Connector/J debe ser accesible para el dominio GlassFish (por ejemplo, en `domains/domain1/lib`, seguido de un reinicio cuando se incorpora).
+- Usuario de base de datos con permisos sobre `emprendelink_dwf`. **No almacenar contraseñas ni tokens en Git.**
+
+Para comprobar la conexión, abrir **Resources → JDBC → JDBC Connection Pools → EmprendeLinkPool → Ping** y confirmar `Ping Succeeded` antes de desplegar el WAR.
+
+### Construcción y despliegue
+
+Desde la raíz del repositorio:
+
+```powershell
+mvn clean test
+mvn clean package
+```
+
+El artefacto esperado es `target/emprendelink.war`. Desplegarlo desde **GlassFish → Applications → Deploy** con *Context Root* `emprendelink`. La construcción final debe volver a ejecutarse y documentarse antes de fusionar o presentar la entrega; el resultado de compilaciones anteriores no se asume automáticamente para esta rama.
+
+Comprobación inicial:
+
+```powershell
+curl.exe -i http://localhost:8080/emprendelink/api/v1/health
+```
+
+Resultado observado el **14/11/2026**: `HTTP 200`, `application/json`, `status: UP`, `application: EmprendeLink`, `apiVersion: v1`.
+
+### Endpoints utilizados en QA
+
+| Método | Ruta relativa a `/emprendelink/api/v1` | Acceso |
+|---|---|---|
+| GET | `/health` | Público |
+| GET | `/emprendimientos` y `/emprendimientos/{id}` | Público |
+| GET | `/emprendimientos/{id}/publicaciones` | Público |
+| GET | `/publicaciones` y `/publicaciones/{id}` | Público |
+| POST | `/auth/login` | Público |
+| GET | `/auth/me` | Sesión autenticada |
+| POST | `/auth/logout` | Sesión autenticada + CSRF |
+| GET | `/pedidos` y `/pedidos/{id}` | Identidad y permisos del usuario |
+| POST | `/pedidos/checkout` | `ROLE_CLIENTE` + CSRF |
+| PUT | `/pedidos/{id}/estado` | `ROLE_EMPRENDEDOR` propietario + CSRF |
+
+La API se consume desde el prefijo `http://localhost:8080/emprendelink/api/v1`. Las operaciones de escritura autenticadas requieren **cookie de sesión** y encabezado `X-CSRF-Token`. El token se entrega en la respuesta de login y en `/auth/me`. Las pruebas se ejecutaron desde PowerShell con `curl.exe` o `Invoke-WebRequest`, manteniendo la sesión mediante `-SessionVariable` y `-WebSession`.
+
+Ejemplos sin credenciales:
+
+```powershell
+curl.exe -i -H "Accept: application/json" http://localhost:8080/emprendelink/api/v1/emprendimientos
+curl.exe -i -H "Accept: application/json" http://localhost:8080/emprendelink/api/v1/publicaciones
+curl.exe -i -H "Accept: application/json" http://localhost:8080/emprendelink/api/v1/auth/me
+```
+
+El último ejemplo, sin cookie válida, debe devolver `401 Unauthorized` con cuerpo JSON.
+
+### Resultados reproducibles de QA (14/11/2026)
+
+En la matriz se definieron **25 casos de Fase 3**: **19 aprobados, 3 fallidos, 1 pendiente de verificación integral y 2 bloqueados**. Se ejecutaron **23 casos**, de los cuales uno (`CP-223`) solo confirmó el código HTTP, no el formato completo del error. Los dos bloqueados no cuentan como ejecutados.
+
+Comportamientos verificados:
+
+- Listados públicos y consultas individuales con `200` y JSON.
+- Login REST válido (`200`), sesión autenticada (`200`), rechazo sin sesión (`401`) y cierre efectivo de sesión (`204`; consulta posterior `401`).
+- Rechazo de checkout sin CSRF (`403`) y acceso denegado a cambio de estado desde `ROLE_CLIENTE` (`403`).
+- Checkout autorizado (`204`): se observó el **pedido ID 5** por **2.50** y el cambio del stock de la publicación 1 de **40 a 39** mediante consultas HTTP posteriores.
+- Checkout con cantidad superior al stock (`409`): no se observó otro pedido ni disminución adicional del inventario.
+
+**Hallazgos abiertos:**
+
+- `DEF-001`: solicitudes a emprendimiento/publicación inexistentes devolvieron `404` con **HTML (`text/html`)**, aun solicitando JSON; el contrato REST especifica error JSON.
+- `DEF-002`: `GET /publicaciones?texto=cafe` devolvió la lista completa sin aplicar el filtro `texto` esperado.
+
+**Cobertura no concluida:** `CP-223` (tipo y cuerpo de error `404` para pedido), `CP-216` y `CP-217` (transiciones con rol emprendedor autorizado); cuerpo JSON del `409`; acceso a pedidos ajenos; compra multi-negocio; verificación directa de SQL; demostración extremo a extremo del cliente consumidor; y ejecución de la integración continua sobre la revisión final.
+
+Consultar la evidencia detallada y el estado individual de cada caso en:
+
+- [`docs/MATRIZ-PRUEBAS.md`](docs/MATRIZ-PRUEBAS.md), sección **14**.
+- [`docs/EVIDENCIAS-FASE3/`](docs/EVIDENCIAS-FASE3/), con capturas y registros.
+- [`docs/RELEASE-NOTES.md`](docs/RELEASE-NOTES.md), notas del Sprint III.
+
+**Nota:** La aplicación cliente consumidora forma parte del alcance del Sprint III, pero en esta ronda de QA **no se documentó una verificación completa de su interfaz ni de su recorrido extremo a extremo**; no debe presentarse como prueba aprobada sin capturas adicionales.
 
 ---
 
