@@ -1,6 +1,8 @@
 
 # API REST — EmprendeLink DWF
 
+> **Sprint IV:** los endpoints ya implementados en Sprint III se conservan sin cambiar su contrato. `ApiAuthenticationFilter` utiliza `AccessPolicy` Spring; `ApiErrorPolicy` define mensajes comunes para mappers, respuestas REST sin cuerpo y despacho de errores del contenedor. La corrección funcional de filtros de catálogo y la verificación de DEF-001/DEF-002 pertenecen al Integrante 2 y QA. Validar JSON y códigos HTTP desplegados antes de cerrar defectos.
+
 ## 1. Objetivo
 
 Contrato de integración para el Sprint III (Fase 3).
@@ -11,7 +13,7 @@ La API REST utiliza JAX-RS, CDI y los Services existentes. No implementa una seg
 
 Este documento define la versión 1 del contrato para que backend, seguridad y cliente externo trabajen sobre las mismas convenciones.
 
-**Estado:** contrato v1 propuesto para revisión e integración del equipo. Los endpoints de negocio se consideran pendientes hasta que sus responsables los implementen y prueben.
+**Estado:** contrato v1 implementado en Sprint III; correcciones y verificación final en Sprint IV.
 
 ## 2. URL base
 
@@ -758,21 +760,4 @@ No modificar Resources ajenos sin coordinación previa.
 
 ## 16. Estado del proyecto
 
-```text
-JAX-RS /api/v1                 IMPLEMENTADO
-GET /health                    IMPLEMENTADO Y PROBADO
-
-Contrato v1                    PROPUESTO PARA REVISIÓN
-Autenticación REST             PENDIENTE
-Seguridad REST                 PENDIENTE
-Manejo de errores REST         PENDIENTE
-
-Emprendimientos REST           PENDIENTE
-Publicaciones REST             PENDIENTE
-Pedidos REST                   PENDIENTE
-Cliente consumidor             PENDIENTE
-Pruebas integrales             PENDIENTE
-Sprint Review                  PENDIENTE
-```
-
-Los endpoints documentados no deben presentarse como implementados hasta que sus responsables los integren y prueben.
+Los endpoints de autenticación, emprendimientos, publicaciones, pedidos y health, así como el cliente consumidor, están presentes en el código de Sprint III. Sprint IV centraliza acceso y errores con Spring Context. El estado de pruebas y defectos debe validarse y consolidarse con QA; no confundir implementación con aprobación de regresión.

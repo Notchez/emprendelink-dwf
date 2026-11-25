@@ -926,3 +926,14 @@ Alcance previsto:
 - manuales;
 - Release Notes;
 - liberación final.
+
+## Sprint IV — Integrante 1: arquitectura y seguridad
+
+| Historia | Criterio de aceptación | Estado inicial del cambio |
+|---|---|---|
+| HU-F4-01 | Contexto Spring real, políticas inyectadas, WAR sin reemplazar CDI/JPA | Implementación propuesta; validar |
+| HU-F4-02 | Acceso web y REST por rol, cuenta activa y propiedad; CSRF REST | Implementación propuesta; validar |
+| HU-F4-03 | Errores compartidos JSON/HTML sin trazas; 404 y códigos conservados | Implementación propuesta; validar |
+| HU-F4-04 | Limpieza, arquitectura, versiones y CI reproducibles | Implementación propuesta; validar |
+
+Cierre: código revisado, CI verde, despliegue real y evidencia de cada criterio. Las historias de otros integrantes no se marcan realizadas por este cambio.

@@ -1,5 +1,7 @@
 # Baseline tecnológica — EmprendeLink DWF
 
+> **Sprint IV:** Spring Framework 7.0.11 (`spring-context`) añadido a `pom.xml`; Jakarta EE 11, Java 25, GlassFish, EclipseLink/JTA y MySQL se conservan. No se agrega Spring Boot, Spring Security ni Hibernate. CI ejecuta `mvn -B clean verify`.
+
 ## Java
 
 - Java: 25
@@ -67,7 +69,7 @@ Previsto:
 
 ## Spring — Fase 4
 
-La versión se fijará cuando comience la integración real de Fase 4.
+Spring Framework 7.0.11 (`spring-context`), administrado por el contexto de la aplicación en el WAR. No se incorpora Spring Boot ni se sustituye el proveedor JPA.
 
 ## Codificación
 

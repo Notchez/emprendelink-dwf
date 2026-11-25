@@ -58,14 +58,9 @@ public final class ApiSessionSecurity {
 
         // No confiar en el estado o rol guardados
         // durante un login anterior.
-        Usuario actual = usuarioService.buscarPorId(
-                usuario.getIdUsuario()
-        );
+        Usuario actual = emprendelink.spring.security.AccessPolicy.current(sesion, usuarioService);
 
-        if (actual == null
-                || !actual.isActivo()
-                || actual.getRol() == null
-                || actual.getRol().getNombre() == null) {
+        if (actual == null) {
 
             sesion.invalidate();
             throw new ForbiddenException();

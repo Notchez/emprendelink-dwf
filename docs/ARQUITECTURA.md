@@ -1,5 +1,7 @@
 # Arquitectura — EmprendeLink DWF
 
+> **Arquitectura Sprint IV:** JSF y JAX-RS siguen conectados a los mismos Services CDI y DAO JPA/JTA. Spring Context se integra de forma explícita en el WAR para políticas de acceso y errores compartidas. `WebAccessFilter` sustituye los siete filtros web; `ApiAuthenticationFilter` consume `AccessPolicy`. El resto del documento registra la evolución de las fases anteriores. Ver [SPRING-FASE4.md](SPRING-FASE4.md).
+
 ## 1. Estado
 
 EmprendeLink completa la arquitectura correspondiente a:

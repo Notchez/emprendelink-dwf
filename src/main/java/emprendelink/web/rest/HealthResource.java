@@ -18,7 +18,7 @@ public class HealthResource {
                 Map.of(
                         "status", "UP",
                         "application", "EmprendeLink",
-                        "phase", "Fase 3",
+                        "phase", "Fase 4",
                         "apiVersion", "v1"
                 )
         ).build();

@@ -249,3 +249,20 @@ CP-167
 ```
 
 No es obligatorio que todos los casos pendientes se automaticen en Fase 2, pero sí deben ejecutarse y documentarse si se desean presentar como evidencia de cierre.
+
+## Sprint IV — Integración Spring y seguridad
+
+| ID | Caso | Tipo | Estado |
+|---|---|---|---|
+| CP-F4-001 | Contexto Spring crea e inyecta los beans | Unit | PENDIENTE |
+| CP-F4-002 | Permisos REST por rol, método y CSRF | Unit/HTTP | PENDIENTE |
+| CP-F4-003 | Filtro JSF permite rutas del perfil y rechaza las demás | Unit/Manual | PENDIENTE |
+| CP-F4-004 | Cuenta desactivada pierde acceso con sesión previa | Integración | PENDIENTE |
+| CP-F4-005 | Cambio de rol revoca sesión JSF anterior | Integración | PENDIENTE |
+| CP-F4-006 | Error REST 404 JSON y error web HTML | HTTP | PENDIENTE |
+| CP-F4-007 | Error 500 sin trazas ni SQL en cuerpo público | Unit/HTTP | PENDIENTE |
+| CP-F4-008 | Cookie HttpOnly y sesión sin URL rewriting | HTTP | PENDIENTE |
+| CP-F4-009 | WAR compila y despliega en GlassFish con JPA/CDI | Build/Integración | PENDIENTE |
+| CP-F4-010 | Regresión login, catálogo, carrito y pedidos por perfil | Integración | PENDIENTE |
+
+Prueba automatizada incluida: `SpringIntegrationTest`. Ejecutar `mvn -B clean verify` y registrar evidencias del entorno antes de cambiar estados.

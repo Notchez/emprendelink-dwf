@@ -447,7 +447,7 @@ class ApiSecurityTest {
             Usuario usuarioBD) {
 
         ApiAuthenticationFilter filtro =
-                new ApiAuthenticationFilter();
+                new ApiAuthenticationFilter(new emprendelink.spring.security.AccessPolicy(new emprendelink.spring.security.RouteRules()));
 
         UsuarioService servicio = proxy(
                 UsuarioService.class,

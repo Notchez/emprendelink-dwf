@@ -1,5 +1,7 @@
 # Rutas — EmprendeLink DWF
 
+> **Sprint IV:** las rutas de la matriz se conservan. Los nombres de filtros de las fases anteriores son históricos; `WebAccessFilter` aplica la política Spring de rutas web. La API `/api/v1` conserva `ApiAuthenticationFilter` y el contrato de roles. Los errores HTML web y JSON REST se separan mediante `ErrorDispatchServlet`.
+
 ## Context path
 
 ```text

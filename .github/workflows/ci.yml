@@ -26,5 +26,5 @@ jobs:
           java-version: "25"
           cache: maven
 
-      - name: Ejecutar pruebas
-        run: mvn -B clean test
+      - name: Ejecutar pruebas y construir WAR
+        run: mvn -B clean verify
