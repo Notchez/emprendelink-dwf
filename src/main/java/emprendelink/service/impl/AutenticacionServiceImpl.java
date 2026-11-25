@@ -30,7 +30,8 @@ public class AutenticacionServiceImpl
         if (correo == null
                 || correo.isBlank()
                 || contrasena == null
-                || contrasena.isBlank()) {
+                || contrasena.isBlank()
+                || correo.length() > 120 || contrasena.length() > 128) {
 
             return null;
         }
@@ -38,7 +39,7 @@ public class AutenticacionServiceImpl
         Usuario usuario =
                 usuarioDAO.buscarPorCorreo(
                                 correo.trim()
-                                        .toLowerCase()
+                                        .toLowerCase(java.util.Locale.ROOT)
                         )
                         .orElse(null);
 

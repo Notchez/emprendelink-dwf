@@ -1,5 +1,7 @@
 # Roles y permisos — EmprendeLink DWF
 
+> **Sprint IV:** `WebAccessFilter` reemplaza los siete filtros descritos históricamente en la sección 9. Revalida estado e identidad con `UsuarioService` y revoca sesión JSF ante cambio de rol o desactivación. API conserva revalidación, CSRF y restricciones por método y rol mediante `AccessPolicy`. La propiedad de pedidos/publicaciones se sigue verificando en Services. Ver [SPRING-FASE4.md](SPRING-FASE4.md).
+
 ## 1. Roles oficiales
 
 ```text
@@ -301,116 +303,7 @@ usuario.idUsuario
 
 ## 9. Filtros
 
-### `AutenticacionFilter`
-
-Protege:
-
-```text
-/inicio.xhtml
-```
-
-La ruta actúa como redirección por rol.
-
-### `AdminFilter`
-
-Protege:
-
-```text
-/admin/*
-```
-
-Requiere:
-
-```text
-ROLE_ADMIN
-```
-
-### `CatalogoFilter`
-
-Protege el comportamiento de:
-
-```text
-/catalogo/*
-```
-
-Reglas:
-
-```text
-Visitante     → permitido
-ROLE_CLIENTE  → permitido
-ROLE_EMPRENDEDOR → redirect a pedidos
-ROLE_ADMIN       → redirect a administración
-```
-
-### `ClienteFilter`
-
-Protege:
-
-```text
-/carrito/*
-/perfil/*
-```
-
-Requiere:
-
-```text
-ROLE_CLIENTE
-```
-
-### `EmprendedorFilter`
-
-Protege:
-
-```text
-/emprendimientos/*
-/ventas/*
-/comisiones/*
-```
-
-Requiere:
-
-```text
-ROLE_EMPRENDEDOR
-```
-
-### `PublicacionFilter`
-
-Protege:
-
-```text
-/publicaciones/*
-```
-
-Requiere usuario activo:
-
-```text
-ROLE_EMPRENDEDOR
-```
-
-### `PedidosFilter`
-
-Protege:
-
-```text
-/pedidos/*
-```
-
-Rutas cliente:
-
-```text
-/pedidos/nuevo.xhtml
-/pedidos/mis-pedidos.xhtml
-```
-
-Ruta emprendedor:
-
-```text
-/pedidos/recibidos.xhtml
-```
-
-El detalle se complementa con la autorización del Service.
-
----
+`WebAccessFilter` protege `/inicio.xhtml`, login, registro, catálogo, administración, carrito, perfil, pedidos y panel de emprendedor. Aplica `AccessPolicy` administrada por Spring. El catálogo permite visitantes y clientes; redirige al admin y emprendedor a su panel. Las demás rutas exigen el rol correspondiente; el detalle de pedido delega la autorización de propiedad al Service. La API conserva `ApiAuthenticationFilter`, sesión y CSRF, utilizando la misma política Spring.
 
 ## 10. Usuario activo
 
@@ -515,4 +408,4 @@ rol + propiedad + estado + disponibilidad
 DAO
 ```
 
-La futura Fase 3 deberá reutilizar estas reglas desde los Services.
+Los Resources REST reutilizan los Services; Sprint IV centraliza la política de acceso con Spring.

@@ -14,10 +14,19 @@
         </param-name>
 
         <param-value>
-            Development
+            Production
         </param-value>
 
     </context-param>
+
+    <listener>
+        <listener-class>emprendelink.spring.config.SpringRuntime</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>Application Error Dispatcher</servlet-name>
+        <servlet-class>emprendelink.spring.rest.ErrorDispatchServlet</servlet-class>
+    </servlet>
 
     <servlet>
 
@@ -47,6 +56,17 @@
 
     </servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>Application Error Dispatcher</servlet-name>
+        <url-pattern>/error/dispatch</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config><http-only>true</http-only></cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
     <welcome-file-list>
         <welcome-file>
             login.xhtml
@@ -60,7 +80,7 @@
         </error-code>
 
         <location>
-            /error/403.html
+            /error/dispatch
         </location>
 
     </error-page>
@@ -72,7 +92,7 @@
         </error-code>
 
         <location>
-            /error/404.html
+            /error/dispatch
         </location>
 
     </error-page>
@@ -84,7 +104,7 @@
         </error-code>
 
         <location>
-            /error/500.html
+            /error/dispatch
         </location>
 
     </error-page>

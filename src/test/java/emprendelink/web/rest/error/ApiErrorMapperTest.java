@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ApiErrorMapperTest {
 
     private final ApiHttpExceptionMapper httpMapper =
-            new ApiHttpExceptionMapper();
+            new ApiHttpExceptionMapper(new emprendelink.spring.rest.ApiErrorPolicy());
 
     @Test
     void convierteError404AJson() {
@@ -109,7 +109,7 @@ class ApiErrorMapperTest {
     void convierteExcepcionInesperadaEn500Seguro() {
 
         ApiUnexpectedExceptionMapper inesperado =
-                new ApiUnexpectedExceptionMapper();
+                new ApiUnexpectedExceptionMapper(new emprendelink.spring.rest.ApiErrorPolicy());
 
         Response respuesta = inesperado.toResponse(
                 new IllegalStateException(

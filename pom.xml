@@ -23,6 +23,7 @@
         <mysql.version>26.7.0</mysql.version>
         <junit.version>5.13.4</junit.version>
         <jersey.version>4.0.2</jersey.version>
+        <spring.framework.version>7.0.11</spring.framework.version>
 
         <maven.compiler.plugin.version>3.16.0</maven.compiler.plugin.version>
         <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
@@ -30,6 +31,13 @@
     </properties>
 
     <dependencies>
+
+        <!-- Spring manages cross-cutting policies; CDI/JPA/JTA remain in GlassFish. -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.framework.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>jakarta.platform</groupId>

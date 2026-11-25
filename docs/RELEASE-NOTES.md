@@ -477,3 +477,12 @@ La Fase 3 deberá implementar formalmente:
 - cliente externo;
 - pruebas;
 - documentación de consumo.
+
+# Sprint IV — incremento de arquitectura y seguridad (no liberado)
+
+- Spring Framework 7.0.11: contexto por WAR, políticas de rutas y errores compartidas.
+- Consolidación de filtros web, revalidación de cuentas y restricciones REST conservadas.
+- Errores públicos centralizados, fallback JSON API, páginas HTML web conservadas.
+- Cookies HttpOnly, sesión de 30 minutos, JSF Production y CI con construcción WAR.
+- Retiro de clases vacías y filtros sustituidos. Sin cambios de esquema ni contrato comercial.
+- Validación de Maven, GlassFish, regresión integral y release final: pendientes de ejecución. No se declara liberada la versión 1.0.

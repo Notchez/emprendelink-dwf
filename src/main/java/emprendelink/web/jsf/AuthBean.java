@@ -30,13 +30,13 @@ public class AuthBean {
         FacesContext contexto =
                 FacesContext.getCurrentInstance();
 
-        Usuario usuario =
-                autenticacionService.autenticar(
-                        correo,
-                        contrasena
-                );
+        Usuario usuario = correo == null || correo.isBlank() || correo.length() > 120
+                || contrasena == null || contrasena.isBlank() || contrasena.length() > 128
+                ? null : autenticacionService.autenticar(correo, contrasena);
 
-        if (usuario == null) {
+        if (usuario == null || !usuario.isActivo() || usuario.getIdUsuario() == null
+                || usuario.getRol() == null || usuario.getRol().getNombre() == null) {
+            contrasena = null;
 
             contexto.addMessage(
                     null,

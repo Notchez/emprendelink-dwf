@@ -1,6 +1,8 @@
 
 # AGENTS.md — EmprendeLink DWF
 
+> **Regla vigente Sprint IV:** Spring Context administra `RouteRules`, `AccessPolicy` y `ApiErrorPolicy`; no sustituir CDI/JTA/EclipseLink ni duplicar Services. El listener `SpringRuntime` gobierna su ciclo de vida. `WebAccessFilter` reemplaza los siete filtros web; REST conserva sesión, CSRF y autorización de recurso en Services. Las reglas históricas del Sprint III que prohíben introducir Spring o describen su API como vacía ya no aplican al Sprint IV. Usar ramas feature/fase4-*, PR a develop, `mvn -B clean verify` y regresión GlassFish. No marcar casos no ejecutados como aprobados. Ver `docs/SPRING-FASE4.md`.
+
 Reglas técnicas obligatorias para desarrolladores y asistentes de IA que trabajen en este repositorio.
 
 > **Estado al inicio de Fase 3 (19/10/2026):** Fase 2 cerrada como incremento funcional; Fase 3 — Servicios REST e Integración de Clientes (Sprint III), en preparación. Fecha académica prevista: 7 u 8 de noviembre de 2026. No marcar funcionalidades nuevas como terminadas hasta integrarlas y verificarlas.
@@ -28,7 +30,7 @@ Cliente externo → HTTP/JSON → REST Resources → DTO ──┘              
 - Jakarta Faces / JSF, CDI, JPA con **EclipseLink**, JTA, MySQL.
 - JAX-RS para los nuevos servicios REST (la API de Jakarta EE está declarada con scope `provided`).
 - JUnit y GitHub Actions para la regresión y validación continua.
-- No reemplazar el proveedor JPA ni introducir Spring en Fase 3 sin una decisión técnica explícita. **Spring corresponde al Sprint IV.**
+- No reemplazar el proveedor JPA. Spring Context se incorpora en Sprint IV mediante la configuración explícita documentada en docs/SPRING-FASE4.md.
 
 ## 3. Reglas obligatorias heredadas de Fase 2
 
@@ -62,7 +64,7 @@ Reglas adicionales para Fase 3:
 23. No introducir cambios incompatibles al contrato compartido sin revisar `docs/API.md` y los consumidores.
 24. No implementar operaciones protegidas antes de resolver autenticación y autorización para REST.
 25. No introducir configuraciones permisivas de CORS o credenciales en el código por conveniencia.
-26. Toda nueva funcionalidad debe respetar el alcance del Sprint III; no anticipar Spring ni el despliegue final del Sprint IV.
+26. En Sprint IV, respetar el contrato REST, la integración Spring acordada y las responsabilidades de despliegue y QA.
 
 ## 4. Persistencia
 
@@ -101,7 +103,7 @@ emprendelink.web.rest
 emprendelink.spring
 ```
 
-`emprendelink.spring` es un paquete preparatorio; no implica que Spring forme parte del runtime actual.
+`emprendelink.spring` contiene la configuración y las políticas activas de Spring Context.
 
 ## 6. Línea base heredada de Fase 2
 
@@ -197,7 +199,7 @@ mvn clean package
 El workflow actual de GitHub Actions ejecuta:
 
 ```text
-mvn -B clean test
+mvn -B clean verify
 ```
 
 `BUILD SUCCESS` verifica compilación/pruebas aplicables; no reemplaza la validación manual del endpoint desplegado ni los casos HTTP de seguridad e integración.

@@ -1,53 +1,25 @@
 # EmprendeLink — DWF
 
+> **Sprint IV — incremento de arquitectura y seguridad (propuesto):** la API JAX-RS y el cliente consumidor de Fase 3 ya están presentes en develop. Este cambio integra Spring Framework 7.0.11 (`spring-context`) para políticas de acceso y errores; GlassFish conserva CDI, JSF, JPA/EclipseLink y JTA. Ver [SPRING-FASE4.md](docs/SPRING-FASE4.md). Los resultados de build, regresión y despliegue se deben verificar; no representan una liberación final.
+
 Proyecto de cátedra para **DWF — Desarrollo de Aplicaciones con Web Frameworks**.
 
 ## Estado actual
 
-La aplicación completa el incremento funcional de:
+EmprendeLink integra la aplicación JSF/JPA, la API JAX-RS v1 y el cliente consumidor de Sprint III. El incremento de Sprint IV incorpora Spring Context para seguridad y tratamiento de errores, manteniendo CDI, JPA/EclipseLink, JTA, GlassFish y MySQL como infraestructura existente.
+
+La compilación, regresión HTTP y liberación final deben comprobarse en el entorno real. Los roles oficiales son `ROLE_ADMIN`, `ROLE_EMPRENDEDOR` y `ROLE_CLIENTE`.
 
 ```text
-Fase 2 — Persistencia Empresarial e Integración JSF
-Sprint II
+JSF/XHTML -> Managed Beans CDI -> Services -> DAO/JPA -> MySQL
+Cliente REST -> JAX-RS -> los mismos Services
+Filtros y errores -> Spring Context (políticas compartidas)
 ```
-
-La versión actual incorpora además refinamientos de experiencia de usuario para los perfiles:
-
-```text
-ROLE_ADMIN
-ROLE_EMPRENDEDOR
-ROLE_CLIENTE
-```
-
-La arquitectura activa es:
-
-```text
-XHTML / JSF
-    ↓
-Managed Beans CDI
-    ↓
-Services
-    ↓
-DAO
-    ↓
-JPA
-    ↓
-EclipseLink
-    ↓
-JTA
-    ↓
-GlassFish DataSource
-    ↓
-MySQL
-```
-
-La implementación anterior basada en JDBC, Servlets y JSP fue retirada del runtime para evitar mantener dos arquitecturas paralelas.
-
----
 
 ## Stack
 
 - Java 25
+- Spring Framework 7.0.11 (Spring Context; sin Spring Boot)
 - Maven
 - Jakarta EE 11
 - Jakarta Faces 4.1
@@ -516,7 +488,7 @@ target/emprendelink.war
 GitHub Actions ejecuta:
 
 ```text
-mvn -B clean test
+mvn -B clean verify
 ```
 
 El trabajo se integra mediante Pull Request hacia:
@@ -553,65 +525,15 @@ http://localhost:8080/emprendelink/login.xhtml
 
 ## Seguridad
 
-La seguridad se aplica en dos niveles:
+`WebAccessFilter` protege rutas JSF y revalida la cuenta activa en la base. `ApiAuthenticationFilter` protege la API mediante sesión HTTP, roles y CSRF. Ambos consumen la política de acceso administrada por Spring; los Services conservan los controles de propiedad, estado y reglas de negocio. No se deben exponer hashes ni secretos. Ver `docs/ROLES-PERMISOS.md` y `docs/SPRING-FASE4.md`.
 
-```text
-HTTP request
-   ↓
-Servlet Filter
-   ↓
-JSF / Managed Bean
-   ↓
-Service
-   ↓
-reglas de rol, propiedad y estado
-```
+## Fase 3 — API REST y cliente consumidor
 
-Filtros activos:
+La API `/api/v1` y el cliente `cliente-rest/index.html` están implementados en el código. El contrato y sus pruebas se documentan en `docs/API.md` y `docs/MATRIZ-PRUEBAS.md`. La revisión de defectos de QA y la validación final continúan en Sprint IV.
 
-```text
-AutenticacionFilter
-AdminFilter
-CatalogoFilter
-ClienteFilter
-EmprendedorFilter
-PedidosFilter
-PublicacionFilter
-```
+## Fase 4 — Spring, calidad y liberación
 
----
-
-## Fase 3
-
-Existen paquetes y clases preparatorias:
-
-```text
-emprendelink.dto
-emprendelink.web.rest
-```
-
-pero las clases REST y DTO actuales son únicamente scaffolding.
-
-La API REST funcional **no forma parte todavía del incremento cerrado de Fase 2**.
-
-El siguiente incremento deberá implementar formalmente:
-
-```text
-JAX-RS
-JSON
-endpoints
-códigos HTTP
-DTO reales
-manejo de errores
-seguridad REST
-cliente consumidor externo
-pruebas de API
-documentación de consumo
-```
-
-La API deberá reutilizar los Services existentes para evitar duplicar reglas de negocio.
-
----
+Ver `docs/SPRING-FASE4.md`. Este incremento no declara una versión final desplegada ni sustituye las entregas de los demás responsables.
 
 ## Documentación
 
